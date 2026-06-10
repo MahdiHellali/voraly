@@ -1,0 +1,161 @@
+/* ═══════════════════════════════════════════════════════════════
+   Voraly — Design System · Liquid Glass Edition
+   Palette : Violet/Indigo (#6366f1 → #8b5cf6)
+   Fond    : Deep Abyss Static bg-zinc-950 (#09090b)
+   ═══════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+
+/* ── Tokens ── */
+:root {
+  --accent-primary:    #8b5cf6;
+  --accent-secondary:  #6366f1;
+  --accent-glow:       rgba(139, 92, 246, 0.4);
+  --accent-border:     rgba(139, 92, 246, 0.2);
+  --text-main:         #ffffff;
+  --text-muted:        #a1a1aa;
+  --text-darker:       #71717a;
+}
+
+/* NOTE: do NOT add an unlayered universal margin/padding reset here.
+   Tailwind v4 puts utilities inside @layer, and unlayered rules override
+   layered ones, so such a reset silently kills every margin and padding
+   utility app-wide. Tailwind Preflight already handles that reset. */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ════════════════════════════════════════════════════════════════
+   HTML — deep-abyss base layer (paints BEHIND the WebGL canvas, which
+   is a fixed -z-10 child of <body>). Body itself stays transparent so
+   the shader shows through.
+   ════════════════════════════════════════════════════════════════ */
+html {
+  height: 100%;
+  background-color: #09090b; /* bg-zinc-950 fallback before/behind WebGL */
+}
+
+body {
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  color: var(--text-main);
+  position: relative;
+  background: transparent; /* let the WebGL field + scrim show through */
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.55); }
+
+/* ════════════════════════════════════════════════════════════════
+   GLASS — Apple Liquid Glass
+   background: rgba(255,255,255,0.03)
+   backdrop-filter: blur(24px)
+   border: 1px solid rgba(255,255,255,0.08)
+   box-shadow: 0 4px 30px rgba(0,0,0,0.1)
+   ════════════════════════════════════════════════════════════════ */
+.glass {
+  background:      rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.glass:hover {
+  background:   rgba(255, 255, 255, 0.048);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 8px 36px rgba(0, 0, 0, 0.26),
+    0 0 0 1px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Sidebar — slightly more opaque for legibility */
+.glass-sidebar {
+  background:      rgba(9, 9, 11, 0.52);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.18);
+}
+
+/* Topbar */
+.glass-topbar {
+  background:      rgba(9, 9, 11, 0.42);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.16);
+}
+
+/* Hero bento — accent tinted */
+.glass-hero {
+  background:      rgba(99, 102, 241, 0.04);
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  border: 1px solid rgba(139, 92, 246, 0.18);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.glass-hero:hover {
+  border-color: rgba(139, 92, 246, 0.32);
+  box-shadow:
+    0 12px 50px rgba(0, 0, 0, 0.32),
+    0 0 50px rgba(139, 92, 246, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ── Decorative FX ── */
+.glow-line {
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(99,102,241,0.75), rgba(139,92,246,0.5), transparent);
+}
+.glow-sphere {
+  position: absolute; top: -80px; right: -80px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(139,92,246,0.13) 0%, transparent 70%);
+  filter: blur(40px); border-radius: 50%; pointer-events: none;
+  animation: spherePulse 7s ease-in-out infinite alternate;
+}
+@keyframes spherePulse {
+  from { opacity: 0.65; transform: scale(1);    }
+  to   { opacity: 1;    transform: scale(1.18); }
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 60%, #e879f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Entry animations now handled by framer-motion (DashboardContent stagger) */
+
+/* ── SVG / bar transitions ── */
+.score-ring-fill { transition: stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1); }
+.kpi-bar-fill    { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* ════════════════════════════════════════════════════════════════
+   FLOATING NAV PILL — ExpandableTabs glass style
+   Deep frosted pill, high-contrast separation from content
+   ════════════════════════════════════════════════════════════════ */
+.glass-pill {
+  background:      rgba(12, 12, 15, 0.88);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}

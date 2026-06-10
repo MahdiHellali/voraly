@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voraly — Dashboard</title>
+  <meta name="description" content="Dashboard central pour optimiser vos profils et revenus freelance sur toutes les plateformes grâce à l'IA." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="shared.css">
+</head>
+
+<body>
+  <div class="app-layout">
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar expanded">
+      <div class="sidebar-header">
+        <img src="logo0.png" alt="Voraly Logo" class="logo-img" />
+        <div class="hide-on-collapse logo-text-container">
+          <span class="logo-text">Voraly</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button id="nav-0" class="nav-item active">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label hide-on-collapse">Dashboard</span>
+        </button>
+        <button id="nav-1" class="nav-item">
+          <span class="nav-icon">🧩</span>
+          <span class="nav-label hide-on-collapse">Plateformes Connectées</span>
+        </button>
+        <button id="nav-2" class="nav-item">
+          <span class="nav-icon">🚀</span>
+          <span class="nav-label hide-on-collapse">Stratégie &amp; Roadmap</span>
+        </button>
+        <button id="nav-3" class="nav-item">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label hide-on-collapse">Optimisation des Offres</span>
+        </button>
+        <button id="nav-4" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label hide-on-collapse">Paramètres</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">
+            <span>JD</span>
+          </div>
+          <div id="user-info" class="hide-on-collapse">
+            <div class="user-name">Jean Dupont</div>
+            <div class="user-meta">Pro · 3 plateformes</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menu-toggle" class="menu-toggle-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="topbar-title-group">
+            <div id="page-title" class="topbar-title">Dashboard</div>
+            <div class="topbar-date">Vendredi 6 juin 2026</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="platform-badges">
+            <span id="badge-upwork" class="platform-badge disconnected">● Upwork</span>
+            <span id="badge-fiverr" class="platform-badge disconnected">● Fiverr</span>
+            <span id="badge-malt" class="platform-badge disconnected">● Malt</span>
+          </div>
+          <button id="notif-btn" class="icon-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span id="notif-dot" class="notif-dot"></span>
+          </button>
+          <button id="settings-btn" class="icon-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Content -->
+      <main class="content-wrapper">
+        <div id="view-dashboard" class="dashboard-container">
+          
+          <!-- Hero Bento -->
+          <div class="hero-bento fade-1">
+            <div class="glow-fx-line"></div>
+            <div class="glow-fx-sphere"></div>
+
+            <div class="hero-content-wrapper">
+              <div class="hero-text-block">
+                <div class="hero-label">👋 Bonjour Jean</div>
+                <div class="hero-title">Voici tes performances du jour</div>
+                <div class="hero-subtitle">3 plateformes synchronisées · Dernière sync : <strong>il y a 4 minutes</strong></div>
+                
+                <div class="quick-stats">
+                  <div class="quick-stat">
+                    <div class="quick-stat-label">Revenus aujourd'hui</div>
+                    <div class="quick-stat-val val-green">320 €</div>
+                  </div>
+                  <div class="quick-stat">
+                    <div class="quick-stat-label">Nouvelles offres</div>
+                    <div class="quick-stat-val val-indigo">7</div>
+                  </div>
+                  <div class="quick-stat">
+                    <div class="quick-stat-label">Réponses en attente</div>
+                    <div class="quick-stat-val val-orange">2</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Score Ring -->
+              <div class="score-wrap">
+                <p class="score-label">Score d'Optim.</p>
+                <div class="score-ring-wrap">
+                  <svg viewBox="0 0 100 100" class="score-ring-svg">
+                    <defs>
+                      <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#8b5cf6" />
+                        <stop offset="100%" stop-color="#4f46e5" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" class="score-ring-bg-circle" />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#scoreGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="282.743" stroke-dashoffset="42.411" class="score-ring-fill" />
+                  </svg>
+                  <div class="score-inner">
+                    <span class="score-num">85</span>
+                    <span class="score-denom">/100</span>
+                  </div>
+                </div>
+                <div class="score-trend">
+                  <span class="score-trend-val">▲ +5%</span>
+                  <span class="score-trend-sub">cette sem.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI Grid -->
+          <div class="kpi-grid fade-2">
+            <!-- KPI 1 -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <div>
+                  <div class="kpi-label">Revenus du mois</div>
+                  <div id="kpi-earnings" class="kpi-value">3 450 €</div>
+                  <div id="kpi-earnings-sub" class="kpi-sub">Mai 2026</div>
+                </div>
+                <div class="kpi-icon">💰</div>
+              </div>
+              <div class="kpi-bars">
+                <div class="kpi-bar-row">
+                  <span class="kpi-bar-label">Upwork</span>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill fill-indigo" style="width: 60%;"></div>
+                  </div>
+                  <span class="kpi-bar-pct">60%</span>
+                </div>
+                <div class="kpi-bar-row">
+                  <span class="kpi-bar-label">Fiverr</span>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill fill-violet" style="width: 40%;"></div>
+                  </div>
+                  <span class="kpi-bar-pct">40%</span>
+                </div>
+              </div>
+              <div class="kpi-trend trend-up">▲ +12% vs mois dernier</div>
+            </div>
+
+            <!-- KPI 2 -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <div>
+                  <div class="kpi-label">Commandes actives</div>
+                  <div id="kpi-orders" class="kpi-value">4</div>
+                  <div id="kpi-orders-sub" class="kpi-sub">en cours</div>
+                </div>
+                <div class="kpi-icon">📦</div>
+              </div>
+              <div class="kpi-bars">
+                <div class="kpi-bar-row">
+                  <span class="kpi-bar-label">Upwork</span>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill fill-emerald" style="width: 75%;"></div>
+                  </div>
+                  <span class="kpi-bar-pct">75%</span>
+                </div>
+                <div class="kpi-bar-row">
+                  <span class="kpi-bar-label">Fiverr</span>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill fill-teal" style="width: 25%;"></div>
+                  </div>
+                  <span class="kpi-bar-pct">25%</span>
+                </div>
+              </div>
+              <div class="kpi-trend trend-up">▲ +1 vs mois dernier</div>
+            </div>
+
+            <!-- KPI 3 -->
+            <div class="card kpi-card">
+              <div class="kpi-top">
+                <div>
+                  <div class="kpi-label">Taux de conversion</div>
+                  <div id="kpi-conv" class="kpi-value">34%</div>
+                  <div id="kpi-conv-sub" class="kpi-sub">moy. toutes plateformes</div>
+                </div>
+                <div class="kpi-icon">🎯</div>
+              </div>
+              <div class="kpi-bars">
+                <div class="kpi-bar-row">
+                  <span class="kpi-bar-label">Upwork</span>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill fill-orange" style="width: 42%;"></div>
+                  </div>
+                  <span class="kpi-bar-pct">42%</span>
+                </div>
+                <div class="kpi-bar-row">
+                  <span class="kpi-bar-label">Fiverr</span>
+                  <div class="kpi-bar-track">
+                    <div class="kpi-bar-fill fill-pink" style="width: 26%;"></div>
+                  </div>
+                  <span class="kpi-bar-pct">26%</span>
+                </div>
+              </div>
+              <div class="kpi-trend trend-up">▲ +3% vs mois dernier</div>
+            </div>
+          </div>
+
+          <!-- Split Row: Chart & Deadlines -->
+          <div class="split-row fade-3">
+            
+            <!-- Revenue area chart -->
+            <div class="card chart-card">
+              <div class="chart-header">
+                <div>
+                  <div class="chart-title">Évolution des Revenus</div>
+                  <div class="chart-sub">6 derniers mois · Toutes plateformes</div>
+                </div>
+                <div class="period-btns">
+                  <button class="period-btn active" data-period="6M">6M</button>
+                  <button class="period-btn" data-period="3M">3M</button>
+                  <button class="period-btn" data-period="1M">1M</button>
+                </div>
+              </div>
+              
+              <div class="chart-container">
+                <svg id="revenue-chart" viewBox="0 0 500 200" class="chart-svg">
+                  <defs>
+                    <linearGradient id="gUpwork" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stop-color="#6366f1" stop-opacity="0.30"></stop>
+                      <stop offset="95%" stop-color="#6366f1" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <linearGradient id="gFiverr" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stop-color="#8b5cf6" stop-opacity="0.22"></stop>
+                      <stop offset="95%" stop-color="#8b5cf6" stop-opacity="0"></stop>
+                    </linearGradient>
+                  </defs>
+
+                  <g id="chart-grid">
+                    <line x1="40" y1="20" x2="480" y2="20" stroke-dasharray="3 3"></line>
+                    <line x1="40" y1="60" x2="480" y2="60" stroke-dasharray="3 3"></line>
+                    <line x1="40" y1="100" x2="480" y2="100" stroke-dasharray="3 3"></line>
+                    <line x1="40" y1="140" x2="480" y2="140" stroke-dasharray="3 3"></line>
+                    <line x1="40" y1="180" x2="480" y2="180"></line>
+                  </g>
+
+                  <g id="chart-x-axis"></g>
+                  <g id="chart-y-axis">
+                    <text x="30" y="24" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif">3000€</text>
+                    <text x="30" y="64" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif">2250€</text>
+                    <text x="30" y="104" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif">1500€</text>
+                    <text x="30" y="144" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif">750€</text>
+                    <text x="30" y="184" text-anchor="end" font-size="11" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif">0€</text>
+                  </g>
+
+                  <g id="chart-paths"></g>
+
+                  <line id="chart-vertical-line" x1="0" y1="20" x2="0" y2="180" stroke="rgba(255,255,255,0.15)" stroke-dasharray="3 3" style="display: none;"></line>
+                  <circle id="chart-dot-upwork" cx="0" cy="0" r="5" fill="#6366f1" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" style="display: none; filter: drop-shadow(0 0 6px rgba(99,102,241,0.8));"></circle>
+                  <circle id="chart-dot-fiverr" cx="0" cy="0" r="5" fill="#8b5cf6" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" style="display: none; filter: drop-shadow(0 0 6px rgba(139,92,246,0.8));"></circle>
+                </svg>
+
+                <div id="chart-tooltip" class="chart-tooltip"></div>
+              </div>
+
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-dot upwork"></span>
+                  <span>Upwork</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot fiverr"></span>
+                  <span>Fiverr</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Deadlines list -->
+            <div class="card deadline-card">
+              <div class="deadline-header">
+                <div>
+                  <div class="chart-title">⚡ Urgences &amp; Deadlines</div>
+                  <div class="chart-sub">Livraisons imminentes</div>
+                </div>
+                <span class="urgent-badge">2 urgents</span>
+              </div>
+              
+              <div class="deadline-list">
+                <!-- Red 1 -->
+                <div class="dl-row bg-red-soft">
+                  <div class="dl-dot red"></div>
+                  <div class="dl-info">
+                    <div class="dl-proj">Refonte Landing Page</div>
+                    <div class="dl-client">TechStart SAS</div>
+                    <div class="dl-progress">
+                      <div class="dl-bar bg-rose" style="width: 92%;"></div>
+                    </div>
+                  </div>
+                  <div class="dl-right">
+                    <span class="dl-plat plat-upwork">Upwork</span>
+                    <span class="dl-time time-red">⏱ 11h 20m</span>
+                  </div>
+                </div>
+                <!-- Red 2 -->
+                <div class="dl-row bg-red-soft">
+                  <div class="dl-dot red"></div>
+                  <div class="dl-info">
+                    <div class="dl-proj">App Mobile MVP</div>
+                    <div class="dl-client">NovaMobile</div>
+                    <div class="dl-progress">
+                      <div class="dl-bar bg-rose" style="width: 75%;"></div>
+                    </div>
+                  </div>
+                  <div class="dl-right">
+                    <span class="dl-plat plat-fiverr">Fiverr</span>
+                    <span class="dl-time time-red">⏱ 23h 05m</span>
+                  </div>
+                </div>
+                <!-- Orange 1 -->
+                <div class="dl-row bg-orange-soft">
+                  <div class="dl-dot orange"></div>
+                  <div class="dl-info">
+                    <div class="dl-proj">Dashboard Analytics</div>
+                    <div class="dl-client">DataVision</div>
+                    <div class="dl-progress">
+                      <div class="dl-bar bg-orange" style="width: 48%;"></div>
+                    </div>
+                  </div>
+                  <div class="dl-right">
+                    <span class="dl-plat plat-malt">Malt</span>
+                    <span class="dl-time time-orange">⏱ 38h 00m</span>
+                  </div>
+                </div>
+                <!-- Normal 1 -->
+                <div class="dl-row bg-gray-soft">
+                  <div class="dl-dot green"></div>
+                  <div class="dl-info">
+                    <div class="dl-proj">API Integration</div>
+                    <div class="dl-client">CloudPulse</div>
+                    <div class="dl-progress">
+                      <div class="dl-bar bg-green" style="width: 8%;"></div>
+                    </div>
+                  </div>
+                  <div class="dl-right">
+                    <span class="dl-plat plat-upwork">Upwork</span>
+                    <span class="dl-time time-green">⏱ 72h 00m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Tasks Section -->
+          <div class="card ai-card fade-4">
+            <div class="ai-header">
+              <div class="ai-header-left">
+                <div class="ai-icon">
+                  <span>IA</span>
+                </div>
+                <div>
+                  <div class="ai-title">To-Do IA — Roadmap Marketing</div>
+                  <div class="ai-sub">Générée automatiquement · Semaine du 2 juin</div>
+                </div>
+              </div>
+              <div class="ai-progress">
+                <div class="ai-prog-track">
+                  <div id="ai-progress-bar" class="ai-prog-fill" style="width: 20%;"></div>
+                </div>
+                <span id="ai-progress-text" class="ai-prog-label">1/5</span>
+              </div>
+            </div>
+            
+            <div id="task-list" class="task-list">
+              <!-- Injected by JS -->
+            </div>
+            
+            <button id="regen-btn" class="regen-btn">
+              ✨ Régénérer les recommandations IA
+            </button>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+
+</html>

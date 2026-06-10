@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voraly — Plateformes Connectées</title>
+  <meta name="description" content="Gérez vos connexions aux différentes plateformes freelance pour synchroniser vos données de revenus et de profils." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Local Stylesheet -->
+  <link rel="stylesheet" href="shared.css">
+</head>
+
+<body>
+  <div class="app-layout">
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar expanded">
+      <div class="sidebar-header">
+        <img src="logo0.png" alt="Voraly Logo" class="logo-img" />
+        <div class="hide-on-collapse logo-text-container">
+          <span class="logo-text">Voraly</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button id="nav-0" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label hide-on-collapse">Dashboard</span>
+        </button>
+        <button id="nav-1" class="nav-item active">
+          <span class="nav-icon">🧩</span>
+          <span class="nav-label hide-on-collapse">Plateformes Connectées</span>
+        </button>
+        <button id="nav-2" class="nav-item">
+          <span class="nav-icon">🚀</span>
+          <span class="nav-label hide-on-collapse">Stratégie &amp; Roadmap</span>
+        </button>
+        <button id="nav-3" class="nav-item">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label hide-on-collapse">Optimisation des Offres</span>
+        </button>
+        <button id="nav-4" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label hide-on-collapse">Paramètres</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">
+            <span>JD</span>
+          </div>
+          <div id="user-info" class="hide-on-collapse">
+            <div class="user-name">Jean Dupont</div>
+            <div class="user-meta">Pro · 3 plateformes</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menu-toggle" class="menu-toggle-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="topbar-title-group">
+            <div id="page-title" class="topbar-title">Plateformes Connectées</div>
+            <div id="topbar-date" class="topbar-date">Vendredi 6 juin 2026</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="platform-badges">
+            <span id="badge-upwork" class="platform-badge disconnected">● Upwork</span>
+            <span id="badge-fiverr" class="platform-badge disconnected">● Fiverr</span>
+            <span id="badge-malt" class="platform-badge disconnected">● Malt</span>
+          </div>
+          <button id="notif-btn" class="icon-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span id="notif-dot" class="notif-dot"></span>
+          </button>
+          <button id="settings-btn" class="icon-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Content -->
+      <main class="content-wrapper">
+        <div class="platforms-grid">
+          
+          <!-- Upwork Card -->
+          <div class="card platform-card fade-1">
+            <div class="platform-card-logo">
+              <img src="https://www.google.com/s2/favicons?domain=upwork.com&sz=128" alt="Upwork" style="width: 32px; height: 32px; border-radius: 6px;">
+            </div>
+            <h3 class="platform-card-title">Upwork</h3>
+            <p class="platform-card-desc">Gérez vos contrats de service, propositions, et suivez vos gains de facturation horaire ou au forfait global.</p>
+            <div id="status-upwork" class="platform-card-badge badge-disconnected">⚪ Non connectée</div>
+            <div id="actions-upwork" style="width: 100%;"></div>
+          </div>
+
+          <!-- Fiverr Card -->
+          <div class="card platform-card fade-2">
+            <div class="platform-card-logo">
+              <img src="https://www.google.com/s2/favicons?domain=fiverr.com&sz=128" alt="Fiverr" style="width: 32px; height: 32px; border-radius: 6px;">
+            </div>
+            <h3 class="platform-card-title">Fiverr</h3>
+            <p class="platform-card-desc">Suivez les revenus de vos services packagés (Gigs), gérez les commandes actives et communiquez avec vos clients.</p>
+            <div id="status-fiverr" class="platform-card-badge badge-disconnected">⚪ Non connectée</div>
+            <div id="actions-fiverr" style="width: 100%;"></div>
+          </div>
+
+          <!-- Malt Card -->
+          <div class="card platform-card fade-3">
+            <div class="platform-card-logo">
+              <img src="https://www.google.com/s2/favicons?domain=malt.fr&sz=128" alt="Malt" style="width: 32px; height: 32px; border-radius: 6px;">
+            </div>
+            <h3 class="platform-card-title">Malt</h3>
+            <p class="platform-card-desc">Synchronisez vos projets avec vos clients français directs, suivez votre TJM et gérez vos propositions de mission.</p>
+            <div id="status-malt" class="platform-card-badge badge-disconnected">⚪ Non connectée</div>
+            <div id="actions-malt" style="width: 100%;"></div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="platforms.js"></script>
+</body>
+
+</html>

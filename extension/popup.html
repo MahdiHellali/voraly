@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voraly</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- Stylesheet local master -->
+  <link rel="stylesheet" href="shared.css">
+  
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      background: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      color: var(--text-main);
+    }
+    
+    .popup-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .popup-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    
+    .popup-title {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a5b4fc, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+    }
+    
+    .popup-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #34d399;
+    }
+    
+    .popup-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+      animation: popupPulse 2s infinite;
+    }
+    
+    @keyframes popupPulse {
+      0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+    }
+    
+    .popup-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #a5b4fc;
+    }
+    
+    .connected-mode .popup-banner {
+      display: flex;
+    }
+    
+    .popup-divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .popup-platforms-label {
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--text-darker);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    
+    .popup-platforms {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .popup-chip {
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      flex: 1;
+      text-align: center;
+    }
+    
+    .popup-chip.connected {
+      background-color: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+    
+    .popup-chip.disconnected {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .popup-chip.loading {
+      background-color: rgba(251, 146, 60, 0.15);
+      color: #fb923c;
+      border-color: rgba(251, 146, 60, 0.3);
+    }
+    
+    .popup-footer {
+      text-align: center;
+      font-size: 9px;
+      color: var(--text-darker);
+    }
+  </style>
+</head>
+<body class="popup-layout">
+
+  <div class="popup-card">
+    <!-- Header -->
+    <div class="popup-header">
+      <img src="logo0.png" alt="Voraly Logo" class="popup-logo" />
+      <div class="popup-title">Voraly</div>
+    </div>
+
+    <!-- Status -->
+    <div class="popup-status">
+      <div class="popup-status-dot"></div>
+      <span>Extension active</span>
+    </div>
+
+    <!-- Bannière plateforme connectée (affichée par popup.js si besoin) -->
+    <div class="popup-banner" id="connected-banner">
+      <span>🟢</span>
+      <span id="banner-text">Plateforme détectée — synchronisation active</span>
+    </div>
+
+    <hr class="popup-divider" />
+
+    <!-- Platforms -->
+    <div class="popup-platforms-label">Plateformes surveillées</div>
+    <div class="popup-platforms">
+      <span class="popup-chip disconnected" id="chip-upwork">Upwork</span>
+      <span class="popup-chip disconnected" id="chip-fiverr">Fiverr</span>
+    </div>
+
+    <!-- CTA -->
+    <a id="cta-btn" href="dashboard.html" target="_blank" class="btn-primary" style="display: block; text-decoration: none;">
+      🚀 Ouvrir mon Dashboard
+    </a>
+
+    <div class="popup-footer">Voraly © 2026 — Propulsé par l'IA</div>
+  </div>
+
+  <!-- Script externe — conforme à la CSP de Manifest V3 -->
+  <script src="popup.js"></script>
+
+</body>
+</html>

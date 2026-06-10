@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Voraly",
+  "version": "1.0",
+  "description": "Optimisez vos profils et revenus freelance sur toutes les plateformes grâce à l'IA.",
+
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "*://*.fiverr.com/*",
+    "*://*.upwork.com/*",
+    "*://*.supabase.co/*",
+    "https://voraly.me/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.fiverr.com/*",
+        "*://*.upwork.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "icons": {
+    "16": "logo0.png",
+    "48": "logo0.png",
+    "128": "logo0.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Voraly",
+    "default_icon": "logo0.png"
+  }
+}
