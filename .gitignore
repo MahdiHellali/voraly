@@ -32,3 +32,6 @@ yarn-error.log*
 Thumbs.db
 .idea/
 *.swp
+
+# Extension local Supabase config (real anon key) — use supabase-config.example.js
+extension/supabase-config.js
