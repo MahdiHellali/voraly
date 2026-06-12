@@ -18,6 +18,10 @@ dist/
 .env.*
 !.env.example
 
+# Production secrets file for the deploy stack (real values, never commit)
+deploy/.env.production
+!deploy/.env.production.example
+
 # Supabase CLI temp (project ref, org id, email)
 .temp/
 
@@ -35,3 +39,6 @@ Thumbs.db
 
 # Extension local Supabase config (real anon key) — use supabase-config.example.js
 extension/supabase-config.js
+
+# VPS credentials — NEVER commit
+ssh.txt

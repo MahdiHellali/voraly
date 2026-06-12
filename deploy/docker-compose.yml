@@ -1,0 +1,70 @@
+# Voraly production stack for a single small OVH VPS (2 vCore / 4 GB RAM).
+#
+# SECURITY NOTE: the `web` and `n8n` services intentionally have NO host port
+# mapping ("expose" only). They are reachable solely from inside the Docker
+# network. Caddy is the single public entrypoint (80/443) and reverse-proxies
+# to them by service name, so the Next.js app and the n8n editor are never
+# exposed directly to the internet.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - voraly
+
+  web:
+    build:
+      context: ../voraly-web
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* must be passed as build args so Next can inline them.
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_WHOP_PLAN_ID: ${NEXT_PUBLIC_WHOP_PLAN_ID}
+        NEXT_PUBLIC_WHOP_COMPANY_ID: ${NEXT_PUBLIC_WHOP_COMPANY_ID}
+    restart: unless-stopped
+    env_file: ./.env.production
+    expose:
+      - "3000"
+    networks:
+      - voraly
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    env_file: ./.env.production
+    environment:
+      N8N_HOST: n8n.voraly.me
+      N8N_PROTOCOL: https
+      N8N_PORT: 5678
+      WEBHOOK_URL: https://n8n.voraly.me/
+      N8N_EDITOR_BASE_URL: https://n8n.voraly.me/
+      GENERIC_TIMEZONE: Africa/Tunis
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "336"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    expose:
+      - "5678"
+    networks:
+      - voraly
+
+networks:
+  voraly:
+
+volumes:
+  caddy_data:
+  caddy_config:
+  n8n_data:
