@@ -10,6 +10,9 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    # SITE_DOMAIN / N8N_DOMAIN are read from .env.production and injected into
+    # the Caddyfile via {$VAR} placeholders.
+    env_file: ./.env.production
     ports:
       - "80:80"
       - "443:443"
@@ -42,11 +45,11 @@ services:
     restart: unless-stopped
     env_file: ./.env.production
     environment:
-      N8N_HOST: n8n.voraly.me
+      N8N_HOST: ${N8N_DOMAIN}
       N8N_PROTOCOL: https
       N8N_PORT: 5678
-      WEBHOOK_URL: https://n8n.voraly.me/
-      N8N_EDITOR_BASE_URL: https://n8n.voraly.me/
+      WEBHOOK_URL: https://${N8N_DOMAIN}/
+      N8N_EDITOR_BASE_URL: https://${N8N_DOMAIN}/
       GENERIC_TIMEZONE: Africa/Tunis
       N8N_BASIC_AUTH_ACTIVE: "true"
       N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
