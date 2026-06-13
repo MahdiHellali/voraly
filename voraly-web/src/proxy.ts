@@ -31,10 +31,10 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Unauthenticated: the root and any /dashboard route are forced to /login.
-  // Intercepting '/' here makes login the explicit, secure default entry point
-  // (page.tsx keeps the same redirect as defense-in-depth).
-  if (!user && (pathname === '/' || pathname.startsWith('/dashboard'))) {
+  // Unauthenticated: only /dashboard routes are forced to /login. The root '/'
+  // stays PUBLIC and renders the marketing landing (page.tsx). Do NOT intercept
+  // '/' here, otherwise anonymous visitors never reach the landing.
+  if (!user && pathname.startsWith('/dashboard')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
