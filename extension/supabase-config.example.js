@@ -12,4 +12,4 @@ export const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
 // URL de l'application web — utilisée pour récupérer le JWT utilisateur.
 // En développement local, remplacer par 'http://localhost:3000'.
-export const VORALY_APP_URL = 'https://voraly.me';
+export const VORALY_APP_URL = 'https://voraly.net';

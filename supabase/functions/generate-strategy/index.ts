@@ -12,7 +12,7 @@
 // Origines autorisées. En production, remplacez YOUR_EXTENSION_ID par l'ID
 // réel de l'extension Chrome (visible dans chrome://extensions).
 const ALLOWED_ORIGINS = [
-  'https://voraly.me',
+  'https://voraly.net',
   'http://localhost:3000',
   'https://localhost:3000',
   'null', // Chrome extension popup/service worker context

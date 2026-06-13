@@ -14,7 +14,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 // Origines autorisées. En production, remplacez YOUR_EXTENSION_ID par l'ID
 // réel de l'extension Chrome (visible dans chrome://extensions).
 const ALLOWED_ORIGINS = [
-  'https://voraly.me',
+  'https://voraly.net',
   'http://localhost:3000',
   'https://localhost:3000',
   // Chrome extensions send 'null' as origin in some contexts (popup/service worker)

@@ -1,9 +1,12 @@
 # Caddy auto-provisions and renews Let's Encrypt TLS for the configured domains.
 # Domains come from SITE_DOMAIN / N8N_DOMAIN in .env.production so we can switch
-# from the nip.io bridge to voraly.me without editing this file.
+# from the nip.io bridge to voraly.net without editing this file.
 {$SITE_DOMAIN} {
     encode gzip zstd
     reverse_proxy web:3000
+}
+www.{$SITE_DOMAIN} {
+    redir https://{$SITE_DOMAIN}{uri} permanent
 }
 {$N8N_DOMAIN} {
     reverse_proxy n8n:5678

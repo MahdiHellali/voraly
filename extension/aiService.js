@@ -6,7 +6,7 @@
 // L'Edge Function Supabase est la seule entité qui appelle l'API Gemini.
 //
 // SÉCURITÉ : chat-refine exige un JWT utilisateur réel (pas la clé anon).
-// getUserJWT() récupère le token depuis voraly.me via credentials:'include'.
+// getUserJWT() récupère le token depuis voraly.net via credentials:'include'.
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY, VORALY_APP_URL } from './supabase-config.js';
 
@@ -17,9 +17,9 @@ const TOKEN_EXPIRY_KEY   = 'voralyUserTokenExpiry';
 const TOKEN_TTL_MS       = 50 * 60 * 1000; // 50 min (JWT valid 1h, refresh at 50m)
 
 /**
- * Obtient le JWT de l'utilisateur connecté sur voraly.me.
+ * Obtient le JWT de l'utilisateur connecté sur voraly.net.
  * - Utilise le cache chrome.storage.local (50 min TTL)
- * - Si expiré, recharge depuis /api/auth/session (nécessite cookies voraly.me)
+ * - Si expiré, recharge depuis /api/auth/session (nécessite cookies voraly.net)
  * @returns {Promise<string|null>} access_token ou null si non connecté
  */
 async function getUserJWT() {
@@ -32,7 +32,7 @@ async function getUserJWT() {
     return cached[TOKEN_CACHE_KEY];
   }
 
-  // 2. Récupérer depuis l'app web (envoie les cookies Supabase de voraly.me)
+  // 2. Récupérer depuis l'app web (envoie les cookies Supabase de voraly.net)
   try {
     const res = await fetch(`${VORALY_APP_URL}/api/auth/session`, {
       credentials: 'include',
@@ -163,7 +163,7 @@ export async function generateFreelancerStrategy(formData, userId) {
 
 /**
  * Envoie un message de chat à la Supabase Edge Function « chat-refine ».
- * Nécessite que l'utilisateur soit connecté sur voraly.me (JWT réel requis).
+ * Nécessite que l'utilisateur soit connecté sur voraly.net (JWT réel requis).
  *
  * @param {string} message  — Message de l'utilisateur.
  * @param {Object} context  — Données de la stratégie actuelle.
@@ -174,9 +174,9 @@ export async function sendChatMessage(message, context) {
   const userToken = await getUserJWT();
 
   if (!userToken) {
-    console.warn('[Voraly] chat-refine : utilisateur non connecté sur voraly.me.');
+    console.warn('[Voraly] chat-refine : utilisateur non connecté sur voraly.net.');
     return {
-      reply: 'Connectez-vous sur voraly.me pour utiliser la fonction chat.',
+      reply: 'Connectez-vous sur voraly.net pour utiliser la fonction chat.',
       messagesRemaining: 0,
     };
   }
@@ -199,7 +199,7 @@ export async function sendChatMessage(message, context) {
       if (response.status === 401) {
         // Token expiré — invalider le cache et informer l'utilisateur
         await clearUserToken();
-        return { reply: 'Session expirée. Reconnectez-vous sur voraly.me.', messagesRemaining: 0 };
+        return { reply: 'Session expirée. Reconnectez-vous sur voraly.net.', messagesRemaining: 0 };
       }
       if (response.status === 403) {
         return { reply: 'Limite de messages atteinte.', messagesRemaining: 0 };

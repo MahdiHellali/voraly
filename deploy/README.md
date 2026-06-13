@@ -4,7 +4,7 @@ Production stack for a single OVH VPS (2 vCore / 4 GB RAM): Caddy (TLS + reverse
 proxy) → Next.js `web` app + self-hosted `n8n`, all on one Docker network. Only
 Caddy is publicly exposed (ports 80/443); `web` and `n8n` are internal-only.
 
-Domains: `voraly.me` / `www.voraly.me` (site), `n8n.voraly.me` (n8n editor).
+Domains: `voraly.net` / `www.voraly.net` (site), `n8n.voraly.net` (n8n editor).
 Server IP: `152.228.128.234`.
 
 ## Order of operations
@@ -24,9 +24,9 @@ Server IP: `152.228.128.234`.
    The real `.env.production` is gitignored and must never be committed.
 
 3. **Point DNS** at the server. Create A records:
-   - `voraly.me` → `152.228.128.234`
-   - `www.voraly.me` → `152.228.128.234`
-   - `n8n.voraly.me` → `152.228.128.234`
+   - `voraly.net` → `152.228.128.234`
+   - `www.voraly.net` → `152.228.128.234`
+   - `n8n.voraly.net` → `152.228.128.234`
 
    Caddy auto-provisions Let's Encrypt certificates once DNS resolves.
 

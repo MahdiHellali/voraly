@@ -5,6 +5,7 @@ import {
   getProviderCredentials,
   isProviderConfigured,
   buildRedirectUri,
+  getSiteOrigin,
   OAUTH_STATE_COOKIE,
 } from '@/lib/oauth/providers'
 
@@ -18,8 +19,10 @@ export async function GET(
   { params }: { params: Promise<{ provider: string }> },
 ) {
   const { provider: providerId } = await params
-  const origin = request.nextUrl.origin
-  const platformsUrl = new URL('/dashboard/platforms', origin)
+  // Use the trusted site origin (NEXT_PUBLIC_SITE_URL) — never request.nextUrl.origin,
+  // which resolves to Docker's internal address (0.0.0.0:3000) in production.
+  const siteOrigin = getSiteOrigin()
+  const platformsUrl = new URL('/dashboard/platforms', siteOrigin)
 
   // 1. Must be authenticated (also enforced by middleware, belt-and-suspenders).
   const supabase = await createClient()
@@ -27,7 +30,7 @@ export async function GET(
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    return NextResponse.redirect(new URL('/login', origin))
+    return NextResponse.redirect(new URL('/login', siteOrigin))
   }
 
   // 2. Provider must be in the allowlist.
