@@ -65,7 +65,11 @@ services:
       - voraly
 
   # Portainer — web GUI to manage/monitor the Docker stack (containers, logs,
-  # stats, restarts). Behind Caddy + its own admin password. No host port.
+  # stats, restarts). SECURITY: bound to the VPS loopback ONLY (127.0.0.1:9000),
+  # never exposed to the internet. Access via SSH tunnel:
+  #   ssh -i ~/.ssh/voraly_vps -L 9000:localhost:9000 ubuntu@152.228.128.234
+  # then browse http://localhost:9000. (Docker socket = root-equivalent, so it
+  # must not be publicly reachable.)
   portainer:
     image: portainer/portainer-ce:latest
     restart: unless-stopped
@@ -73,10 +77,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
-    expose:
-      - "9000"
-    networks:
-      - voraly
+    ports:
+      - "127.0.0.1:9000:9000"
 
 networks:
   voraly:
