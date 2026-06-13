@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -55,13 +55,24 @@ interface SidebarProps {
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
 
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [mounted,     setMounted]     = useState(false)
+  // Initialise depuis localStorage de façon synchrone (premier rendu uniquement).
+  // L'utilisation de useRef empêche setState dans l'effet — on lit la valeur
+  // directement dans l'initializer pour éviter le flash, et on ne setState
+  // pas dans l'effet.
+  const initializedRef = useRef(false)
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    // useState initializer : accès côté client uniquement.
+    if (typeof window === 'undefined') return false
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved !== null ? saved === 'true' : false
+  })
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved !== null) setIsCollapsed(saved === 'true')
-    setMounted(true)
+    if (!initializedRef.current) {
+      initializedRef.current = true
+      setMounted(true)
+    }
   }, [])
 
   const toggle = useCallback(() => {

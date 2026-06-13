@@ -6,6 +6,7 @@ import KpiGrid      from './KpiGrid'
 import RevenueChart from './RevenueChart'
 import DeadlineCard from './DeadlineCard'
 import AiTaskCard   from './AiTaskCard'
+import type { DashboardData } from '@/lib/dashboard/types'
 
 // PricingCard blur-reveal pattern from inspiration.txt:
 // initial: blur(4px) → whileInView: blur(0px)
@@ -20,12 +21,26 @@ const blurReveal = (delay = 0) => ({
   },
 })
 
-export default function DashboardContent({ firstName }: { firstName: string }) {
+interface DashboardContentProps {
+  firstName: string
+  data: DashboardData
+  userId?: string | null
+}
+
+export default function DashboardContent({ firstName, data, userId }: DashboardContentProps) {
+  const hasMetrics = !!data.revenueSeries
+
   return (
     <div className="flex w-full flex-col gap-12 md:gap-16">
 
-      {/* ── HERO — typographic, no card, pure negative space ── */}
-      <HeroBento firstName={firstName} />
+      {/* ── HERO ── */}
+      <HeroBento
+        firstName={firstName}
+        connectedPlatformsCount={data.connectedPlatformsCount}
+        revenue={data.revenue}
+        score={data.score}
+        chips={data.chips}
+      />
 
       {/* ── Divider ── */}
       <motion.div
@@ -35,23 +50,41 @@ export default function DashboardContent({ firstName }: { firstName: string }) {
         className="h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent origin-center"
       />
 
-      {/* ── KPI BENTO ── */}
+      {/* ── KPI BENTO ou empty state ── */}
       <motion.div {...blurReveal(0.08)}>
-        <KpiGrid />
+        <KpiGrid items={data.kpiItems} />
       </motion.div>
 
       {/* ── REVENUE + DEADLINES ── */}
-      <motion.div
-        {...blurReveal(0.12)}
-        className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5"
-      >
-        <RevenueChart />
-        <DeadlineCard />
-      </motion.div>
+      {hasMetrics ? (
+        /* Grille deux colonnes : graphique + deadlines */
+        <motion.div
+          {...blurReveal(0.12)}
+          className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5"
+        >
+          <RevenueChart series={data.revenueSeries!} />
+          <DeadlineCard
+            deadlines={data.deadlines}
+            integrations={data.integrations}
+          />
+        </motion.div>
+      ) : (
+        /* Pas de métriques → DeadlineCard pleine largeur, RevenueChart non monté */
+        <motion.div {...blurReveal(0.12)}>
+          <DeadlineCard
+            deadlines={data.deadlines}
+            integrations={data.integrations}
+          />
+        </motion.div>
+      )}
 
       {/* ── AI TASKS ── */}
       <motion.div {...blurReveal(0.08)}>
-        <AiTaskCard />
+        <AiTaskCard
+          tasks={data.todos}
+          generatedLabel={data.roadmapGeneratedLabel}
+          userId={userId}
+        />
       </motion.div>
 
     </div>

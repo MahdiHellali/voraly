@@ -2,28 +2,12 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { RevenueSeries } from '@/lib/dashboard/types'
 
 type Period = '6M' | '3M' | '1M'
 
-const DATA: Record<Period, { months: string[]; upwork: number[]; fiverr: number[]; malt: number[] }> = {
-  '6M': {
-    months: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-    upwork: [4100, 4300, 3900, 4800, 5000, 5120],
-    malt:   [3200, 3500, 3300, 3800, 4000, 4120],
-    fiverr: [2100, 2400, 2200, 2900, 3100, 3210],
-  },
-  '3M': {
-    months: ['Avr', 'Mai', 'Juin'],
-    upwork: [4800, 5000, 5120],
-    malt:   [3800, 4000, 4120],
-    fiverr: [2900, 3100, 3210],
-  },
-  '1M': {
-    months: ['S1', 'S2', 'S3', 'S4'],
-    upwork: [1200, 1300, 1250, 1370],
-    malt:   [980, 1050, 1010, 1080],
-    fiverr: [750, 850, 780, 830],
-  },
+interface RevenueChartProps {
+  series: RevenueSeries
 }
 
 function normalizeY(value: number, max: number, chartHeight = 160, yTop = 20): number {
@@ -39,23 +23,37 @@ function buildArea(xs: number[], ys: number[], baseline: number): string {
   return `${line} L${xs[xs.length - 1]},${baseline} L${xs[0]},${baseline} Z`
 }
 
-export default function RevenueChart() {
+export default function RevenueChart({ series }: RevenueChartProps) {
   const [period, setPeriod] = useState<Period>('6M')
-  const data = DATA[period]
+
+  // Détermine les périodes disponibles depuis la série de données
+  const allPeriods: Period[] = ['6M', '3M', '1M']
+
+  // Pour chaque période, on prend les N derniers mois de la série
+  const periodSlices: Record<Period, number> = { '6M': 6, '3M': 3, '1M': 1 }
+  const slice = periodSlices[period]
+  const months = series.months.slice(-slice)
 
   const W = 500
   const xStart = 40
   const xEnd = 480
   const yBaseline = 180
-  const n = data.months.length
-  const step = (xEnd - xStart) / (n - 1)
-  const xs = data.months.map((_, i) => xStart + i * step)
-  const allValues = [...data.upwork, ...data.fiverr, ...data.malt]
-  const maxVal = Math.max(...allValues) * 1.1
+  const n = months.length
+  const step = n > 1 ? (xEnd - xStart) / (n - 1) : 0
+  const xs = months.map((_, i) => xStart + i * step)
 
-  const upworkYs = data.upwork.map((v) => normalizeY(v, maxVal))
-  const fiverrYs  = data.fiverr.map((v) => normalizeY(v, maxVal))
-  const maltYs    = data.malt.map((v) => normalizeY(v, maxVal))
+  // Slices par plateforme
+  const slicedSeries = series.series.map((s) => ({
+    ...s,
+    values: s.values.slice(-slice),
+  }))
+
+  const allValues = slicedSeries.flatMap((s) => s.values)
+  const maxVal = Math.max(...allValues, 1) * 1.1
+
+  const seriesYs = slicedSeries.map((s) =>
+    s.values.map((v) => normalizeY(v, maxVal)),
+  )
 
   return (
     <div
@@ -66,10 +64,12 @@ export default function RevenueChart() {
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="text-sm font-bold text-zinc-100">Évolution des Revenus</div>
-          <div className="text-[11px] text-zinc-500 mt-0.5">Toutes plateformes · {period}</div>
+          <div className="text-[11px] text-zinc-500 mt-0.5">
+            Toutes plateformes · {period}
+          </div>
         </div>
         <div className="flex gap-1">
-          {(['6M', '3M', '1M'] as Period[]).map((p) => (
+          {allPeriods.map((p) => (
             <motion.button
               key={p}
               onClick={() => setPeriod(p)}
@@ -88,7 +88,7 @@ export default function RevenueChart() {
         </div>
       </div>
 
-      {/* ── SVG Chart — fades when period changes ── */}
+      {/* ── SVG Chart ── */}
       <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.svg
@@ -101,25 +101,22 @@ export default function RevenueChart() {
             transition={{ duration: 0.22, ease: 'easeInOut' }}
           >
             <defs>
-              <linearGradient id="gUpwork" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#6366f1" stopOpacity="0.30" />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity="0"    />
-              </linearGradient>
-              <linearGradient id="gMalt" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#f97316" stopOpacity="0.22" />
-                <stop offset="95%" stopColor="#f97316" stopOpacity="0"    />
-              </linearGradient>
-              <linearGradient id="gFiverr" x1="0" y1="0" x2="0" y2="22">
-                <stop offset="5%"  stopColor="#8b5cf6" stopOpacity="0.22" />
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity="0"    />
-              </linearGradient>
+              {slicedSeries.map((s) => (
+                <linearGradient key={s.platform} id={`g${s.platform}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={s.color} stopOpacity="0.28" />
+                  <stop offset="95%" stopColor={s.color} stopOpacity="0" />
+                </linearGradient>
+              ))}
             </defs>
 
             {/* Grid lines */}
             {[20, 60, 100, 140, 180].map((y) => (
               <line
                 key={y}
-                x1={xStart} y1={y} x2={xEnd} y2={y}
+                x1={xStart}
+                y1={y}
+                x2={xEnd}
+                y2={y}
                 stroke="rgba(255,255,255,0.06)"
                 strokeDasharray={y === 180 ? undefined : '3 3'}
               />
@@ -151,42 +148,60 @@ export default function RevenueChart() {
                 fill="rgba(255,255,255,0.3)"
                 fontFamily="Inter, sans-serif"
               >
-                {data.months[i]}
+                {months[i]}
               </text>
             ))}
 
             {/* Area fills */}
-            <path d={buildArea(xs, upworkYs, yBaseline)} fill="url(#gUpwork)" />
-            <path d={buildArea(xs, maltYs,    yBaseline)} fill="url(#gMalt)"    />
-            <path d={buildArea(xs, fiverrYs,  yBaseline)} fill="url(#gFiverr)"  />
+            {slicedSeries.map((s, si) => (
+              <path
+                key={s.platform}
+                d={buildArea(xs, seriesYs[si], yBaseline)}
+                fill={`url(#g${s.platform})`}
+              />
+            ))}
 
             {/* Lines */}
-            <path d={buildPath(xs, upworkYs)} fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d={buildPath(xs, maltYs)}    fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d={buildPath(xs, fiverrYs)}  fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            {slicedSeries.map((s, si) => (
+              <path
+                key={s.platform}
+                d={buildPath(xs, seriesYs[si])}
+                fill="none"
+                stroke={s.color}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
 
             {/* Data points */}
-            {xs.map((x, i) => (
-              <g key={i}>
-                <circle cx={x} cy={upworkYs[i]} r="3.5" fill="#6366f1" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 4px rgba(99,102,241,0.8))' }} />
-                <circle cx={x} cy={maltYs[i]}    r="3.5" fill="#f97316" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 4px rgba(249,115,22,0.8))' }} />
-                <circle cx={x} cy={fiverrYs[i]}  r="3.5" fill="#8b5cf6" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 4px rgba(139,92,246,0.8))' }} />
-              </g>
-            ))}
+            {xs.map((x, i) =>
+              slicedSeries.map((s, si) => (
+                <circle
+                  key={`${s.platform}-${i}`}
+                  cx={x}
+                  cy={seriesYs[si][i]}
+                  r="3.5"
+                  fill={s.color}
+                  stroke="rgba(255,255,255,0.8)"
+                  strokeWidth="1.5"
+                  style={{ filter: `drop-shadow(0 0 4px ${s.color}cc)` }}
+                />
+              )),
+            )}
           </motion.svg>
         </AnimatePresence>
       </div>
 
       {/* ── Legend ── */}
-      <div className="flex gap-4 mt-3">
-        {[
-          { label: 'Upwork', color: '#6366f1' },
-          { label: 'Malt',    color: '#f97316' },
-          { label: 'Fiverr',  color: '#8b5cf6' },
-        ].map((l) => (
-          <div key={l.label} className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: l.color }} />
-            <span className="text-[11px] text-zinc-400">{l.label}</span>
+      <div className="flex gap-4 mt-3 flex-wrap">
+        {slicedSeries.map((s) => (
+          <div key={s.platform} className="flex items-center gap-2">
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: s.color }}
+            />
+            <span className="text-[11px] text-zinc-400 capitalize">{s.platform}</span>
           </div>
         ))}
       </div>
