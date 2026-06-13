@@ -6,7 +6,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CalendarDays, FileText, ArrowLeft } from 'lucide-react'
-import { INTEGRATION_PROVIDERS } from '@/lib/integrations/providers'
+import { INTEGRATION_PROVIDERS, type IntegrationId } from '@/lib/integrations/providers'
+
+const INTEGRATION_ORDER: IntegrationId[] = ['google_calendar', 'notion']
 
 export const metadata: Metadata = {
   title: 'Intégrations — Voraly',
@@ -33,11 +35,12 @@ export default function IntegrationsPage() {
 
       {/* ── Liste des providers ── */}
       <div className="flex flex-col gap-3">
-        {INTEGRATION_PROVIDERS.map((provider) => {
+        {INTEGRATION_ORDER.map((id) => {
+          const provider = INTEGRATION_PROVIDERS[id]
           const Icon = provider.id === 'google_calendar' ? CalendarDays : FileText
           return (
             <div
-              key={provider.id}
+              key={id}
               className="glass rounded-2xl p-5 flex items-center gap-4"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
             >
