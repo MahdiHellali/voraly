@@ -90,6 +90,24 @@ export function isProviderConfigured(provider: ProviderConfig): boolean {
 }
 
 /**
+ * Returns the trusted site origin built from NEXT_PUBLIC_SITE_URL.
+ * Falls back to 'http://localhost:3000' when the variable is absent or
+ * malformed. Use this instead of request.nextUrl.origin for ALL server-side
+ * redirections so that Docker's internal hostname (0.0.0.0:3000) is never
+ * leaked into redirect URLs.
+ */
+export function getSiteOrigin(): string {
+  const FALLBACK = 'http://localhost:3000'
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (!raw) return FALLBACK
+  try {
+    return new URL(raw).origin
+  } catch {
+    return FALLBACK
+  }
+}
+
+/**
  * Builds the OAuth redirect_uri. MUST be identical in connect + callback and
  * MUST match the value registered in the provider portal exactly.
  *
@@ -98,21 +116,7 @@ export function isProviderConfigured(provider: ProviderConfig): boolean {
  * falls back strictly to 'http://localhost:3000'.
  */
 export function buildRedirectUri(providerId: ProviderId): string {
-  const FALLBACK = 'http://localhost:3000'
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
-
-  let base = FALLBACK
-  if (raw) {
-    try {
-      // new URL(...).origin normalizes scheme://host:port and strips any
-      // accidental trailing slash or path. Throws on malformed input.
-      base = new URL(raw).origin
-    } catch {
-      base = FALLBACK
-    }
-  }
-
-  return `${base}/api/platforms/${providerId}/callback`
+  return `${getSiteOrigin()}/api/platforms/${providerId}/callback`
 }
 
 /** Cookie name holding the per-flow CSRF state token. */

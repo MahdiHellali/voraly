@@ -5,6 +5,7 @@ import {
   getProviderCredentials,
   isProviderConfigured,
   buildRedirectUri,
+  getSiteOrigin,
   OAUTH_STATE_COOKIE,
   type ProviderConfig,
 } from '@/lib/oauth/providers'
@@ -20,11 +21,13 @@ export async function GET(
   { params }: { params: Promise<{ provider: string }> },
 ) {
   const { provider: providerId } = await params
-  const origin = request.nextUrl.origin
+  // Use the trusted site origin (NEXT_PUBLIC_SITE_URL) — never request.nextUrl.origin,
+  // which resolves to Docker's internal address (0.0.0.0:3000) in production.
+  const siteOrigin = getSiteOrigin()
   const { searchParams } = request.nextUrl
 
   const back = (flag: Record<string, string>) => {
-    const url = new URL('/dashboard/platforms', origin)
+    const url = new URL('/dashboard/platforms', siteOrigin)
     for (const [k, v] of Object.entries(flag)) url.searchParams.set(k, v)
     // Clear the one-time CSRF cookie on every terminal response.
     const res = NextResponse.redirect(url)
@@ -37,7 +40,7 @@ export async function GET(
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return NextResponse.redirect(new URL('/login', origin))
+  if (!user) return NextResponse.redirect(new URL('/login', siteOrigin))
 
   // 2. Provider allowlist + configuration.
   const provider = getProvider(providerId)
