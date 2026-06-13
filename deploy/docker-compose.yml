@@ -64,6 +64,20 @@ services:
     networks:
       - voraly
 
+  # Portainer — web GUI to manage/monitor the Docker stack (containers, logs,
+  # stats, restarts). Behind Caddy + its own admin password. No host port.
+  portainer:
+    image: portainer/portainer-ce:latest
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    expose:
+      - "9000"
+    networks:
+      - voraly
+
 networks:
   voraly:
 
@@ -71,3 +85,4 @@ volumes:
   caddy_data:
   caddy_config:
   n8n_data:
+  portainer_data:

@@ -8,3 +8,6 @@
 {$N8N_DOMAIN} {
     reverse_proxy n8n:5678
 }
+{$PORTAINER_DOMAIN} {
+    reverse_proxy portainer:9000
+}
