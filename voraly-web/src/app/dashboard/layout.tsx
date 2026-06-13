@@ -19,6 +19,14 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Statut Pro pour le badge d'abonnement du Topbar (RLS : ligne du propriétaire).
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_premium')
+    .eq('id', user.id)
+    .maybeSingle()
+  const isPremium = Boolean(profile?.is_premium)
+
   return (
     <div
       className="relative flex h-screen w-full flex-col overflow-hidden"
@@ -28,7 +36,7 @@ export default async function DashboardLayout({
           so nothing hugs the left edge and the layout reads centered. */}
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-5xl px-6 pt-8 pb-44 sm:px-8 md:pt-12">
-          <Topbar />
+          <Topbar isPremium={isPremium} />
           {children}
         </div>
       </main>

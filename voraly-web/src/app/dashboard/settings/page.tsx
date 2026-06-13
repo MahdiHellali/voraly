@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { Settings, User, Bell, Shield, CreditCard, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { User, Bell, Shield, CreditCard, ChevronRight, type LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
@@ -7,7 +8,17 @@ export const metadata: Metadata = {
   description: 'Gérez votre compte, préférences et abonnement Voraly.',
 }
 
-const sections = [
+type Section = {
+  icon: LucideIcon
+  label: string
+  desc: string
+  color: string
+  bg: string
+  /** Si défini, la section devient un lien (ex. Abonnement → /pricing). */
+  href?: string
+}
+
+const sections: Section[] = [
   {
     icon: User,
     label: 'Profil',
@@ -32,15 +43,23 @@ const sections = [
   {
     icon: CreditCard,
     label: 'Abonnement',
-    desc: 'Plan Pro · Facturation et historique',
-    color: 'text-orange-400',
-    bg: 'bg-orange-500/10',
+    desc: 'Gérer votre plan, facturation et historique',
+    color: 'text-pink-400',
+    bg: 'bg-pink-500/10',
+    href: '/pricing',
   },
 ]
 
 export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_premium')
+    .eq('id', user?.id ?? '')
+    .maybeSingle()
+  const isPremium = Boolean(profile?.is_premium)
 
   const fullName   = user?.user_metadata?.full_name?.trim() || user?.email?.split('@')[0] || 'Utilisateur'
   const email      = user?.email ?? ''
@@ -75,27 +94,39 @@ export default async function SettingsPage() {
         <div>
           <div className="text-base font-bold text-zinc-100">{fullName}</div>
           <div className="text-[12px] text-zinc-400 mt-0.5">{email}</div>
-          <div className="text-[10px] text-indigo-400 mt-1 font-semibold">Plan Gratuit · Actif</div>
+          <div className={`text-[10px] mt-1 font-semibold ${isPremium ? 'text-pink-400' : 'text-indigo-400'}`}>
+            {isPremium ? 'Plan Pro · À vie' : 'Plan Gratuit · Actif'}
+          </div>
         </div>
       </div>
 
       {/* Settings sections */}
       <div className="flex flex-col gap-3 fade-3">
-        {sections.map(({ icon: Icon, label, desc, color, bg }) => (
-          <button
-            key={label}
-            className="glass rounded-2xl p-5 flex items-center gap-4 text-left group hover:border-white/20 w-full transition-all duration-200"
-          >
-            <div className={`w-10 h-10 rounded-xl ${bg} border border-white/[0.08] flex items-center justify-center flex-shrink-0`}>
-              <Icon size={16} className={color} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-zinc-200">{label}</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">{desc}</div>
-            </div>
-            <ChevronRight size={15} className="text-zinc-600 flex-shrink-0 group-hover:text-zinc-400 transition-colors" />
-          </button>
-        ))}
+        {sections.map(({ icon: Icon, label, desc, color, bg, href }) => {
+          const cls =
+            'glass rounded-2xl p-5 flex items-center gap-4 text-left group hover:border-white/20 w-full transition-all duration-200'
+          const inner = (
+            <>
+              <div className={`w-10 h-10 rounded-xl ${bg} border border-white/[0.08] flex items-center justify-center flex-shrink-0`}>
+                <Icon size={16} className={color} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-zinc-200">{label}</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">{desc}</div>
+              </div>
+              <ChevronRight size={15} className="text-zinc-600 flex-shrink-0 group-hover:text-zinc-400 transition-colors" />
+            </>
+          )
+          return href ? (
+            <Link key={label} href={href} className={cls}>
+              {inner}
+            </Link>
+          ) : (
+            <button key={label} className={cls}>
+              {inner}
+            </button>
+          )
+        })}
       </div>
 
       {/* Danger zone */}

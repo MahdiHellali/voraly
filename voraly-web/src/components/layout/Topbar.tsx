@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Bell } from 'lucide-react'
+import SubscriptionBadge from './SubscriptionBadge'
 
 const pageTitles: Record<string, string> = {
   '/dashboard':            "Vue d'ensemble",
@@ -12,7 +13,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard/settings':   'Réglages',
 }
 
-export default function Topbar() {
+export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
   const pathname = usePathname()
   const title = pageTitles[pathname] ?? 'Dashboard'
 
@@ -48,7 +49,8 @@ export default function Topbar() {
       </div>
 
       {/* ── Actions ── */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2.5">
+        <SubscriptionBadge isPremium={isPremium} />
         <motion.button
           whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.07)' }}
           whileTap={{ scale: 0.88, transition: { duration: 0.08 } }}
