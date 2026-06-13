@@ -37,7 +37,7 @@ export default function OptimizePage() {
         <div>
           <h2 className="text-xl font-bold text-white mb-2">Analyse en cours de développement</h2>
           <p className="text-sm text-zinc-400 max-w-sm">
-            Cette section analysera automatiquement vos offres Upwork, Fiverr et Malt pour identifier les axes d'amélioration.
+            Cette section analysera automatiquement vos offres Upwork, Fiverr et Malt pour identifier les axes d&apos;amélioration.
           </p>
         </div>
         <button className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-orange-300 bg-orange-500/10 border border-orange-500/25 hover:bg-orange-500/20 transition-all duration-200">
