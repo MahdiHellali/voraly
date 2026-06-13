@@ -12,6 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: 'Voraly — Tableau de bord freelance intelligent',
   description:
     "Voraly centralise vos plateformes freelance (Upwork, Fiverr, Malt) et optimise vos revenus grâce à l'IA. Pilotez votre activité depuis un seul tableau de bord.",
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
     description: "Optimisez vos revenus freelance sur toutes les plateformes grâce à l'IA.",
     type: 'website',
     locale: 'fr_FR',
+    url: '/',
   },
 }
 
