@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 import PublicNav from "@/components/landing/PublicNav"
 import PublicFooter from "@/components/landing/PublicFooter"
@@ -127,20 +126,19 @@ function FaqCategory({ category }: { category: (typeof FAQ_CATEGORIES)[0] }) {
               ].join(" ")}
             />
           </button>
-          <AnimatePresence initial={false}>
-            {openIdx === i && (
-              <motion.div
-                key="answer"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="overflow-hidden"
-              >
-                <p className="px-6 pb-5 text-sm leading-relaxed text-zinc-400">{item.a}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Réponse toujours dans le DOM — pliage CSS uniquement (SEO + IA) */}
+          <div
+            aria-hidden={openIdx !== i}
+            className="overflow-hidden"
+            style={{
+              maxHeight: openIdx === i ? "600px" : "0px",
+              opacity: openIdx === i ? 1 : 0,
+              visibility: openIdx === i ? "visible" : "hidden",
+              transition: "max-height 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease, visibility 0.35s ease",
+            }}
+          >
+            <p className="px-6 pb-5 text-sm leading-relaxed text-zinc-400">{item.a}</p>
+          </div>
         </div>
       ))}
     </div>

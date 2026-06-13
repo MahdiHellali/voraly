@@ -7,7 +7,7 @@
 
 import { useState, useRef } from "react"
 import Link from "next/link"
-import { motion, AnimatePresence, useInView } from "framer-motion"
+import { motion, useInView } from "framer-motion"
 import { LayoutDashboard, Sparkles, Plug, CalendarClock, ChevronDown } from "lucide-react"
 import { LiquidButton } from "@/components/ui/liquid-glass-button"
 import { BentoGrid, type BentoItem } from "@/components/ui/bento-grid"
@@ -83,9 +83,9 @@ const FAQ_ITEMS = [
 ]
 
 const METRICS = [
-  { value: "+38 %", label: "revenus mieux suivis en moyenne" },
+  { value: "Tous vos revenus", label: "centralisés en un seul endroit" },
   { value: "4", label: "plateformes connectées" },
-  { value: "12 h", label: "économisées par mois" },
+  { value: "Toutes plateformes", label: "un seul écran" },
   { value: "2 min", label: "pour démarrer" },
 ]
 
@@ -220,20 +220,19 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
           ].join(" ")}
         />
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="answer"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <p className="px-6 pb-5 text-sm leading-relaxed text-zinc-400">{a}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Réponse toujours dans le DOM — visibilité CSS uniquement (SEO + IA) */}
+      <div
+        aria-hidden={!open}
+        className="overflow-hidden transition-all duration-350"
+        style={{
+          maxHeight: open ? "600px" : "0px",
+          opacity: open ? 1 : 0,
+          visibility: open ? "visible" : "hidden",
+          transition: "max-height 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.35s ease, visibility 0.35s ease",
+        }}
+      >
+        <p className="px-6 pb-5 text-sm leading-relaxed text-zinc-400">{a}</p>
+      </div>
     </motion.div>
   )
 }
@@ -281,7 +280,7 @@ export default function LandingExperience() {
               <span className="gradient-text">un seul endroit.</span>
             </motion.h1>
 
-            {/* Sous-titre */}
+            {/* Sous-titre — mot-clé principal intégré naturellement */}
             <motion.p
               variants={blurReveal}
               initial="hidden"
@@ -289,8 +288,8 @@ export default function LandingExperience() {
               custom={2}
               className="max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg"
             >
-              Upwork, Fiverr, Malt, LinkedIn — Voraly centralise vos plateformes, optimise vos
-              revenus grâce à l&apos;IA et garde le cap sur vos deadlines. Reprenez le contrôle de
+              Le tableau de bord freelance tout-en-un : Upwork, Fiverr, Malt et LinkedIn réunis,
+              revenus optimisés par l&apos;IA, deadlines synchronisées. Reprenez le contrôle de
               votre carrière.
             </motion.p>
 
@@ -327,6 +326,19 @@ export default function LandingExperience() {
               className="text-xs text-zinc-600"
             >
               Sans carte bancaire · Configuration en 2 minutes
+            </motion.p>
+
+            {/* Phrase GEO — extractible par les moteurs et les IA */}
+            <motion.p
+              variants={blurReveal}
+              initial="hidden"
+              animate="visible"
+              custom={4.5}
+              className="max-w-2xl text-xs leading-relaxed text-zinc-500"
+            >
+              Voraly est un tableau de bord freelance qui centralise Upwork, Fiverr, Malt et
+              LinkedIn, génère une roadmap de croissance par IA et synchronise vos deadlines avec
+              Google Calendar et Notion.
             </motion.p>
 
             {/* Logos plateformes */}
@@ -403,22 +415,25 @@ export default function LandingExperience() {
 
         {/* ── COMMENT CA MARCHE ──────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-5xl px-6 py-28">
-          <SectionHeader eyebrow="Comment ça marche" title="Opérationnel en trois étapes." />
+          <SectionHeader
+            eyebrow="Comment ça marche"
+            title="Centraliser vos plateformes freelance en 3 étapes."
+          />
           <HowItWorksSteps />
         </section>
 
         {/* ── MÉTRIQUES ──────────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-5xl px-6 py-28">
           <SectionHeader
-            eyebrow="Résultats"
-            title="Les freelances qui pilotent avec Voraly avancent plus vite."
+            eyebrow="Pourquoi Voraly"
+            title="Pourquoi les freelances choisissent Voraly."
           />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {METRICS.map((m, i) => (
               <AnimatedMetric key={m.value} value={m.value} label={m.label} delay={i * 0.5} />
             ))}
           </div>
-          <TestimonialCard />
+          <ValueCallout />
         </section>
 
         {/* ── SECTION IA ─────────────────────────────────────────────────── */}
@@ -436,8 +451,8 @@ export default function LandingExperience() {
                 Propulsé par l&apos;IA
               </p>
               <h2 className="max-w-2xl text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Une stratégie de croissance,{" "}
-                <span className="gradient-text">générée pour vous.</span>
+                Roadmap IA freelance :{" "}
+                <span className="gradient-text">votre stratégie, générée pour vous.</span>
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-zinc-400">
                 L&apos;IA de Voraly analyse vos missions, vos tarifs et vos plateformes, puis
@@ -472,6 +487,11 @@ export default function LandingExperience() {
               Voir toutes les questions →
             </Link>
           </div>
+        </section>
+
+        {/* ── BADGES CONFIANCE ───────────────────────────────────────────── */}
+        <section className="relative mx-auto max-w-3xl px-6 pb-16 flex justify-center">
+          <TrustBadges />
         </section>
 
         {/* ── CTA FINAL ──────────────────────────────────────────────────── */}
@@ -633,12 +653,34 @@ function HowItWorksSteps() {
   )
 }
 
-function TestimonialCard() {
+const TRUST_BADGES = [
+  "OAuth 2.0",
+  "Données chiffrées en transit",
+  "Conforme RGPD",
+  "Hébergement UE",
+]
+
+function TrustBadges() {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {TRUST_BADGES.map((badge) => (
+        <span
+          key={badge}
+          className="glass inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-zinc-400"
+        >
+          {badge}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function ValueCallout() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-60px" })
 
   return (
-    <motion.blockquote
+    <motion.div
       ref={ref}
       variants={blurReveal}
       initial="hidden"
@@ -646,13 +688,10 @@ function TestimonialCard() {
       custom={0}
       className="glass rounded-3xl p-8 mt-12 flex flex-col items-center gap-4 text-center"
     >
-      <p className="max-w-xl text-base italic leading-relaxed text-zinc-300">
-        &ldquo;Je voyais enfin tous mes revenus au même endroit. La roadmap IA m&apos;a fait
-        passer un cap.&rdquo;
+      <p className="max-w-xl text-base font-semibold leading-relaxed text-zinc-200">
+        Conçu pour les freelances qui veulent reprendre le contrôle de leur activité — sans jongler
+        entre dix onglets.
       </p>
-      <footer className="text-sm font-semibold text-zinc-500">
-        — Sarah L., Designer freelance
-      </footer>
-    </motion.blockquote>
+    </motion.div>
   )
 }

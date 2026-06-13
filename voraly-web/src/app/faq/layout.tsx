@@ -2,16 +2,25 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
-  title: 'FAQ — Voraly',
+  title: 'FAQ — Voraly, tableau de bord freelance',
   description:
-    'Plateformes compatibles, sécurité des données, roadmap IA, tarifs... Toutes les réponses à vos questions sur Voraly.',
+    'Plateformes compatibles, sécurité des données, roadmap IA freelance, tarifs... Toutes les réponses à vos questions sur Voraly.',
+  alternates: {
+    canonical: '/faq',
+  },
   openGraph: {
-    title: 'FAQ — Voraly',
+    title: 'FAQ — Voraly, tableau de bord freelance',
     description:
-      'Plateformes compatibles, sécurité des données, roadmap IA, tarifs... Toutes les réponses à vos questions sur Voraly.',
+      'Plateformes compatibles, sécurité des données, roadmap IA freelance, tarifs... Toutes les réponses à vos questions sur Voraly.',
     type: 'website',
     locale: 'fr_FR',
     url: '/faq',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FAQ — Voraly, tableau de bord freelance',
+    description:
+      'Plateformes compatibles, sécurité des données, roadmap IA freelance, tarifs...',
   },
 }
 

@@ -5,16 +5,25 @@ import PublicNav from '@/components/landing/PublicNav'
 import PublicFooter from '@/components/landing/PublicFooter'
 
 export const metadata: Metadata = {
-  title: "À propos — Voraly",
+  title: "À propos — Voraly, le tableau de bord freelance",
   description:
-    "Notre mission : rendre aux freelances le contrôle de leur carrière. Découvrez l'histoire, les valeurs et l'équipe derrière Voraly.",
+    "Voraly est né pour résoudre un problème concret : les freelances passent trop de temps à gérer leurs outils. Découvrez notre mission, nos valeurs et notre vision pour l'indépendance professionnelle.",
+  alternates: {
+    canonical: "/a-propos",
+  },
   openGraph: {
-    title: "À propos — Voraly",
+    title: "À propos — Voraly, le tableau de bord freelance",
     description:
-      "Notre mission : rendre aux freelances le contrôle de leur carrière. Découvrez l'histoire, les valeurs et l'équipe derrière Voraly.",
+      "Voraly est né pour résoudre un problème concret : les freelances passent trop de temps à gérer leurs outils. Mission, valeurs, vision.",
     type: "website",
     locale: "fr_FR",
     url: "/a-propos",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "À propos — Voraly, le tableau de bord freelance",
+    description:
+      "Voraly est né pour résoudre un problème concret : les freelances passent trop de temps à gérer leurs outils. Mission, valeurs, vision.",
   },
 }
 
@@ -89,21 +98,49 @@ export default function AProposPage() {
         </div>
       </section>
 
+      {/* Le problème observé */}
+      <section className="mx-auto max-w-3xl px-6 pb-10">
+        <div className="glass rounded-3xl p-10 flex flex-col gap-6">
+          <h2 className="text-xl font-extrabold text-white">Le problème que nous avons observé</h2>
+          <div className="flex flex-col gap-4 text-sm leading-relaxed text-zinc-400">
+            <p>
+              Un freelance actif sur plusieurs plateformes passe une part significative de son temps
+              à des tâches de gestion : vérifier les paiements ici, répondre aux messages là,
+              mettre à jour une feuille de calcul pour suivre les deadlines. Ce temps n&apos;est
+              pas du temps de production — c&apos;est du temps perdu à cause de la fragmentation
+              des outils.
+            </p>
+            <p>
+              Ce problème concerne tous les freelances, quel que soit leur domaine ou leur niveau
+              d&apos;expérience. Les grandes plateformes ont chacune leur propre silo de données,
+              sans passerelle vers les autres. Il n&apos;existait pas d&apos;espace commun pour
+              piloter l&apos;ensemble.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* L'histoire */}
       <section className="mx-auto max-w-3xl px-6 pb-20">
         <div className="glass rounded-3xl p-10 flex flex-col gap-6">
-          <h2 className="text-xl font-extrabold text-white">Comment tout a commencé</h2>
+          <h2 className="text-xl font-extrabold text-white">Comment Voraly a été construit</h2>
           <div className="flex flex-col gap-4 text-sm leading-relaxed text-zinc-400">
             <p>
-              Voraly est parti d&apos;une observation : la plupart des freelances jonglent avec
-              quatre, cinq, six plateformes différentes, chacune avec son propre tableau de bord,
-              ses propres métriques, ses propres messages. Le résultat ? Des heures gaspillées à
-              consolider des données, des deadlines oubliées, des opportunités ratées.
+              Voraly est né de ce constat. Pas en ajoutant une plateforme de plus à la liste —
+              mais en créant le hub central depuis lequel toutes les autres sont pilotées. L&apos;idée
+              directrice : un seul endroit, une vision complète, une stratégie claire.
             </p>
             <p>
-              Nous avons construit Voraly pour résoudre ce problème de fond. Pas en ajoutant une
-              plateforme de plus à la liste — mais en créant le hub central depuis lequel toutes
-              les autres sont pilotées. Un seul endroit, une vision complète, une stratégie claire.
+              Nous avons commencé par les intégrations les plus demandées — Upwork, Fiverr, Malt,
+              LinkedIn — et construit autour d&apos;elles un tableau de bord conçu pour la clarté.
+              L&apos;IA est venue ensuite, pour transformer les données brutes en recommandations
+              actionnables : la roadmap freelance que chacun mérite d&apos;avoir, sans avoir besoin
+              d&apos;être analyste de données.
+            </p>
+            <p>
+              Voraly continue d&apos;évoluer avec sa communauté. Chaque nouvelle intégration,
+              chaque amélioration de la roadmap IA, chaque fonctionnalité est guidée par un
+              principe simple : est-ce que cela rend le freelance plus libre et plus efficace ?
             </p>
           </div>
         </div>
