@@ -1,133 +1,151 @@
 'use client'
 
 /**
- * HeroBackground — orchestre le fond 3D ou le fallback CSS.
- * - Si prefers-reduced-motion OU largeur<768 OU WebGL indispo → HeroFallback
- * - Sinon → HeroSceneCanvas chargé dynamiquement (ssr:false)
+ * HeroBackground — fond animé CSS pur (zéro WebGL).
+ * - Fond ultra-sombre #09090b
+ * - Grille de points SVG inline subtile
+ * - 4 glows radiaux Voraly (violet / indigo / rose) en parallaxe scroll
+ * - Vignette radiale pour lisibilité du texte
+ * Pas d'effet souris, pas de WebGL, zéro dépendance externe.
  */
 
-import { Suspense, useRef, useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-
-// Chargement paresseux ssr:false — ne se monte QUE côté client, JAMAIS en SSR
-const HeroSceneCanvas = dynamic(
-  () => import('./HeroScene').then((m) => ({ default: m.HeroSceneCanvas })),
-  { ssr: false }
-)
-
-// ── Fallback CSS ──────────────────────────────────────────────────────────────
-
-function HeroFallback() {
-  return (
-    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-
-      {/* Halos CSS */}
-      <div
-        className="absolute -top-32 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          animation: 'spherePulse 7s ease-in-out infinite alternate',
-        }}
-      />
-      <div
-        className="absolute bottom-0 right-1/4 h-[350px] w-[350px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(255,102,204,0.14) 0%, transparent 70%)',
-          filter: 'blur(50px)',
-          animation: 'spherePulse 9s ease-in-out 1s infinite alternate',
-        }}
-      />
-      <div
-        className="absolute left-1/4 top-1/2 h-[280px] w-[280px] -translate-y-1/2 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
-          filter: 'blur(40px)',
-          animation: 'spherePulse 11s ease-in-out 0.5s infinite alternate',
-        }}
-      />
-    </div>
-  )
-}
-
-// ── Détection WebGL ────────────────────────────────────────────────────────────
-
-function detectWebGL(): boolean {
-  try {
-    const canvas = document.createElement('canvas')
-    return !!(
-      canvas.getContext('webgl2') ||
-      canvas.getContext('webgl') ||
-      canvas.getContext('experimental-webgl')
-    )
-  } catch {
-    return false
-  }
-}
-
-// ── Composant principal ────────────────────────────────────────────────────────
+import { useEffect, useRef } from 'react'
 
 export default function HeroBackground() {
-  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const [use3D, setUse3D] = useState(false)
+  const glowRef = useRef<HTMLDivElement>(null)
 
+  // Parallaxe scroll — les glows bougent à 0.25x la vitesse du scroll
   useEffect(() => {
-    // Détection client-only dans une microtask pour satisfaire la règle
-    // react-hooks/set-state-in-effect (pas de setState synchrone).
-    const detect = () => {
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const isNarrow = window.innerWidth < 768
-      const hasWebGL = detectWebGL()
-      setUse3D(!reducedMotion && !isNarrow && hasWebGL)
+    const el = glowRef.current
+    if (!el) return
+
+    const onScroll = () => {
+      const y = window.scrollY
+      el.style.transform = `translateY(${y * 0.25}px)`
     }
-    // queueMicrotask évite le setState synchrone tout en restant dans l'effect
-    queueMicrotask(detect)
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Parallaxe souris
-  useEffect(() => {
-    if (!use3D) return
-    const handleMouse = (e: MouseEvent) => {
-      mouseRef.current = {
-        x: (e.clientX / window.innerWidth - 0.5) * 2,   // -1 à +1
-        y: -(e.clientY / window.innerHeight - 0.5) * 2,  // -1 à +1
-      }
-    }
-    window.addEventListener('mousemove', handleMouse, { passive: true })
-    return () => window.removeEventListener('mousemove', handleMouse)
-  }, [use3D])
-
-  if (!use3D) {
-    return <HeroFallback />
-  }
-
   return (
-    <>
-      {/* Scène 3D */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <Suspense fallback={<HeroFallback />}>
-          <HeroSceneCanvas mouseRef={mouseRef} />
-        </Suspense>
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+      style={{ background: '#09090b' }}
+    >
+      {/* ── Grille de points ──────────────────────────────────────── */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px',
+          maskImage:
+            'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
+        }}
+      />
+
+      {/* ── Glows radiaux parallaxe ───────────────────────────────── */}
+      <div ref={glowRef} className="absolute inset-0 will-change-transform">
+        {/* Glow violet — haut centre */}
+        <div
+          className="absolute"
+          style={{
+            top: '-10%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '900px',
+            height: '700px',
+            background:
+              'radial-gradient(ellipse at center, rgba(139,92,246,0.22) 0%, rgba(139,92,246,0.08) 40%, transparent 70%)',
+            filter: 'blur(80px)',
+            animation: 'vorGlow1 9s ease-in-out infinite alternate',
+          }}
+        />
+
+        {/* Glow indigo — milieu gauche */}
+        <div
+          className="absolute"
+          style={{
+            top: '35%',
+            left: '-8%',
+            width: '700px',
+            height: '600px',
+            background:
+              'radial-gradient(ellipse at center, rgba(99,102,241,0.18) 0%, rgba(99,102,241,0.06) 45%, transparent 70%)',
+            filter: 'blur(90px)',
+            animation: 'vorGlow2 12s ease-in-out infinite alternate',
+          }}
+        />
+
+        {/* Glow rose néon — droite */}
+        <div
+          className="absolute"
+          style={{
+            top: '20%',
+            right: '-8%',
+            width: '600px',
+            height: '500px',
+            background:
+              'radial-gradient(ellipse at center, rgba(255,102,204,0.14) 0%, rgba(255,102,204,0.04) 45%, transparent 70%)',
+            filter: 'blur(80px)',
+            animation: 'vorGlow3 15s ease-in-out infinite alternate',
+          }}
+        />
+
+        {/* Glow violet pâle — bas */}
+        <div
+          className="absolute"
+          style={{
+            bottom: '5%',
+            left: '30%',
+            width: '500px',
+            height: '400px',
+            background:
+              'radial-gradient(ellipse at center, rgba(168,85,247,0.12) 0%, transparent 65%)',
+            filter: 'blur(70px)',
+            animation: 'vorGlow4 11s ease-in-out 2s infinite alternate',
+          }}
+        />
       </div>
 
-      {/* Scrim lisibilité texte */}
+      {/* ── Vignette radiale (lisibilité texte) ───────────────────── */}
       <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-[5]"
+        className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(to bottom, rgba(9,9,11,0.4) 0%, rgba(9,9,11,0.1) 40%, rgba(9,9,11,0.95) 100%)',
+            'radial-gradient(ellipse at 50% 0%, transparent 50%, rgba(9,9,11,0.7) 100%)',
         }}
       />
-      {/* Vignette radiale */}
+      {/* Assombrir le bas */}
       <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-[5]"
+        className="absolute inset-x-0 bottom-0 h-64"
         style={{
-          background:
-            'radial-gradient(ellipse at center, transparent 40%, #09090b 85%)',
+          background: 'linear-gradient(to bottom, transparent, rgba(9,9,11,0.95))',
         }}
       />
-    </>
+
+      {/* ── Keyframes CSS ─────────────────────────────────────────── */}
+      <style>{`
+        @keyframes vorGlow1 {
+          from { opacity: 0.7; transform: translateX(-50%) scale(1);    }
+          to   { opacity: 1;   transform: translateX(-50%) scale(1.12); }
+        }
+        @keyframes vorGlow2 {
+          from { opacity: 0.6; transform: translate(0, 0)   scale(1);    }
+          to   { opacity: 0.9; transform: translate(3%, 4%)  scale(1.1); }
+        }
+        @keyframes vorGlow3 {
+          from { opacity: 0.5; transform: translate(0, 0)    scale(1);    }
+          to   { opacity: 0.8; transform: translate(-3%, 6%) scale(1.15); }
+        }
+        @keyframes vorGlow4 {
+          from { opacity: 0.5; transform: translate(0, 0)   scale(1);    }
+          to   { opacity: 0.9; transform: translate(-4%, -3%) scale(1.1); }
+        }
+      `}</style>
+    </div>
   )
 }

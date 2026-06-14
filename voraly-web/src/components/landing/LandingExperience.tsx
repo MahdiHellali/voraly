@@ -7,7 +7,7 @@
 
 import { useState, useRef } from "react"
 import Link from "next/link"
-import { motion, useInView } from "framer-motion"
+import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { LayoutDashboard, Sparkles, Plug, CalendarClock, ChevronDown } from "lucide-react"
 import { LiquidButton } from "@/components/ui/liquid-glass-button"
 import { BentoGrid, type BentoItem } from "@/components/ui/bento-grid"
@@ -381,29 +381,15 @@ export default function LandingExperience() {
         </section>
 
         {/* ── PROBLÈME / SOLUTION ────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-5xl px-6 py-28">
-          <div
-            className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full"
-            style={{
-              background: "radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)",
-              filter: "blur(50px)",
-            }}
-          />
+        <ParallaxSection>
           <div className="grid gap-12 md:grid-cols-2">
             <ProblemCard />
             <SolutionCard />
           </div>
-        </section>
+        </ParallaxSection>
 
         {/* ── FONCTIONNALITÉS ────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-6xl px-6 py-28" id="fonctionnalites">
-          <div
-            className="pointer-events-none absolute right-0 top-10 h-64 w-64 rounded-full"
-            style={{
-              background: "radial-gradient(circle, rgba(255,102,204,0.1) 0%, transparent 70%)",
-              filter: "blur(50px)",
-            }}
-          />
           <SectionHeader
             eyebrow="Fonctionnalités"
             title="Tout ce qu'il faut pour faire grandir"
@@ -693,5 +679,44 @@ function ValueCallout() {
         entre dix onglets.
       </p>
     </motion.div>
+  )
+}
+// ── ParallaxSection ───────────────────────────────────────────────
+// Enveloppe une section avec un glow décoratif en parallaxe au scroll
+
+function ParallaxSection({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end start'],
+  })
+  // Le glow dérive de +40px à -40px pendant que la section traverse le viewport
+  const glowY = useTransform(scrollYProgress, [0, 1], [40, -40])
+
+  return (
+    <section ref={ref} className="relative mx-auto max-w-5xl px-6 py-28">
+      {/* Glow parallaxe indépendant du contenu */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -left-24 top-0 h-80 w-80 rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          y: glowY,
+        }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute right-0 bottom-0 h-60 w-60 rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(255,102,204,0.08) 0%, transparent 70%)',
+          filter: 'blur(50px)',
+          y: useTransform(scrollYProgress, [0, 1], [-20, 30]),
+        }}
+      />
+      {children}
+    </section>
   )
 }
