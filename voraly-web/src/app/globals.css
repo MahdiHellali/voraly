@@ -40,7 +40,7 @@ body {
   overflow: hidden;
   color: var(--text-main);
   position: relative;
-  background: #09090b;
+  background: transparent; /* canvas HeroBackground (fixed -z-10) doit être visible */
 }
 
 /* ── Scrollbar ── */
