@@ -7,21 +7,13 @@ import {
 } from '@/lib/roadmap/types'
 
 // POST /api/roadmap/generate
-// Proxies the diagnostic to the local n8n "AI Roadmap Generator" workflow.
-//
-// Why server-side (not a direct browser → n8n call):
-//   • user_id comes from the authenticated session, never the client (same
-//     trust model as the OAuth handlers in this codebase).
-//   • avoids cross-origin (localhost:3000 → :5678) CORS entirely.
-//   • keeps the webhook URL / any future auth header server-only.
-//
-// The n8n webhook expects JSON { user_id, linkedin_profile_text }. We fold the
-// four questionnaire answers into linkedin_profile_text alongside any stored
-// LinkedIn text, then return the structured roadmap to the client.
+// Proxies the diagnostic to the n8n "generate-roadmap" workflow.
+// n8n retourne { roadmap_steps, marketing_strategy } — les deux sont persistés
+// dans profiles.ai_roadmap et retournés au client pour affichage immédiat.
 
 const N8N_WEBHOOK_URL =
   process.env.N8N_ROADMAP_WEBHOOK_URL ??
-  'http://localhost:5678/webhook-test/generate-roadmap'
+  'http://localhost:5678/webhook/generate-roadmap'
 
 // n8n's test webhook only fires while the editor is "listening"; give the
 // request a generous but bounded window so the UI never hangs forever.
@@ -102,11 +94,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'workflow_unreachable' }, { status: 502 })
   }
 
-  // 5. Prefer the roadmap from the webhook response; fall back to the row the
-  //    workflow just wrote to Supabase.
+  // 5. Extraire roadmap_steps et marketing_strategy depuis la réponse n8n.
+  const payload = webhookJson as {
+    roadmap_steps?: unknown
+    roadmap?: unknown
+    marketing_strategy?: unknown
+  } | null
+
   let steps: RoadmapStep[] = normalizeRoadmap(
-    (webhookJson as { roadmap?: unknown })?.roadmap ?? webhookJson,
+    payload?.roadmap_steps ?? payload?.roadmap ?? webhookJson,
   )
+  let marketingStrategy: unknown = payload?.marketing_strategy ?? null
 
   if (steps.length === 0) {
     const { data: refreshed } = await supabase
@@ -114,26 +112,26 @@ export async function POST(request: NextRequest) {
       .select('ai_roadmap')
       .eq('id', user.id)
       .maybeSingle()
-    steps = normalizeRoadmap(refreshed?.ai_roadmap)
+    const stored = refreshed?.ai_roadmap as { roadmap_steps?: unknown; marketing_strategy?: unknown } | null
+    steps = normalizeRoadmap(stored?.roadmap_steps ?? stored)
+    if (!marketingStrategy) marketingStrategy = stored?.marketing_strategy ?? null
   }
 
   if (steps.length === 0) {
     return NextResponse.json({ error: 'empty_roadmap' }, { status: 502 })
   }
 
-  // A fresh roadmap invalidates the previous plan's progress — reset the
-  // gamification checkpoints so the new steps start unchecked. Best-effort:
-  // a failure here shouldn't block returning the roadmap (the client also
-  // resets its optimistic state).
-  const { error: resetError } = await supabase
+  // 6. Persister le résultat complet dans profiles.ai_roadmap.
+  const aiRoadmapPayload = { roadmap_steps: steps, marketing_strategy: marketingStrategy }
+  const { error: saveError } = await supabase
     .from('profiles')
-    .update({ completed_steps: [] })
+    .update({ ai_roadmap: aiRoadmapPayload, completed_steps: [] })
     .eq('id', user.id)
-  if (resetError) {
-    console.error('[roadmap] failed to reset completed_steps', resetError)
+  if (saveError) {
+    console.error('[roadmap] failed to persist ai_roadmap', saveError)
   }
 
-  return NextResponse.json({ roadmap_steps: steps })
+  return NextResponse.json({ roadmap_steps: steps, marketing_strategy: marketingStrategy })
 }
 
 /**
