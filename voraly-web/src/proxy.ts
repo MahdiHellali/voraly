@@ -31,6 +31,18 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Check Authenticator Assurance Level (MFA)
+  let isMfaRequired = false
+  if (user) {
+    const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (!mfaError && mfaData) {
+      const { currentLevel, nextLevel } = mfaData
+      if (currentLevel === 'aal1' && nextLevel === 'aal2') {
+        isMfaRequired = true
+      }
+    }
+  }
+
   // Unauthenticated: only /dashboard routes are forced to /login. The root '/'
   // stays PUBLIC and renders the marketing landing (page.tsx). Do NOT intercept
   // '/' here, otherwise anonymous visitors never reach the landing.
@@ -40,8 +52,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Authenticated: the root and the auth pages send the user into the app.
-  if (user && (pathname === '/' || pathname === '/login' || pathname === '/signup')) {
+  // Authenticated but MFA challenge not completed: redirect /dashboard access to /login?mfa=true
+  if (user && isMfaRequired && pathname.startsWith('/dashboard')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('mfa', 'true')
+    return NextResponse.redirect(url)
+  }
+
+  // Authenticated (and MFA verified or not required): the root and the auth pages send the user into the app.
+  if (user && !isMfaRequired && (pathname === '/' || pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export type AuthState = { error?: string; message?: string } | null
+export type AuthState = { error?: string; message?: string; mfaRequired?: boolean; factorId?: string } | null
 
 // Supabase returns English errors — map to French
 const ERROR_MAP: Record<string, string> = {
@@ -27,6 +27,18 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
     password: (formData.get('password') as string),
   })
   if (error) return { error: toFrench(error.message) }
+
+  // Check if MFA (TOTP) is enrolled and verified for this user
+  const { data: mfaData } = await supabase.auth.mfa.listFactors()
+  const verifiedFactors = mfaData?.totp?.filter((f: { id: string; status: string }) => f.status === 'verified') || []
+
+  if (verifiedFactors.length > 0) {
+    return {
+      mfaRequired: true,
+      factorId: verifiedFactors[0].id
+    }
+  }
+  
   redirect('/dashboard')
 }
 

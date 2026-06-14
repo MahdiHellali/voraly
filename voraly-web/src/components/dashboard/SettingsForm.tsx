@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useActionState } from 'react'
+import { useState, useTransition, useActionState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -12,9 +12,12 @@ import {
   Loader2,
   Check,
   AlertTriangle,
-  ChevronDown
+  ChevronDown,
+  Crown,
+  QrCode
 } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import {
   updateProfileAction,
   updateNotificationPreferencesAction,
@@ -22,13 +25,14 @@ import {
   disconnectOtherSessionsAction,
   deleteAccountAction
 } from '@/app/dashboard/settings/actions'
+import { broadcastNotificationFormAction } from '@/app/dashboard/settings/notifications-actions'
 
 interface SettingsFormProps {
   user: SupabaseUser
   isPremium: boolean
 }
 
-type SectionId = 'profile' | 'notifications' | 'security'
+type SectionId = 'profile' | 'notifications' | 'security' | 'founder'
 
 export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
   const [activeSection, setActiveSection] = useState<SectionId | null>(null)
@@ -54,17 +58,53 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
     null
   )
 
+  // Founder Broadcast Action State
+  const [founderState, founderFormAction, isFounderPending] = useActionState(
+    broadcastNotificationFormAction,
+    null
+  )
+
   const [disconnectResult, setDisconnectResult] = useState<{ success?: string; error?: string } | null>(null)
   const [deleteResult, setDeleteResult] = useState<{ error?: string } | null>(null)
 
-  // Current states
+  // 2FA state
+  const [mfaEnabled, setMfaEnabled] = useState(false)
+  const [mfaSetup, setMfaSetup] = useState(false)
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null)
+  const [mfaQrCode, setMfaQrCode] = useState<string | null>(null)
+  const [mfaSecret, setMfaSecret] = useState<string | null>(null)
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaError, setMfaError] = useState<string | null>(null)
+  const [mfaSuccess, setMfaSuccess] = useState<string | null>(null)
+  const [mfaLoading, setMfaLoading] = useState(false)
+
+  // Current user info
   const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || 'Utilisateur'
   const email = user.email ?? ''
+  const isFounder = ['hello@voraly.net', 'hellali.amine@gmail.com'].includes(email)
   const notifPrefs = user.user_metadata?.notification_preferences ?? {
     email_deadlines: true,
     email_offers: true,
     email_sync: true,
   }
+
+  const supabase = createClient()
+
+  // Check 2FA (MFA) status on mount
+  useEffect(() => {
+    async function checkMfa() {
+      try {
+        const { data, error } = await supabase.auth.mfa.listFactors()
+        if (!error && data) {
+          const verified = data.totp?.some(f => f.status === 'verified')
+          setMfaEnabled(Boolean(verified))
+        }
+      } catch (err) {
+        console.error('Error listing MFA factors:', err)
+      }
+    }
+    checkMfa()
+  }, [supabase])
 
   const toggleSection = (id: SectionId) => {
     setActiveSection(prev => (prev === id ? null : id))
@@ -86,6 +126,106 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
         setDeleteResult({ error: result.error })
       }
     })
+  }
+
+  // MFA Setup Handlers
+  const handleStartMfaSetup = async () => {
+    setMfaError(null)
+    setMfaSuccess(null)
+    setMfaLoading(true)
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: 'totp',
+        issuer: 'Voraly',
+        friendlyName: email
+      })
+      if (error) {
+        setMfaError(error.message)
+      } else if (data) {
+        setMfaFactorId(data.id)
+        if (data.totp) {
+          setMfaQrCode(data.totp.qr_code)
+          setMfaSecret(data.totp.secret)
+          setMfaSetup(true)
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Une erreur est survenue."
+      setMfaError(msg)
+    } finally {
+      setMfaLoading(false)
+    }
+  }
+
+  const handleVerifyMfa = async () => {
+    if (!mfaFactorId || !mfaCode) return
+    setMfaError(null)
+    setMfaSuccess(null)
+    setMfaLoading(true)
+    try {
+      const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+        factorId: mfaFactorId
+      })
+      if (challengeError) {
+        setMfaError(challengeError.message)
+        return
+      }
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: mfaFactorId,
+        challengeId: challengeData.id,
+        code: mfaCode
+      })
+
+      if (verifyError) {
+        setMfaError(verifyError.message)
+      } else {
+        setMfaSuccess('Double authentification (2FA) configurée et activée avec succès !')
+        setMfaEnabled(true)
+        setMfaSetup(false)
+        setMfaCode('')
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Une erreur est survenue."
+      setMfaError(msg)
+    } finally {
+      setMfaLoading(false)
+    }
+  }
+
+  const handleDisableMfa = async () => {
+    setMfaError(null)
+    setMfaSuccess(null)
+    setMfaLoading(true)
+    try {
+      const { data: factors, error: listError } = await supabase.auth.mfa.listFactors()
+      if (listError) {
+        setMfaError(listError.message)
+        return
+      }
+
+      const activeFactor = factors?.totp?.find(f => f.status === 'verified')
+      if (!activeFactor) {
+        setMfaEnabled(false)
+        return
+      }
+
+      const { error: unenrollError } = await supabase.auth.mfa.unenroll({
+        factorId: activeFactor.id
+      })
+
+      if (unenrollError) {
+        setMfaError(unenrollError.message)
+      } else {
+        setMfaSuccess('Double authentification (2FA) désactivée avec succès.')
+        setMfaEnabled(false)
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Une erreur est survenue."
+      setMfaError(msg)
+    } finally {
+      setMfaLoading(false)
+    }
   }
 
   return (
@@ -318,7 +458,7 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
             </div>
             <div>
               <div className="text-sm font-semibold text-zinc-200">Sécurité</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Mot de passe et gestion des sessions actives</div>
+              <div className="text-[11px] text-zinc-500 mt-0.5">Mot de passe, 2FA et sessions actives</div>
             </div>
           </div>
           <ChevronDown
@@ -339,7 +479,7 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
             >
               <div className="border-t border-white/[0.06] p-6 bg-white/[0.01] flex flex-col gap-6">
                 
-                {/* 1. Change password form */}
+                {/* 1. Changer le mot de passe */}
                 <form action={pwdFormAction} className="flex flex-col gap-4 max-w-md">
                   <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
                     Changer le mot de passe
@@ -399,7 +539,114 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
 
                 <hr className="border-white/[0.06]" />
 
-                {/* 2. Disconnect other sessions */}
+                {/* 2. Double Authentification (2FA) */}
+                <div className="max-w-md flex flex-col gap-4">
+                  <div>
+                    <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
+                      Double Authentification (2FA)
+                    </div>
+                    <p className="text-[11.5px] text-zinc-500 mt-1 leading-relaxed">
+                      Sécurisez votre compte en exigeant un code de sécurité à chaque connexion.
+                    </p>
+                  </div>
+
+                  {mfaError && (
+                    <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/25 px-4 py-2.5 text-xs text-rose-400">
+                      <AlertTriangle size={14} className="shrink-0" />
+                      <span>{mfaError}</span>
+                    </div>
+                  )}
+
+                  {mfaSuccess && (
+                    <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-4 py-2.5 text-xs text-emerald-400">
+                      <Check size={14} className="shrink-0" />
+                      <span>{mfaSuccess}</span>
+                    </div>
+                  )}
+
+                  {mfaEnabled ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-4 py-2.5 text-xs text-emerald-400 w-fit">
+                        <Check size={14} />
+                        <span>2FA active avec succès (TOTP)</span>
+                      </div>
+                      <button
+                        onClick={handleDisableMfa}
+                        disabled={mfaLoading}
+                        className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/[0.03] px-6 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                      >
+                        {mfaLoading ? <Loader2 size={13} className="animate-spin" /> : null}
+                        Désactiver la double authentification
+                      </button>
+                    </div>
+                  ) : !mfaSetup ? (
+                    <button
+                      onClick={handleStartMfaSetup}
+                      disabled={mfaLoading}
+                      className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
+                    >
+                      {mfaLoading ? <Loader2 size={13} className="animate-spin" /> : null}
+                      Configurer la double authentification (2FA)
+                    </button>
+                  ) : (
+                    <div className="flex flex-col gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                      <div className="text-xs font-bold text-zinc-200 flex items-center gap-2">
+                        <QrCode size={16} className="text-indigo-400" />
+                        Scannez ce QR Code
+                      </div>
+                      
+                      {mfaQrCode && (
+                        <div
+                          className="w-48 h-48 bg-white p-3 rounded-2xl flex items-center justify-center mx-auto"
+                          dangerouslySetInnerHTML={{ __html: mfaQrCode }}
+                        />
+                      )}
+
+                      {mfaSecret && (
+                        <div className="text-center">
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Clé secrète (saisie manuelle)</p>
+                          <code className="text-xs text-indigo-300 font-mono select-all mt-1 block tracking-widest">{mfaSecret}</code>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-1.5 mt-2">
+                        <label htmlFor="totpCode" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                          Code de validation à 6 chiffres
+                        </label>
+                        <input
+                          id="totpCode"
+                          type="text"
+                          maxLength={6}
+                          placeholder="000000"
+                          value={mfaCode}
+                          onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                          className="w-full text-center tracking-[0.3em] font-mono rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={handleVerifyMfa}
+                          disabled={mfaLoading || mfaCode.length !== 6}
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-xs font-semibold text-white hover:from-indigo-400 hover:to-violet-400 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                        >
+                          {mfaLoading ? <Loader2 size={12} className="animate-spin" /> : null}
+                          Vérifier et activer
+                        </button>
+                        <button
+                          onClick={() => setMfaSetup(false)}
+                          className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <hr className="border-white/[0.06]" />
+
+                {/* 3. Disconnect other sessions */}
                 <div className="max-w-md flex flex-col gap-3">
                   <div>
                     <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
@@ -439,6 +686,100 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Section CONSOLE FONDATEUR (Founder Only) ── */}
+      {isFounder && (
+        <div className="glass rounded-3xl overflow-hidden border border-amber-500/15 transition-all duration-300">
+          <button
+            onClick={() => toggleSection('founder')}
+            className="w-full p-5 flex items-center justify-between text-left group hover:bg-white/[0.02]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+                <Crown size={16} className="text-amber-400" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-zinc-200">Console Fondateur</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">Diffuser une notification globale à tous les freelances</div>
+              </div>
+            </div>
+            <ChevronDown
+              size={16}
+              className={`text-zinc-500 transition-transform duration-300 ${
+                activeSection === 'founder' ? 'rotate-180 text-zinc-300' : 'group-hover:text-zinc-400'
+              }`}
+            />
+          </button>
+
+          <AnimatePresence initial={false}>
+            {activeSection === 'founder' && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="border-t border-white/[0.06] p-6 bg-white/[0.01]">
+                  <form action={founderFormAction} className="flex flex-col gap-4 max-w-md">
+                    {/* Title */}
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="broadcastTitle" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                        Titre de la notification
+                      </label>
+                      <input
+                        id="broadcastTitle"
+                        name="broadcastTitle"
+                        type="text"
+                        required
+                        placeholder="Ex: Nouvelle mise à jour du tableau de bord !"
+                        className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex flex-col gap-1.5">
+                      <label htmlFor="broadcastContent" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                        Message
+                      </label>
+                      <textarea
+                        id="broadcastContent"
+                        name="broadcastContent"
+                        required
+                        rows={3}
+                        placeholder="Ex: Nous venons de déployer la double authentification..."
+                        className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                      />
+                    </div>
+
+                    {founderState?.error && (
+                      <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 border border-rose-500/25 px-4 py-2.5 text-xs text-rose-400">
+                        <AlertTriangle size={14} className="shrink-0" />
+                        <span>{founderState.error}</span>
+                      </div>
+                    )}
+
+                    {founderState?.success && (
+                      <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-4 py-2.5 text-xs text-emerald-400">
+                        <Check size={14} className="shrink-0" />
+                        <span>{founderState.success}</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isFounderPending}
+                      className="self-start inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-2.5 text-xs font-semibold text-white hover:from-amber-400 hover:to-orange-400 transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(245,158,11,0.25)] disabled:opacity-50"
+                    >
+                      {isFounderPending ? <Loader2 size={13} className="animate-spin" /> : null}
+                      Diffuser la notification
+                    </button>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* ── Section ABONNEMENT (Lien direct vers tarifs) ── */}
       <Link
