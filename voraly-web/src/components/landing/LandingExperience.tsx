@@ -11,7 +11,6 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { LayoutDashboard, Sparkles, Plug, CalendarClock, ChevronDown } from "lucide-react"
 import { LiquidButton } from "@/components/ui/liquid-glass-button"
 import { BentoGrid, type BentoItem } from "@/components/ui/bento-grid"
-import HeroBackground from "./HeroBackground"
 import PublicNav from "./PublicNav"
 import PublicFooter from "./PublicFooter"
 
@@ -242,10 +241,7 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
 export default function LandingExperience() {
   return (
     <>
-      {/* Fond 3D (fixed, -z-10) */}
-      <HeroBackground />
-
-      {/* Scroll container — cf. PricingExperience pattern */}
+      {/* Scroll container */}
       <main className="h-dvh overflow-y-auto" id="main-content">
         {/* Nav */}
         <PublicNav />

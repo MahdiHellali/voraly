@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import HeroBackground from '@/components/landing/HeroBackground'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -33,6 +34,8 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <body className={inter.className}>
+        {/* Fond aurora global — toutes les pages */}
+        <HeroBackground />
         <TooltipProvider>
           {children}
         </TooltipProvider>
