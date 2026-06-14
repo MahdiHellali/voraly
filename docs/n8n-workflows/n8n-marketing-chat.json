@@ -1,4 +1,5 @@
 [{
+  "id": "zyeaFHZuLyWHpI2S",
   "name": "Voraly: Marketing Chatbot",
   "nodes": [
     {
@@ -81,7 +82,7 @@
     },
     {
       "parameters": {
-        "code": "// Extract 'reply' from agent output (handles both JSON string and object)\nconst raw = $input.item.json.output ?? '';\nlet reply = '';\ntry {\n  const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;\n  reply = parsed.reply ?? parsed.response ?? parsed.output ?? String(raw);\n} catch {\n  // Agent responded as plain text — use directly\n  reply = String(raw).replace(/^\\{[\\s\\S]*\"reply\"\\s*:\\s*\"|\"\\s*\\}$/g, '');\n}\nreturn { reply };"
+        "jsCode": "// Extract 'reply' from agent output — use $input.first() (Run Once for All Items mode)\nconst item = $input.first();\nconst raw = item?.json?.output ?? '';\nlet reply = '';\ntry {\n  // Strip markdown code fences if Gemini adds them\n  const cleaned = String(raw).replace(/^```(?:json)?\\s*/m, '').replace(/\\s*```$/m, '').trim();\n  const parsed = JSON.parse(cleaned);\n  reply = parsed.reply ?? parsed.response ?? parsed.output ?? '';\n} catch {\n  // Plain text fallback: try regex extraction then use raw\n  const match = String(raw).match(/\"reply\"\\s*:\\s*\"([\\s\\S]+?)\"(?:\\s*})/);\n  if (match) {\n    reply = match[1].replace(/\\\\n/g, '\\n').replace(/\\\\\"/g, '\"');\n  } else {\n    reply = String(raw);\n  }\n}\nif (!reply) reply = 'Je suis votre conseiller marketing Voraly. Comment puis-je vous aider ?';\nreturn { reply };"
       },
       "id": "code-extract-reply",
       "name": "Extract Reply",

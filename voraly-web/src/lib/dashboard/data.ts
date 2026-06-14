@@ -77,20 +77,20 @@ export async function getDashboardData(
           steps[steps.length - 1]
 
         if (currentStep?.daily_plan && currentStep.daily_plan.length > 0) {
-          // Afficher les tâches quotidiennes de la semaine courante.
-          todos = currentStep.daily_plan.flatMap((day, dayIndex) =>
-            day.tasks.map((task, taskIndex) => {
-              const id = `${currentStep.step_number}-${day.day}-${taskIndex}`
-              return {
-                id,
-                text: task,
-                done: completedDailyTasks.includes(id),
-                priority: mapPriority(dayIndex),
-                dayLabel: day.day,
-                weekLabel: `Semaine ${currentStep.step_number}`,
-              } satisfies AiTask
-            }),
-          )
+          // Une seule tâche par jour (la première) — évite les doublons visuels.
+          todos = currentStep.daily_plan.flatMap((day, dayIndex) => {
+            const firstTask = day.tasks[0]
+            if (!firstTask) return []
+            const id = `${currentStep.step_number}-${day.day}-0`
+            return [{
+              id,
+              text: firstTask,
+              done: completedDailyTasks.includes(id),
+              priority: mapPriority(dayIndex),
+              dayLabel: day.day,
+              weekLabel: `Semaine ${currentStep.step_number}`,
+            } satisfies AiTask]
+          })
         } else {
           // Fallback : afficher les étapes hebdomadaires (pas encore de daily_plan).
           todos = steps.map((step) => ({
