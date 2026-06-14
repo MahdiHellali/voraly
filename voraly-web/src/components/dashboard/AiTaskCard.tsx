@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, CheckCircle2, Circle, RefreshCw } from 'lucide-react'
 import { LiquidButton } from '@/components/ui/liquid-glass-button'
@@ -35,7 +36,9 @@ function isDailyTaskId(id: string): boolean {
 }
 
 export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCardProps) {
+  const router = useRouter()
   const [localTasks, setLocalTasks] = useState<AiTask[]>(tasks ?? [])
+  const [isPersisting, setIsPersisting] = useState(false)
 
   const hasTasks = localTasks.length > 0
   const completed = localTasks.filter((t) => t.done).length
@@ -45,10 +48,12 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
   const isDaily = hasTasks && isDailyTaskId(localTasks[0]?.id ?? '')
 
   const toggle = async (id: string) => {
+    if (isPersisting) return
+    setIsPersisting(true)
     const previous = [...localTasks]
     const next = localTasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
     setLocalTasks(next)
-    if (!userId) return
+    if (!userId) { setIsPersisting(false); return }
 
     const supabase = createClient()
     let error: { message: string } | null = null
@@ -61,6 +66,34 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
         .update({ completed_daily_tasks: completedDailyTaskIds })
         .eq('id', userId)
       error = result.error
+
+      // Auto-avancement : si toutes les tâches sont cochées, marquer le step comme complété.
+      if (!error && next.every((t) => t.done) && next.length > 0) {
+        // Extraire le step_number depuis l'ID de la première tâche ("stepNum-day-idx").
+        const stepNum = parseInt(next[0].id.split('-')[0], 10)
+        if (!isNaN(stepNum)) {
+          // Lire les completed_steps existants.
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('completed_steps')
+            .eq('id', userId)
+            .single()
+
+          const existing: number[] = Array.isArray(profileData?.completed_steps)
+            ? (profileData.completed_steps as unknown[]).map(Number).filter(Number.isFinite)
+            : []
+
+          if (!existing.includes(stepNum)) {
+            await supabase
+              .from('profiles')
+              .update({ completed_steps: [...existing, stepNum] })
+              .eq('id', userId)
+          }
+
+          // Rafraîchir pour afficher la semaine suivante.
+          router.refresh()
+        }
+      }
     } else {
       // Fallback legacy : persister les step_numbers.
       const completedStepNumbers = next.filter((t) => t.done).map((t) => Number(t.id))
@@ -75,6 +108,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
       console.error('[dashboard] failed to persist task progress', error)
       setLocalTasks(previous)
     }
+    setIsPersisting(false)
   }
 
   /* ── État B — pas de roadmap ── */

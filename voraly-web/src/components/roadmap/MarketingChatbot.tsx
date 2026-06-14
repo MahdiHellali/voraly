@@ -48,6 +48,10 @@ export default function MarketingChatbot() {
     setInput('')
     setIsLoading(true)
 
+    // apiData est mis à jour dès que la réponse API est parsée,
+    // pour pouvoir l'utiliser dans le catch même en cas d'erreur HTTP.
+    let apiData: { error?: string; reply?: string } | null = null
+
     try {
       // Map message history to n8n format
       // n8n chatbot node expects history as an array of messages
@@ -62,20 +66,27 @@ export default function MarketingChatbot() {
         body: JSON.stringify({ message: textToSend, history }),
       })
 
-      const data = await res.json()
+      apiData = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.message || data.error || 'Une erreur est survenue.')
+        throw new Error(apiData?.error || 'Une erreur est survenue.')
       }
 
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: data.reply || '' },
+        { role: 'assistant', content: apiData?.reply || '' },
       ])
     } catch (err: unknown) {
       console.error('[chatbot] failed to get response', err)
-      const errMsg = err instanceof Error ? err.message : 'Une erreur inconnue est survenue.'
-      setError(errMsg || 'Impossible de joindre le chatbot. Veuillez vérifier que votre stratégie a bien été générée.')
+      const errMsg = err instanceof Error ? err.message : null
+      const errorCode = apiData?.error ?? errMsg
+      const friendlyMsg =
+        errorCode === 'chatbot_unreachable' || errorCode === 'chatbot_failed'
+          ? 'Le conseiller IA est momentanément indisponible. Réessayez dans quelques instants.'
+          : errorCode === 'empty_response'
+            ? 'Le conseiller n\'a pas pu générer de réponse. Reformulez votre question.'
+            : errMsg || 'Impossible de joindre le chatbot.'
+      setError(friendlyMsg)
     } finally {
       setIsLoading(false)
     }

@@ -17,10 +17,11 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_premium')
+    .select('is_premium, avatar_url')
     .eq('id', user.id)
     .maybeSingle()
   const isPremium = Boolean(profile?.is_premium)
+  const avatarUrl = (profile?.avatar_url as string | null) ?? null
 
   const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || 'Utilisateur'
   const email = user.email ?? ''
@@ -43,14 +44,17 @@ export default async function SettingsPage() {
 
       {/* User preview card */}
       <div className="glass-hero rounded-3xl p-6 flex items-center gap-5 fade-2">
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white flex-shrink-0"
-          style={{
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            boxShadow: '0 0 20px rgba(139,92,246,0.4)',
-          }}
-        >
-          {initials}
+        <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0" style={{ boxShadow: '0 0 20px rgba(139,92,246,0.4)' }}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center text-lg font-black text-white"
+              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            >
+              {initials}
+            </div>
+          )}
         </div>
         <div>
           <div className="text-base font-bold text-zinc-100">{fullName}</div>
@@ -63,7 +67,7 @@ export default async function SettingsPage() {
 
       {/* Interactive Settings Form sections */}
       <div className="fade-3">
-        <SettingsForm user={user} isPremium={isPremium} />
+        <SettingsForm user={user} isPremium={isPremium} avatarUrl={avatarUrl} />
       </div>
     </div>
   )

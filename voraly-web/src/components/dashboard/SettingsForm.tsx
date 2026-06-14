@@ -30,11 +30,12 @@ import { broadcastNotificationFormAction } from '@/app/dashboard/settings/notifi
 interface SettingsFormProps {
   user: SupabaseUser
   isPremium: boolean
+  avatarUrl?: string | null
 }
 
 type SectionId = 'profile' | 'notifications' | 'security' | 'founder'
 
-export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
+export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFormProps) {
   const [activeSection, setActiveSection] = useState<SectionId | null>(null)
   const [isDisconnectPending, startDisconnectTransition] = useTransition()
   const [isDeletePending, startDeleteTransition] = useTransition()
@@ -78,6 +79,11 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
   const [mfaSuccess, setMfaSuccess] = useState<string | null>(null)
   const [mfaLoading, setMfaLoading] = useState(false)
 
+  // Avatar upload state
+  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(avatarUrl ?? null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+
   // Current user info
   const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || 'Utilisateur'
   const email = user.email ?? ''
@@ -89,6 +95,28 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
   }
 
   const supabase = createClient()
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarError(null)
+    setAvatarUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/profile/avatar', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) {
+        setAvatarError(data.message ?? 'Erreur lors de l\'upload.')
+      } else {
+        setLocalAvatarUrl(data.url)
+      }
+    } catch {
+      setAvatarError('Impossible d\'uploader la photo.')
+    } finally {
+      setAvatarUploading(false)
+    }
+  }
 
   // Check 2FA (MFA) status on mount
   useEffect(() => {
@@ -291,6 +319,41 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
             >
               <div className="border-t border-white/[0.06] p-6 bg-white/[0.01]">
                 <form action={profileFormAction} className="flex flex-col gap-4 max-w-md">
+                  {/* Avatar upload */}
+                  <div className="flex flex-col items-center gap-3 mb-2">
+                    <label htmlFor="avatar-upload" className="cursor-pointer group relative">
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 group-hover:border-violet-500/40 transition-colors" style={{ boxShadow: '0 0 20px rgba(139,92,246,0.2)' }}>
+                        {localAvatarUrl ? (
+                          <img src={localAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl font-black text-white" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                            {fullName.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        {avatarUploading && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-2xl">
+                            <Loader2 size={20} className="animate-spin text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-indigo-500 border border-zinc-900 flex items-center justify-center">
+                        <UserIcon size={12} className="text-white" />
+                      </div>
+                    </label>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                      disabled={avatarUploading}
+                    />
+                    <p className="text-[10px] text-zinc-500">Cliquez pour {localAvatarUrl ? 'changer' : 'ajouter'} votre photo · Max 2 Mo</p>
+                    {avatarError && (
+                      <p className="text-[11px] text-rose-400 text-center">{avatarError}</p>
+                    )}
+                  </div>
+
                   {/* Full Name */}
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="fullName" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
@@ -624,10 +687,13 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
                       </div>
                       
                       {mfaQrCode && (
-                        <div
-                          className="w-48 h-48 bg-white p-3 rounded-2xl flex items-center justify-center mx-auto text-black [&_path]:fill-black [&_svg]:w-full [&_svg]:h-full"
-                          dangerouslySetInnerHTML={{ __html: mfaQrCode }}
-                        />
+                        <div className="w-48 h-48 bg-white p-3 rounded-2xl flex items-center justify-center mx-auto">
+                          <img
+                            src={mfaQrCode}
+                            alt="QR Code 2FA"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
                       )}
 
                       {mfaSecret && (

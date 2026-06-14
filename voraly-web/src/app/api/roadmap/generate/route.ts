@@ -8,7 +8,9 @@ import {
 
 const N8N_WEBHOOK_URL =
   process.env.N8N_ROADMAP_WEBHOOK_URL ??
-  'http://localhost:5678/webhook/generate-roadmap'
+  (process.env.NODE_ENV === 'production'
+    ? 'http://n8n:5678/webhook/generate-roadmap'
+    : 'http://localhost:5678/webhook/generate-roadmap')
 
 const N8N_TIMEOUT_MS = 90_000
 
@@ -100,14 +102,13 @@ export async function POST(request: NextRequest) {
 
   const aiRoadmapPayload = { roadmap_steps: steps, marketing_strategy: marketingStrategy }
 
-  // 6. Versioning : désactiver les anciennes roadmaps, insérer la nouvelle.
+  // 6. Versioning : supprimer toutes les anciennes roadmaps, insérer la nouvelle.
   //    Best-effort — si la table n'existe pas encore, on continue quand même.
   try {
     await supabase
       .from('roadmaps')
-      .update({ is_active: false })
+      .delete()
       .eq('user_id', user.id)
-      .eq('is_active', true)
 
     await supabase.from('roadmaps').insert({
       user_id: user.id,

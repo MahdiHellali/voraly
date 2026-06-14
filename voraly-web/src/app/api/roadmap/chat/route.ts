@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const N8N_TIMEOUT_MS = 60_000
+const N8N_TIMEOUT_MS = 45_000
 
 const N8N_CHAT_URL =
   process.env.N8N_CHAT_WEBHOOK_URL ??
   (process.env.N8N_ROADMAP_WEBHOOK_URL
     ? process.env.N8N_ROADMAP_WEBHOOK_URL.replace('generate-roadmap', 'marketing-chat')
-    : 'http://localhost:5678/webhook/marketing-chat')
+    : process.env.NODE_ENV === 'production'
+      ? 'http://n8n:5678/webhook/marketing-chat'
+      : 'http://localhost:5678/webhook/marketing-chat')
 
 // Extrait marketing_strategy depuis n'importe quelle forme que prend ai_roadmap.
 function extractMarketingStrategy(raw: unknown): unknown {

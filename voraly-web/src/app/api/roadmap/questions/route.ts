@@ -6,7 +6,9 @@ const N8N_QUESTIONS_URL =
   process.env.N8N_QUESTIONS_WEBHOOK_URL ??
   (process.env.N8N_ROADMAP_WEBHOOK_URL
     ? process.env.N8N_ROADMAP_WEBHOOK_URL.replace('generate-roadmap', 'generate-questions')
-    : 'http://localhost:5678/webhook/generate-questions')
+    : process.env.NODE_ENV === 'production'
+      ? 'http://n8n:5678/webhook/generate-questions'
+      : 'http://localhost:5678/webhook/generate-questions')
 
 const N8N_TIMEOUT_MS = 30_000
 
