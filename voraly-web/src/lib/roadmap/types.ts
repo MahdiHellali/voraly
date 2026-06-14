@@ -16,6 +16,7 @@ export interface RoadmapStep {
   title: string
   actionable_advice: string
   daily_plan?: DailyTask[]
+  tasks?: string[]
 }
 
 /** The structured payload produced by the n8n agent + output parser. */
@@ -143,11 +144,33 @@ export function normalizeRoadmap(raw: unknown): RoadmapStep[] {
           .filter((d) => d.day && d.tasks.length > 0)
         if (daily_plan.length === 0) daily_plan = undefined
       }
+
+      // Si n8n n'a pas généré de daily_plan, on le construit depuis tasks[].
+      if (!daily_plan) {
+        const rawTasks = step.tasks
+        const taskList: string[] = Array.isArray(rawTasks)
+          ? rawTasks.map((t: unknown) => String(t)).filter(Boolean)
+          : []
+        if (taskList.length > 0) {
+          const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']
+          daily_plan = DAYS
+            .map((day, di) => ({ day, tasks: taskList.filter((_, j) => j % 5 === di) }))
+            .filter((d) => d.tasks.length > 0)
+          if (daily_plan.length === 0) daily_plan = undefined
+        }
+      }
+
+      const rawTasks = step.tasks
+      const tasks: string[] | undefined = Array.isArray(rawTasks)
+        ? rawTasks.map((t: unknown) => String(t)).filter(Boolean)
+        : undefined
+
       return {
         step_number: Number(step.step_number ?? i + 1),
         title: String(step.title ?? ''),
         actionable_advice: String(step.actionable_advice ?? ''),
         daily_plan,
+        ...(tasks ? { tasks } : {}),
       }
     })
     .filter((s) => s.title || s.actionable_advice)

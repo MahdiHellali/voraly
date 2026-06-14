@@ -49,15 +49,26 @@ export async function getDashboardData(
   try {
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('ai_roadmap, completed_steps, completed_daily_tasks')
+      .select('ai_roadmap, completed_steps')
       .eq('id', userId)
       .single()
+
+    // completed_daily_tasks en requête séparée : best-effort si la colonne n'existe pas encore.
+    let rawDailyTasks: unknown = null
+    if (!error && profile) {
+      const { data: dtRow } = await supabase
+        .from('profiles')
+        .select('completed_daily_tasks')
+        .eq('id', userId)
+        .single()
+      rawDailyTasks = dtRow?.completed_daily_tasks ?? null
+    }
 
     if (!error && profile) {
       const steps = normalizeRoadmap(profile.ai_roadmap)
       if (steps.length > 0) {
         const completedSteps = normalizeCompletedSteps(profile.completed_steps)
-        const completedDailyTasks = normalizeCompletedDailyTasks(profile.completed_daily_tasks)
+        const completedDailyTasks = normalizeCompletedDailyTasks(rawDailyTasks)
 
         // Trouver la première semaine non complétée avec un daily_plan.
         const currentStep =
