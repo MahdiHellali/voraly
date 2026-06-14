@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle } from 'lucide-react'
-import type { Phase, RoadmapStep } from '@/lib/roadmap/types'
+import type { Phase, RoadmapStep, Question } from '@/lib/roadmap/types'
 import EmptyState from './EmptyState'
 import QuestionnaireFlow from './QuestionnaireFlow'
 import CinematicLoader from './CinematicLoader'
@@ -24,20 +24,44 @@ const ERROR_COPY: Record<string, string> = {
 export default function RoadmapExperience({
   initialSteps,
   initialCompleted,
+  initialMarketingStrategy,
   userId,
 }: {
   initialSteps: RoadmapStep[]
   initialCompleted: number[]
+  initialMarketingStrategy: unknown
   userId: string | null
 }) {
   const [phase, setPhase] = useState<Phase>(
     initialSteps.length > 0 ? 'roadmap' : 'empty',
   )
   const [steps, setSteps] = useState<RoadmapStep[]>(initialSteps)
+  const [marketingStrategy, setMarketingStrategy] = useState<unknown>(initialMarketingStrategy)
+  const [customQuestions, setCustomQuestions] = useState<Question[]>([])
+
   // Seed for RoadmapResult's checkpoint state. Resets to [] whenever a new
   // roadmap is generated so the fresh plan starts with nothing checked.
   const [completedSeed, setCompletedSeed] = useState<number[]>(initialCompleted)
   const [error, setError] = useState<string | null>(null)
+
+  async function handleStartQuestionnaire() {
+    setError(null)
+    setPhase('analyzing')
+    try {
+      const res = await fetch('/api/roadmap/questions')
+      if (!res.ok) {
+        throw new Error('failed_to_fetch_questions')
+      }
+      const data = await res.json()
+      setCustomQuestions(data.questions || [])
+      setPhase('questionnaire')
+    } catch (err) {
+      console.error('Failed to load dynamic questions, falling back to defaults', err)
+      // Fallback is handled by the API endpoint, but if that also fails or crashes,
+      // the empty state will recover gracefully.
+      setPhase('questionnaire')
+    }
+  }
 
   async function handleComplete(answers: Record<string, string>) {
     setError(null)
@@ -49,7 +73,7 @@ export default function RoadmapExperience({
         body: JSON.stringify({ answers }),
       })
       const data = (await res.json().catch(() => null)) as
-        | { roadmap_steps?: RoadmapStep[]; error?: string }
+        | { roadmap_steps?: RoadmapStep[]; marketing_strategy?: unknown; error?: string }
         | null
 
       if (!res.ok || !data?.roadmap_steps?.length) {
@@ -59,6 +83,7 @@ export default function RoadmapExperience({
       }
 
       setSteps(data.roadmap_steps)
+      setMarketingStrategy(data.marketing_strategy)
       setCompletedSeed([]) // fresh plan → clear carried-over checkpoints
       setPhase('roadmap')
     } catch {
@@ -107,16 +132,26 @@ export default function RoadmapExperience({
           <EmptyState
             key="empty"
             regenerate={steps.length > 0}
-            onStart={() => {
-              setError(null)
-              setPhase('questionnaire')
-            }}
+            onStart={handleStartQuestionnaire}
+          />
+        )}
+
+        {phase === 'analyzing' && (
+          <CinematicLoader
+            key="analyzing"
+            messages={[
+              'Analyse de vos intégrations…',
+              'Lecture des comptes connectés…',
+              'Récupération de vos métriques de revenus…',
+              'Conception d’un diagnostic sur-mesure…',
+            ]}
           />
         )}
 
         {phase === 'questionnaire' && (
           <QuestionnaireFlow
             key="questionnaire"
+            questions={customQuestions}
             onComplete={handleComplete}
             onCancel={() => setPhase(steps.length > 0 ? 'roadmap' : 'empty')}
           />
@@ -128,9 +163,10 @@ export default function RoadmapExperience({
           <RoadmapResult
             key="roadmap"
             steps={steps}
+            marketingStrategy={marketingStrategy}
             initialCompleted={completedSeed}
             userId={userId}
-            onRestart={() => setPhase('questionnaire')}
+            onRestart={handleStartQuestionnaire}
           />
         )}
       </AnimatePresence>

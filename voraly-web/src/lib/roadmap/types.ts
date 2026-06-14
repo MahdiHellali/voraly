@@ -1,8 +1,8 @@
 // ─── Voraly · Roadmap · Types & questionnaire config ─────────────────────────
 // Shared by the server route handler and the client experience components.
 
-/** The four phases of the diagnostic experience. */
-export type Phase = 'empty' | 'questionnaire' | 'loading' | 'roadmap'
+/** The phases of the diagnostic experience. */
+export type Phase = 'empty' | 'analyzing' | 'questionnaire' | 'loading' | 'roadmap'
 
 /** One actionable step of the generated growth roadmap. */
 export interface RoadmapStep {

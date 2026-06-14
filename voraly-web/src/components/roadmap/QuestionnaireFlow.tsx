@@ -4,23 +4,26 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Sparkles, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { QUESTIONS } from '@/lib/roadmap/types'
+import { QUESTIONS, type Question } from '@/lib/roadmap/types'
 
 // Phase 'questionnaire' — exactly one question on screen at a time. Answers are
 // held locally and only handed back to the orchestrator on the final step.
 export default function QuestionnaireFlow({
+  questions = [],
   onComplete,
   onCancel,
 }: {
+  questions?: Question[]
   onComplete: (answers: Record<string, string>) => void
   onCancel: () => void
 }) {
+  const activeQuestions = questions.length > 0 ? questions : QUESTIONS
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
   const [answers, setAnswers] = useState<Record<string, string>>({})
 
-  const question = QUESTIONS[index]
-  const total = QUESTIONS.length
+  const question = activeQuestions[index]
+  const total = activeQuestions.length
   const isLast = index === total - 1
   const current = answers[question.id]?.trim() ?? ''
   const canAdvance = current.length > 0
@@ -57,7 +60,7 @@ export default function QuestionnaireFlow({
     >
       {/* Progress */}
       <div className="mb-10 flex items-center gap-3">
-        {QUESTIONS.map((q, i) => (
+        {activeQuestions.map((q, i) => (
           <div
             key={q.id}
             className="h-1 flex-1 overflow-hidden rounded-full bg-white/8"

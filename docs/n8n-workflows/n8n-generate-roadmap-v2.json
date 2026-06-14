@@ -1,0 +1,126 @@
+[{
+  "id": "2ck90hyceVDLIscR",
+  "name": "Voraly: AI Roadmap Generator V2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-roadmap",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-generate-roadmap",
+      "name": "Roadmap Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 112],
+      "webhookId": "23c0d33b-acd5-4a63-9e1e-f2d1261b4e43"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-user-id",
+              "name": "user_id",
+              "value": "={{ $json.body?.user_id ?? $json.user_id ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-brief",
+              "name": "linkedin_profile_text",
+              "value": "={{ $json.body?.linkedin_profile_text ?? $json.linkedin_profile_text ?? \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-normalize",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [224, 112]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Freelancer profile & questionnaire answers:\n{{ $json.linkedin_profile_text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are Voraly, an elite career strategist for freelancers. Based PRECISELY on the freelancer's background and questionnaire answers provided, generate:\n1. A detailed 5-week action plan with concrete, immediately actionable steps.\n2. A complete marketing strategy: organic content tactics AND paid acquisition tactics.\n3. Three short-video scripts (Shorts/Reels/TikTok) tailored to their niche.\n\nIMPORTANT: Be specific to their actual profile. Never give generic advice.\nReturn ONLY valid JSON matching the schema — no markdown, no explanation."
+        }
+      },
+      "id": "agent-roadmap",
+      "name": "Voraly Strategist Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [448, 112]
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.6
+        }
+      },
+      "id": "gemini-roadmap",
+      "name": "Google Gemini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [464, 336],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "A4VqjP6rolDTdXpu",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"roadmap_steps\": [\n    {\n      \"step_number\": 1,\n      \"title\": \"Semaine 1 : Repositionner votre profil LinkedIn\",\n      \"actionable_advice\": \"Réécrivez votre titre LinkedIn pour cibler vos clients idéaux avec des mots-clés axés sur les résultats. Exemple : 'Développeur Next.js — J'aide les startups à lancer leur MVP en 4 semaines'.\"\n    },\n    {\n      \"step_number\": 2,\n      \"title\": \"Semaine 2 : Activer la prospection directe\",\n      \"actionable_advice\": \"Envoyez 10 messages personnalisés par jour sur LinkedIn à des leads qualifiés en utilisant le template : 'Bonjour [prénom], j'ai vu que vous cherchez [besoin]. J'ai aidé [client similaire] à [résultat concret]. Seriez-vous disponible pour un appel de 15 min ?'.\"\n    }\n  ],\n  \"marketing_strategy\": {\n    \"organic\": \"Publiez 3x/semaine sur LinkedIn : 1 post de valeur (conseil technique), 1 étude de cas client, 1 post de personal branding. Utilisez les hashtags de votre niche. Interagissez avec 20 posts de votre cible par jour pendant 15 minutes.\",\n    \"paid\": \"Lancez une campagne LinkedIn Ads avec un budget de 10€/jour ciblant les décideurs (CEO/CTO) de startups SaaS en France. Créez 2 variantes d'annonces A/B testant l'approche 'gain' vs 'douleur'.\",\n    \"shorts_scripts\": [\n      {\n        \"topic\": \"Comment trouver votre premier client freelance en 7 jours\",\n        \"structure\": \"Hook fort → Problème commun → Solution en 3 étapes → CTA\",\n        \"hook\": \"Tu es freelance depuis 3 mois et tu n'as toujours pas de client ? Voici la méthode exacte que j'ai utilisée.\",\n        \"body\": \"Étape 1 : Identifie ta niche ultra-précise. Pas 'développeur web', mais 'je crée des landing pages qui convertissent pour les coachs'. Étape 2 : Va sur LinkedIn et contacte 10 personnes dans ta cible chaque jour avec un message personnalisé de 3 lignes max. Étape 3 : Offre un audit gratuit de 20 minutes pour montrer ta valeur avant de vendre.\",\n        \"cta\": \"Abonne-toi pour voir comment j'ai décroché mes 5 premiers clients en moins d'un mois.\"\n      }\n    ]\n  }\n}"
+      },
+      "id": "parser-roadmap",
+      "name": "Roadmap JSON Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [608, 336]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"roadmap_steps\": $json.output.roadmap_steps, \"marketing_strategy\": $json.output.marketing_strategy } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-roadmap",
+      "name": "Respond to Frontend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [672, 112]
+    }
+  ],
+  "connections": {
+    "Roadmap Webhook": {
+      "main": [[{ "node": "Normalize Input", "type": "main", "index": 0 }]]
+    },
+    "Normalize Input": {
+      "main": [[{ "node": "Voraly Strategist Agent", "type": "main", "index": 0 }]]
+    },
+    "Voraly Strategist Agent": {
+      "main": [[{ "node": "Respond to Frontend", "type": "main", "index": 0 }]]
+    },
+    "Google Gemini Model": {
+      "ai_languageModel": [[{ "node": "Voraly Strategist Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Roadmap JSON Parser": {
+      "ai_outputParser": [[{ "node": "Voraly Strategist Agent", "type": "ai_outputParser", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  }
+}]

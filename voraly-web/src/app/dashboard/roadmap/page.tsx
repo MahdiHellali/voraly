@@ -19,13 +19,24 @@ export default async function RoadmapPage() {
 
   let initialSteps: ReturnType<typeof normalizeRoadmap> = []
   let initialCompleted: number[] = []
+  let initialMarketingStrategy: unknown = null
+
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('ai_roadmap, completed_steps')
       .eq('id', user.id)
       .maybeSingle()
-    initialSteps = normalizeRoadmap(profile?.ai_roadmap)
+
+    if (profile?.ai_roadmap && typeof profile.ai_roadmap === 'object') {
+      const r = profile.ai_roadmap as { roadmap_steps?: unknown; marketing_strategy?: unknown }
+      // Handle backwards compatibility where ai_roadmap might have been a flat array
+      initialSteps = normalizeRoadmap(r.roadmap_steps ?? r)
+      initialMarketingStrategy = r.marketing_strategy ?? null
+    } else if (profile?.ai_roadmap) {
+      initialSteps = normalizeRoadmap(profile.ai_roadmap)
+    }
+
     initialCompleted = normalizeCompletedSteps(profile?.completed_steps)
   }
 
@@ -33,6 +44,7 @@ export default async function RoadmapPage() {
     <RoadmapExperience
       initialSteps={initialSteps}
       initialCompleted={initialCompleted}
+      initialMarketingStrategy={initialMarketingStrategy}
       userId={user?.id ?? null}
     />
   )

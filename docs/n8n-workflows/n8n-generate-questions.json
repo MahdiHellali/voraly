@@ -1,0 +1,124 @@
+[{
+  "name": "Voraly: Question Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-questions",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-questions",
+      "name": "Questions Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 112]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-uid",
+              "name": "user_id",
+              "value": "={{ $json.body?.user_id ?? $json.user_id ?? \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-data",
+              "name": "user_data",
+              "value": "={{ $json.body?.user_data ?? $json.user_data ?? \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-questions",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [224, 112]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User data summary:\n{{ $json.user_data }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Voraly freelance analyst. Based on the user data provided (connected accounts, revenue, upcoming calendar events, Notion pages), design exactly 4 personalized diagnostic questions for this freelance profile.\n\nQUESTION LOGIC:\n- If Upwork/Fiverr is connected but revenue is low → ask about proposal conversion rate\n- If Google Calendar shows many meetings → ask about time management or delegation\n- If Notion has tasks → ask about production bottlenecks\n- If no platforms are connected → ask about their current client acquisition method\n- Always include at least one question about their target revenue goal\n- Questions must be in FRENCH\n\nReturn ONLY valid JSON — no markdown, no explanation.\nAll labels and options must be in French."
+        }
+      },
+      "id": "agent-questions",
+      "name": "Questions Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [448, 112]
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "gemini-questions",
+      "name": "Google Gemini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [464, 336],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "A4VqjP6rolDTdXpu",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"questions\": [\n    {\n      \"id\": \"niche\",\n      \"kind\": \"text\",\n      \"eyebrow\": \"Positionnement\",\n      \"label\": \"Quelle est votre niche ou spécialité principale ?\",\n      \"placeholder\": \"ex : Développeur React, Copywriter SEO…\"\n    },\n    {\n      \"id\": \"revenue_goal\",\n      \"kind\": \"select\",\n      \"eyebrow\": \"Ambition\",\n      \"label\": \"Quel est votre objectif de chiffre d'affaires mensuel ?\",\n      \"options\": [\"2k – 5k€\", \"5k – 10k€\", \"10k€ +\"]\n    },\n    {\n      \"id\": \"blocker\",\n      \"kind\": \"select\",\n      \"eyebrow\": \"Frein principal\",\n      \"label\": \"Quel est votre plus grand blocage pour trouver des clients ?\",\n      \"options\": [\"Manque de visibilité\", \"Tarification trop basse\", \"Prospection trop chronophage\"]\n    },\n    {\n      \"id\": \"offer_model\",\n      \"kind\": \"toggle\",\n      \"eyebrow\": \"Modèle de vente\",\n      \"label\": \"Avez-vous des offres packagées ou vendez-vous principalement au TJM ?\",\n      \"options\": [\"Offres au forfait\", \"TJM régulier\"]\n    }\n  ]\n}"
+      },
+      "id": "parser-questions",
+      "name": "Questions JSON Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [608, 336]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"questions\": $json.output.questions } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond-questions",
+      "name": "Respond to Frontend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [672, 112]
+    }
+  ],
+  "connections": {
+    "Questions Webhook": {
+      "main": [[{ "node": "Normalize Input", "type": "main", "index": 0 }]]
+    },
+    "Normalize Input": {
+      "main": [[{ "node": "Questions Agent", "type": "main", "index": 0 }]]
+    },
+    "Questions Agent": {
+      "main": [[{ "node": "Respond to Frontend", "type": "main", "index": 0 }]]
+    },
+    "Google Gemini Model": {
+      "ai_languageModel": [[{ "node": "Questions Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Questions JSON Parser": {
+      "ai_outputParser": [[{ "node": "Questions Agent", "type": "ai_outputParser", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  }
+}]

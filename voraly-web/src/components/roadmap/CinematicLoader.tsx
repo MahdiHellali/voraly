@@ -5,23 +5,24 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 // Phase 'loading' — a glowing frosted-glass ring breathing with neon-pink rim
 // light, under cycling minimalist micro-copy.
-const MESSAGES = [
+const DEFAULT_MESSAGES = [
   'Analyse de votre positionnement…',
   'Calcul des opportunités de marché…',
   'Cartographie de vos leviers de croissance…',
   'Génération de votre plan d’action personnalisé…',
 ]
 
-export default function CinematicLoader() {
+export default function CinematicLoader({ messages }: { messages?: string[] }) {
   const [step, setStep] = useState(0)
+  const list = messages ?? DEFAULT_MESSAGES
 
   useEffect(() => {
     const id = setInterval(
-      () => setStep((s) => (s + 1) % MESSAGES.length),
+      () => setStep((s) => (s + 1) % list.length),
       3000,
     )
     return () => clearInterval(id)
-  }, [])
+  }, [list])
 
   return (
     <motion.div
@@ -91,7 +92,7 @@ export default function CinematicLoader() {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="text-sm font-medium tracking-wide text-zinc-300"
           >
-            {MESSAGES[step]}
+            {list[step]}
           </motion.p>
         </AnimatePresence>
       </div>
