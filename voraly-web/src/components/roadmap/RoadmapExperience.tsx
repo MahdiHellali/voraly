@@ -12,13 +12,13 @@ import RoadmapResult from './RoadmapResult'
 // Human-readable mapping for the structured errors returned by the route handler.
 const ERROR_COPY: Record<string, string> = {
   workflow_not_listening:
-    ‘Le service de génération est momentanément indisponible. Réessayez dans quelques secondes.’,
-  workflow_failed: ‘Le workflow a renvoyé une erreur. Réessayez dans un instant.’,
+    "Le service de génération est momentanément indisponible. Réessayez dans quelques secondes.",
+  workflow_failed: "Le workflow a renvoyé une erreur. Réessayez dans un instant.",
   workflow_unreachable:
-    ‘Impossible de joindre le service de génération. Réessayez dans quelques instants.’,
+    "Impossible de joindre le service de génération. Réessayez dans quelques instants.",
   empty_roadmap:
-    ‘La génération n’a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.’,
-  unauthorized: ‘Votre session a expiré. Reconnectez-vous puis réessayez.’,
+    "La génération n’a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.",
+  unauthorized: "Votre session a expiré. Reconnectez-vous puis réessayez.",
 }
 
 export default function RoadmapExperience({
@@ -105,8 +105,8 @@ export default function RoadmapExperience({
             Stratégie & Roadmap
           </h1>
           <p className="text-sm text-zinc-400">
-            Votre plan d’action personnalisé pour trouver plus de clients, généré
-            par l’IA Voraly.
+            Votre plan d&apos;action personnalisé pour trouver plus de clients, généré
+            par l&apos;IA Voraly.
           </p>
         </div>
       )}
@@ -121,7 +121,7 @@ export default function RoadmapExperience({
             className="flex items-start gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-200"
           >
             <AlertTriangle size={18} className="mt-0.5 shrink-0" />
-            <span>{ERROR_COPY[error] ?? 'Une erreur est survenue. Réessayez.'}</span>
+            <span>{ERROR_COPY[error] ?? "Une erreur est survenue. Réessayez."}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -140,10 +140,10 @@ export default function RoadmapExperience({
           <CinematicLoader
             key="analyzing"
             messages={[
-              'Analyse de vos intégrations…',
-              'Lecture des comptes connectés…',
-              'Récupération de vos métriques de revenus…',
-              'Conception d’un diagnostic sur-mesure…',
+              "Analyse de vos intégrations…",
+              "Lecture des comptes connectés…",
+              "Récupération de vos métriques de revenus…",
+              "Conception d’un diagnostic sur-mesure…",
             ]}
           />
         )}
