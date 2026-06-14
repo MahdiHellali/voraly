@@ -6,17 +6,10 @@ import {
   type RoadmapStep,
 } from '@/lib/roadmap/types'
 
-// POST /api/roadmap/generate
-// Proxies the diagnostic to the n8n "generate-roadmap" workflow.
-// n8n retourne { roadmap_steps, marketing_strategy } — les deux sont persistés
-// dans profiles.ai_roadmap et retournés au client pour affichage immédiat.
-
 const N8N_WEBHOOK_URL =
   process.env.N8N_ROADMAP_WEBHOOK_URL ??
   'http://localhost:5678/webhook/generate-roadmap'
 
-// n8n's test webhook only fires while the editor is "listening"; give the
-// request a generous but bounded window so the UI never hangs forever.
 const N8N_TIMEOUT_MS = 90_000
 
 interface GenerateBody {
@@ -24,7 +17,7 @@ interface GenerateBody {
 }
 
 export async function POST(request: NextRequest) {
-  // 1. Authenticated session required; user_id is derived here, not trusted.
+  // 1. Authenticated session — user_id dérivé ici, jamais du body.
   const supabase = await createClient()
   const {
     data: { user },
@@ -33,7 +26,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  // 2. Parse + lightly validate the questionnaire answers.
+  // 2. Parse answers.
   let body: GenerateBody
   try {
     body = (await request.json()) as GenerateBody
@@ -45,19 +38,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'missing_answers' }, { status: 400 })
   }
 
-  // 3. Pull any stored professional background to enrich the brief.
+  // 3. Enrichir le brief avec le profil existant.
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name, linkedin_profile_text')
     .eq('id', user.id)
     .maybeSingle()
 
-  const linkedinProfileText = buildBrief(
-    profile?.linkedin_profile_text ?? null,
-    answers,
-  )
+  const linkedinProfileText = buildBrief(profile?.linkedin_profile_text ?? null, answers)
 
-  // 4. Call the n8n workflow.
+  // 4. Appel n8n.
   let webhookJson: unknown = null
   try {
     const controller = new AbortController()
@@ -65,10 +55,7 @@ export async function POST(request: NextRequest) {
     const res = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: user.id,
-        linkedin_profile_text: linkedinProfileText,
-      }),
+      body: JSON.stringify({ user_id: user.id, linkedin_profile_text: linkedinProfileText }),
       cache: 'no-store',
       signal: controller.signal,
     }).finally(() => clearTimeout(timer))
@@ -76,17 +63,12 @@ export async function POST(request: NextRequest) {
     if (!res.ok) {
       const detail = await res.text().catch(() => '')
       console.error(`[roadmap] n8n ${res.status}: ${detail.slice(0, 300)}`)
-      // 404 from the test webhook = the workflow isn't listening in the editor.
       return NextResponse.json(
-        {
-          error:
-            res.status === 404 ? 'workflow_not_listening' : 'workflow_failed',
-        },
+        { error: res.status === 404 ? 'workflow_not_listening' : 'workflow_failed' },
         { status: 502 },
       )
     }
 
-    // The webhook may legitimately return an empty body in some configs.
     const text = await res.text()
     webhookJson = text ? JSON.parse(text) : null
   } catch (error) {
@@ -94,7 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'workflow_unreachable' }, { status: 502 })
   }
 
-  // 5. Extraire roadmap_steps et marketing_strategy depuis la réponse n8n.
+  // 5. Extraire steps + marketing_strategy.
   const payload = webhookJson as {
     roadmap_steps?: unknown
     roadmap?: unknown
@@ -121,12 +103,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'empty_roadmap' }, { status: 502 })
   }
 
-  // 6. Persister le résultat complet dans profiles.ai_roadmap.
   const aiRoadmapPayload = { roadmap_steps: steps, marketing_strategy: marketingStrategy }
+
+  // 6. Versioning : désactiver les anciennes roadmaps, insérer la nouvelle.
+  //    Best-effort — si la table n'existe pas encore, on continue quand même.
+  try {
+    await supabase
+      .from('roadmaps')
+      .update({ is_active: false })
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+
+    await supabase.from('roadmaps').insert({
+      user_id: user.id,
+      roadmap_data: aiRoadmapPayload,
+      is_active: true,
+    })
+  } catch (err) {
+    console.warn('[roadmap] roadmaps versioning failed (table may not exist yet)', err)
+  }
+
+  // 7. Mettre à jour profiles.ai_roadmap + reset des progressions.
   const { error: saveError } = await supabase
     .from('profiles')
-    .update({ ai_roadmap: aiRoadmapPayload, completed_steps: [] })
+    .update({
+      ai_roadmap: aiRoadmapPayload,
+      completed_steps: [],
+      completed_daily_tasks: [],
+    })
     .eq('id', user.id)
+
   if (saveError) {
     console.error('[roadmap] failed to persist ai_roadmap', saveError)
   }
@@ -134,14 +140,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ roadmap_steps: steps, marketing_strategy: marketingStrategy })
 }
 
-/**
- * Serialises the stored background + questionnaire answers into a single
- * readable brief for the strategist agent.
- */
-function buildBrief(
-  storedText: string | null,
-  answers: Record<string, string>,
-): string {
+function buildBrief(storedText: string | null, answers: Record<string, string>): string {
   const lines: string[] = []
 
   if (storedText?.trim()) {

@@ -1,9 +1,5 @@
 // ─── Voraly · Dashboard · Couche serveur ─────────────────────────────────────
 // Agrège toutes les données pour le dashboard.
-// RÉSILIENCE : les 3 nouvelles tables (platform_metrics, integration_connections,
-// deadlines) peuvent ne pas encore exister si les migrations n'ont pas été
-// lancées. Chaque requête est enveloppée dans un try/catch + fallback pour
-// que le dashboard s'affiche toujours, même sans données.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizeRoadmap, normalizeCompletedSteps } from '@/lib/roadmap/types'
@@ -11,18 +7,24 @@ import type { DashboardData, AiTask, Deadline, IntegrationsState } from './types
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function mapPriority(stepNumber: number): 'high' | 'medium' | 'low' {
-  if (stepNumber <= 2) return 'high'
-  if (stepNumber <= 4) return 'medium'
+function mapPriority(dayIndex: number): 'high' | 'medium' | 'low' {
+  if (dayIndex <= 1) return 'high'
+  if (dayIndex <= 3) return 'medium'
   return 'low'
+}
+
+// Normalise completed_daily_tasks depuis JSONB (array de strings).
+function normalizeCompletedDailyTasks(raw: unknown): string[] {
+  let data: unknown = raw
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data) } catch { return [] }
+  }
+  if (!Array.isArray(data)) return []
+  return data.filter((v) => typeof v === 'string')
 }
 
 // ─── Fonction principale ──────────────────────────────────────────────────────
 
-/**
- * Récupère et agrège toutes les données du dashboard pour l'utilisateur.
- * Ne lève jamais d'exception : tout échec est absorbé avec un fallback vide.
- */
 export async function getDashboardData(
   supabase: SupabaseClient,
   userId: string,
@@ -35,22 +37,19 @@ export async function getDashboardData(
       .from('platform_connections')
       .select('*', { head: true, count: 'exact' })
       .eq('user_id', userId)
-
-    if (!error && count != null) {
-      connectedPlatformsCount = count
-    }
+    if (!error && count != null) connectedPlatformsCount = count
   } catch (err) {
     console.error('[dashboard] platform_connections count failed', err)
   }
 
-  // ── 2. To-do IA (profiles.ai_roadmap + completed_steps) ──────────────────
+  // ── 2. To-do IA (tâches quotidiennes de la semaine en cours) ─────────────
   let todos: AiTask[] | null = null
   let roadmapGeneratedLabel: string | undefined
 
   try {
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('ai_roadmap, completed_steps')
+      .select('ai_roadmap, completed_steps, completed_daily_tasks')
       .eq('id', userId)
       .single()
 
@@ -58,23 +57,46 @@ export async function getDashboardData(
       const steps = normalizeRoadmap(profile.ai_roadmap)
       if (steps.length > 0) {
         const completedSteps = normalizeCompletedSteps(profile.completed_steps)
-        todos = steps.map((step) => ({
-          id: String(step.step_number),
-          text: step.title,
-          done: completedSteps.includes(step.step_number),
-          priority: mapPriority(step.step_number),
-        }))
+        const completedDailyTasks = normalizeCompletedDailyTasks(profile.completed_daily_tasks)
+
+        // Trouver la première semaine non complétée avec un daily_plan.
+        const currentStep =
+          steps.find((s) => !completedSteps.includes(s.step_number) && (s.daily_plan?.length ?? 0) > 0) ??
+          steps.find((s) => !completedSteps.includes(s.step_number)) ??
+          steps[steps.length - 1]
+
+        if (currentStep?.daily_plan && currentStep.daily_plan.length > 0) {
+          // Afficher les tâches quotidiennes de la semaine courante.
+          todos = currentStep.daily_plan.flatMap((day, dayIndex) =>
+            day.tasks.map((task, taskIndex) => {
+              const id = `${currentStep.step_number}-${day.day}-${taskIndex}`
+              return {
+                id,
+                text: task,
+                done: completedDailyTasks.includes(id),
+                priority: mapPriority(dayIndex),
+                dayLabel: day.day,
+                weekLabel: `Semaine ${currentStep.step_number}`,
+              } satisfies AiTask
+            }),
+          )
+        } else {
+          // Fallback : afficher les étapes hebdomadaires (pas encore de daily_plan).
+          todos = steps.map((step) => ({
+            id: String(step.step_number),
+            text: step.title,
+            done: completedSteps.includes(step.step_number),
+            priority: mapPriority(step.step_number - 1),
+          }))
+        }
         roadmapGeneratedLabel = 'Générée par Voraly AI'
       }
-      // Si steps vide → todos reste null (état B : "générer")
     }
   } catch (err) {
     console.error('[dashboard] profiles roadmap fetch failed', err)
   }
 
-  // ── 3. Métriques revenus (platform_metrics) — RÉSILIENT ──────────────────
-  // La table peut ne pas exister si la migration n'a pas encore été lancée.
-  // Dans ce cas (ou si 0 ligne), tout reste null → empty states.
+  // ── 3. Métriques revenus — RÉSILIENT ──────────────────────────────────────
   const revenue = null
   const chips = null
   const kpiItems = null
@@ -88,35 +110,18 @@ export async function getDashboardData(
       .order('metric_date', { ascending: false })
       .limit(200)
 
-    // Si la table n'existe pas encore, Supabase renvoie une erreur postgres.
-    // On absorbe silencieusement → toutes les métriques restent null.
     if (error) {
       if (!error.message?.includes('does not exist')) {
         console.error('[dashboard] platform_metrics fetch failed', error)
       }
-      // Pas de données disponibles → empty states
     } else if (metrics && metrics.length > 0) {
-      // Logique d'agrégation (placeholder) — sera complétée quand les syncs
-      // API seront construits et que des lignes réelles seront présentes.
-      // Pour l'instant, même avec des lignes, on ne reconstruit pas encore
-      // les agrégats complexes (mois courant vs précédent par plateforme).
-      // Décommenter et compléter cette section quand les syncs seront prêts.
-      //
-      // Exemple de structure future :
-      //   revenue = { monthTotal: ..., deltaPct: ..., activePlatforms: ... }
-      //   chips   = { revenueToday: ..., newProposals: ..., pendingReplies: ... }
-      //   kpiItems = [...]
-      //   revenueSeries = { months: [...], series: [...] }
-      //
-      // En attendant → null (empty states maintenus).
-      void metrics // évite le warning "assigned but never used"
+      void metrics
     }
   } catch (err) {
-    // La table n'existe pas encore (migration non lancée) → ok, empty states.
     console.error('[dashboard] platform_metrics unexpected error', err)
   }
 
-  // ── 4. Deadlines (table deadlines) — RÉSILIENT ────────────────────────────
+  // ── 4. Deadlines — RÉSILIENT ───────────────────────────────────────────────
   let deadlines: Deadline[] = []
 
   try {
@@ -145,11 +150,8 @@ export async function getDashboardData(
     console.error('[dashboard] deadlines unexpected error', err)
   }
 
-  // ── 5. Intégrations (integration_connections) — RÉSILIENT ────────────────
-  const integrations: IntegrationsState = {
-    googleCalendar: 'soon',
-    notion: 'soon',
-  }
+  // ── 5. Intégrations — RÉSILIENT ───────────────────────────────────────────
+  const integrations: IntegrationsState = { googleCalendar: 'soon', notion: 'soon' }
 
   try {
     const { data: rows, error } = await supabase
@@ -171,12 +173,11 @@ export async function getDashboardData(
     console.error('[dashboard] integration_connections unexpected error', err)
   }
 
-  // ── Assemblage ────────────────────────────────────────────────────────────
   return {
     connectedPlatformsCount,
     revenue,
     chips,
-    score: null,        // Aucune source calculée pour le score
+    score: null,
     kpiItems,
     revenueSeries,
     deadlines,

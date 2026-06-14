@@ -14,48 +14,65 @@ const priorityDot: Record<string, string> = {
   low:    'bg-emerald-400',
 }
 
+// Couleur d'accent par jour de la semaine (cohérent avec RoadmapResult)
+const DAY_ACCENT: Record<string, string> = {
+  Lundi:    'text-violet-400/80',
+  Mardi:    'text-indigo-400/80',
+  Mercredi: 'text-sky-400/80',
+  Jeudi:    'text-pink-400/80',
+  Vendredi: 'text-emerald-400/80',
+}
+
 interface AiTaskCardProps {
   tasks?: AiTask[] | null
   generatedLabel?: string
   userId?: string | null
 }
 
+// Détermine si les IDs sont au format "step-day-taskIndex" (daily tasks) ou numériques (weekly).
+function isDailyTaskId(id: string): boolean {
+  return id.includes('-') && isNaN(Number(id))
+}
+
 export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCardProps) {
-  // État local pour optimistic updates
   const [localTasks, setLocalTasks] = useState<AiTask[]>(tasks ?? [])
 
-  // Synchronise si les props changent (ex. navigation)
-  // (pas de useEffect pour éviter les re-renders inutiles — les props viennent du serveur)
-
   const hasTasks = localTasks.length > 0
-
   const completed = localTasks.filter((t) => t.done).length
   const total = localTasks.length
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0
 
+  const isDaily = hasTasks && isDailyTaskId(localTasks[0]?.id ?? '')
+
   const toggle = async (id: string) => {
     const previous = [...localTasks]
     const next = localTasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
-
-    // Optimistic update
     setLocalTasks(next)
-
     if (!userId) return
 
-    // Reconstruit l'array de step_numbers complétés
-    const completedStepNumbers = next
-      .filter((t) => t.done)
-      .map((t) => Number(t.id))
-
     const supabase = createClient()
-    const { error } = await supabase
-      .from('profiles')
-      .update({ completed_steps: completedStepNumbers })
-      .eq('id', userId)
+    let error: { message: string } | null = null
+
+    if (isDaily) {
+      // Persister les IDs de tâches quotidiennes complétées.
+      const completedDailyTaskIds = next.filter((t) => t.done).map((t) => t.id)
+      const result = await supabase
+        .from('profiles')
+        .update({ completed_daily_tasks: completedDailyTaskIds })
+        .eq('id', userId)
+      error = result.error
+    } else {
+      // Fallback legacy : persister les step_numbers.
+      const completedStepNumbers = next.filter((t) => t.done).map((t) => Number(t.id))
+      const result = await supabase
+        .from('profiles')
+        .update({ completed_steps: completedStepNumbers })
+        .eq('id', userId)
+      error = result.error
+    }
 
     if (error) {
-      console.error('[dashboard] failed to persist completed_steps', error)
-      // Rollback en cas d'erreur
+      console.error('[dashboard] failed to persist task progress', error)
       setLocalTasks(previous)
     }
   }
@@ -63,10 +80,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
   /* ── État B — pas de roadmap ── */
   if (!hasTasks) {
     return (
-      <div
-        className="glass rounded-2xl p-6"
-        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
-      >
+      <div className="glass rounded-2xl p-6" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
         <motion.div
           initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -117,11 +131,11 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
   }
 
   /* ── État A — roadmap chargée ── */
+  const weekLabel = localTasks[0]?.weekLabel
+  const titleSuffix = weekLabel ? ` — ${weekLabel}` : ''
+
   return (
-    <div
-      className="glass rounded-2xl p-6"
-      style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
-    >
+    <div className="glass rounded-2xl p-6" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
       {/* ── Header ── */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -137,7 +151,9 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
             IA
           </motion.div>
           <div>
-            <div className="text-sm font-bold text-zinc-100">To-Do IA — Roadmap Marketing</div>
+            <div className="text-sm font-bold text-zinc-100">
+              To-Do IA{titleSuffix}
+            </div>
             <div className="text-[11px] text-zinc-500 mt-0.5">
               {generatedLabel ?? 'Générée automatiquement'}
             </div>
@@ -163,9 +179,19 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
       {/* ── Liste des tâches ── */}
       <div className="flex flex-col gap-2 mb-4">
         {localTasks.map((task) => {
-          const weekMatch = task.text.match(/^(semaine\s+\d+)\s*[:–\-]\s*/i)
-          const weekLabel = weekMatch ? weekMatch[1].replace(/^s/i, 'S') : null
-          const shortText = weekMatch ? task.text.slice(weekMatch[0].length).trim() : task.text
+          // Pour les tâches quotidiennes, dayLabel est fourni par le serveur.
+          // Pour le fallback hebdomadaire, on extrait "Semaine N" du texte.
+          const displayDayLabel = task.dayLabel ?? null
+          const displayWeekLabel = !task.dayLabel
+            ? (() => {
+                const m = task.text.match(/^(semaine\s+\d+)\s*[:–\-]\s*/i)
+                return m ? m[1].replace(/^s/i, 'S') : null
+              })()
+            : null
+          const shortText = displayWeekLabel
+            ? task.text.replace(/^semaine\s+\d+\s*[:–\-]\s*/i, '').trim()
+            : task.text
+
           return (
             <motion.button
               key={task.id}
@@ -203,9 +229,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
               </div>
 
               {/* Dot priorité */}
-              <div
-                className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${priorityDot[task.priority]}`}
-              />
+              <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${priorityDot[task.priority]}`} />
 
               {/* Texte */}
               <motion.span
@@ -213,9 +237,20 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
                 transition={{ duration: 0.25 }}
                 className="flex flex-col gap-0.5 min-w-0"
               >
-                {weekLabel && (
+                {/* Label jour (mode daily_plan) */}
+                {displayDayLabel && (
+                  <span
+                    className={`text-[9px] font-black uppercase tracking-widest ${
+                      DAY_ACCENT[displayDayLabel] ?? 'text-zinc-400/70'
+                    }`}
+                  >
+                    {displayDayLabel}
+                  </span>
+                )}
+                {/* Label semaine (mode hebdomadaire legacy) */}
+                {displayWeekLabel && (
                   <span className="text-[9px] font-black uppercase tracking-widest text-pink-400/80">
-                    {weekLabel}
+                    {displayWeekLabel}
                   </span>
                 )}
                 <span
@@ -231,12 +266,12 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
         })}
       </div>
 
-      {/* ── Bouton régénérer ── */}
+      {/* ── Bouton voir la roadmap complète ── */}
       <Link href="/dashboard/roadmap" className="block">
         <LiquidButton size="lg" className="group/liquid w-full text-[13px] font-semibold text-zinc-100">
           <span className="flex items-center justify-center gap-2">
             <Sparkles size={14} className="text-indigo-400" />
-            Régénérer les recommandations IA
+            Voir la roadmap complète
             <RefreshCw
               size={12}
               className="text-zinc-400 transition-transform duration-500 group-hover/liquid:rotate-180"

@@ -27,10 +27,12 @@ export interface Deadline {
  * Quand `ai_roadmap` est vide, `tasks` est null et AiTaskCard affiche l'état B.
  */
 export interface AiTask {
-  id: string            // String(step_number)
-  text: string          // step.title
-  done: boolean         // step_number in completedSteps
+  id: string            // "${step_number}-${day}-${taskIndex}" ou String(step_number)
+  text: string          // tâche quotidienne ou step.title
+  done: boolean
   priority: 'high' | 'medium' | 'low'
+  dayLabel?: string     // "Lundi", "Mardi"… (présent quand daily_plan disponible)
+  weekLabel?: string    // "Semaine 1" (présent quand daily_plan disponible)
 }
 
 // ─── Revenue ─────────────────────────────────────────────────────────────────
