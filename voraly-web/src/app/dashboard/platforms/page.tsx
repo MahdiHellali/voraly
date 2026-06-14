@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { CheckCircle2, Clock, Plus, ArrowRight, Unplug, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { OAUTH_PROVIDERS, type ProviderId } from '@/lib/oauth/providers'
@@ -23,28 +24,28 @@ const PLATFORM_META: Record<
   { icon: string; color: string; border: string; glow: string; desc: string }
 > = {
   upwork: {
-    icon: '🟢',
+    icon: '/platforms/upwork.png',
     color: 'from-green-600/20 to-emerald-500/10',
     border: 'border-green-500/20 hover:border-green-500/40',
     glow: 'rgba(34,197,94,0.15)',
     desc: 'La plus grande marketplace freelance mondiale. Connectez votre compte pour synchroniser vos revenus et commandes.',
   },
   linkedin: {
-    icon: '🔵',
+    icon: '/platforms/linkedin.png',
     color: 'from-blue-600/20 to-indigo-500/10',
     border: 'border-blue-500/20 hover:border-blue-500/40',
     glow: 'rgba(59,130,246,0.15)',
     desc: 'Optimisation du profil LinkedIn et suivi des opportunités entrantes via l’API officielle.',
   },
   fiverr: {
-    icon: '💚',
+    icon: '/platforms/fiverr.png',
     color: 'from-emerald-600/20 to-teal-500/10',
     border: 'border-teal-500/20 hover:border-teal-500/40',
     glow: 'rgba(20,184,166,0.15)',
     desc: 'Plateforme de services à la demande. Synchronisez vos Gigs et commandes actives en temps réel.',
   },
   malt: {
-    icon: '🔴',
+    icon: '/platforms/malt.png',
     color: 'from-rose-600/20 to-pink-500/10',
     border: 'border-rose-500/20 hover:border-rose-500/40',
     glow: 'rgba(244,63,94,0.15)',
@@ -60,13 +61,13 @@ const INTEGRATION_META: Record<
   { icon: string; color: string; border: string; glow: string }
 > = {
   google_calendar: {
-    icon: '📅',
+    icon: '/integrations/google_calendar.png',
     color: 'from-indigo-600/20 to-blue-500/10',
     border: 'border-indigo-500/20 hover:border-indigo-500/40',
     glow: 'rgba(99,102,241,0.15)',
   },
   notion: {
-    icon: '📝',
+    icon: '/integrations/notion.png',
     color: 'from-zinc-600/20 to-zinc-500/10',
     border: 'border-zinc-500/20 hover:border-zinc-500/40',
     glow: 'rgba(161,161,170,0.12)',
@@ -226,7 +227,15 @@ export default async function PlatformsPage({
               {/* Header row */}
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="text-2xl">{p.icon}</span>
+                  <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg overflow-hidden bg-zinc-900/60 border border-white/10 p-0.5">
+                    <Image
+                      src={p.icon}
+                      alt={p.label}
+                      width={24}
+                      height={24}
+                      className="object-contain select-none"
+                    />
+                  </div>
                   <div className="min-w-0">
                     <div className="truncate text-base font-bold text-zinc-100">{p.label}</div>
                   </div>
@@ -298,7 +307,15 @@ export default async function PlatformsPage({
                 {/* Header row */}
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="text-2xl">{p.icon}</span>
+                    <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg overflow-hidden bg-zinc-900/60 border border-white/10 p-0.5">
+                      <Image
+                        src={p.icon}
+                        alt={p.label}
+                        width={24}
+                        height={24}
+                        className="object-contain select-none"
+                      />
+                    </div>
                     <div className="min-w-0">
                       <div className="truncate text-base font-bold text-zinc-100">{p.label}</div>
                     </div>

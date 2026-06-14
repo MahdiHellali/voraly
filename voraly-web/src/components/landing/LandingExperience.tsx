@@ -7,6 +7,7 @@
 
 import { useState, useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { LayoutDashboard, Sparkles, Plug, CalendarClock, ChevronDown } from "lucide-react"
 import { LiquidButton } from "@/components/ui/liquid-glass-button"
@@ -403,14 +404,25 @@ export default function LandingExperience() {
                 Vos plateformes, enfin réunies
               </p>
               <div className="flex flex-wrap items-center justify-center gap-6">
-                {PLATFORM_LOGOS.map((name) => (
-                  <span
-                    key={name}
-                    className="text-sm font-semibold text-zinc-600 opacity-60 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0 hover:text-zinc-300"
-                  >
-                    {name}
-                  </span>
-                ))}
+                {PLATFORM_LOGOS.map((name) => {
+                  const key = name.toLowerCase()
+                  const iconPath = key === 'freelancer' ? '/globe.svg' : `/platforms/${key}.png`
+                  return (
+                    <span
+                      key={name}
+                      className="flex items-center gap-2 text-sm font-semibold text-zinc-400 opacity-70 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0 hover:text-zinc-200"
+                    >
+                      <Image
+                        src={iconPath}
+                        alt={name}
+                        width={18}
+                        height={18}
+                        className="object-contain rounded-md"
+                      />
+                      {name}
+                    </span>
+                  )
+                })}
               </div>
             </motion.div>
           </div>
