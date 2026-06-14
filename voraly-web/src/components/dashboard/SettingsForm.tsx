@@ -134,6 +134,20 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
     setMfaSuccess(null)
     setMfaLoading(true)
     try {
+      // Clean up any existing unverified factors before starting a new enrollment
+      const { data: factors, error: listError } = await supabase.auth.mfa.listFactors()
+      if (!listError && factors) {
+        const allFactors = [
+          ...(factors.totp || []),
+          ...(factors.all || [])
+        ]
+        const uniqueFactors = Array.from(new Map(allFactors.map(f => [f.id, f])).values())
+        const unverified = uniqueFactors.filter(f => f.status === 'unverified')
+        for (const f of unverified) {
+          await supabase.auth.mfa.unenroll({ factorId: f.id })
+        }
+      }
+
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
         issuer: 'Voraly',
@@ -154,6 +168,20 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
       setMfaError(msg)
     } finally {
       setMfaLoading(false)
+    }
+  }
+
+  const handleCancelMfaSetup = async () => {
+    setMfaSetup(false)
+    if (mfaFactorId) {
+      try {
+        await supabase.auth.mfa.unenroll({ factorId: mfaFactorId })
+      } catch (err) {
+        console.error('Error unenrolling on cancel:', err)
+      }
+      setMfaFactorId(null)
+      setMfaQrCode(null)
+      setMfaSecret(null)
     }
   }
 
@@ -597,7 +625,7 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
                       
                       {mfaQrCode && (
                         <div
-                          className="w-48 h-48 bg-white p-3 rounded-2xl flex items-center justify-center mx-auto"
+                          className="w-48 h-48 bg-white p-3 rounded-2xl flex items-center justify-center mx-auto text-black [&_path]:fill-black [&_svg]:w-full [&_svg]:h-full"
                           dangerouslySetInnerHTML={{ __html: mfaQrCode }}
                         />
                       )}
@@ -634,7 +662,7 @@ export default function SettingsForm({ user, isPremium }: SettingsFormProps) {
                           Vérifier et activer
                         </button>
                         <button
-                          onClick={() => setMfaSetup(false)}
+                          onClick={handleCancelMfaSetup}
                           className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer"
                         >
                           Annuler
