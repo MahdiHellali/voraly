@@ -3,13 +3,22 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ArrowLeft } from 'lucide-react'
 import { loginAction } from '@/app/actions/auth'
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, null)
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4">
+    <main className="min-h-screen flex items-center justify-center p-4 relative">
+      {/* Bouton Retour à l'accueil */}
+      <Link
+        href="/"
+        className="absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-md px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.06] transition-all duration-200"
+      >
+        <ArrowLeft size={13} />
+        {"Retour à l'accueil"}
+      </Link>
       {/* Glass card */}
       <div className="glass relative overflow-hidden rounded-3xl w-full max-w-md p-8 fade-1">
         {/* Decorative top line */}
