@@ -12,13 +12,13 @@ import RoadmapResult from './RoadmapResult'
 // Human-readable mapping for the structured errors returned by the route handler.
 const ERROR_COPY: Record<string, string> = {
   workflow_not_listening:
-    'Le workflow n8n n’est pas à l’écoute. Ouvrez-le dans l’éditeur et cliquez sur « Listen for test event », puis réessayez.',
-  workflow_failed: 'Le workflow a renvoyé une erreur. Réessayez dans un instant.',
+    ‘Le service de génération est momentanément indisponible. Réessayez dans quelques secondes.’,
+  workflow_failed: ‘Le workflow a renvoyé une erreur. Réessayez dans un instant.’,
   workflow_unreachable:
-    'Impossible de joindre le service de génération. Vérifiez que n8n est démarré.',
+    ‘Impossible de joindre le service de génération. Réessayez dans quelques instants.’,
   empty_roadmap:
-    'La génération n’a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.',
-  unauthorized: 'Votre session a expiré. Reconnectez-vous puis réessayez.',
+    ‘La génération n’a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.’,
+  unauthorized: ‘Votre session a expiré. Reconnectez-vous puis réessayez.’,
 }
 
 export default function RoadmapExperience({
