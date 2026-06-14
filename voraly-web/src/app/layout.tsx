@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import MouseTracker from '@/components/providers/MouseTracker'
-import { WebGLShader } from '@/components/ui/web-gl-shader'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,25 +33,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <body className={inter.className}>
-        {/* Global WebGL ambient field (behind everything) */}
-        <WebGLShader />
-        {/* Ambient softening — blur + dark tint, strictly between the canvas
-            (painted first) and the UI content. Turns the shader into an aura. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 -z-10 bg-zinc-950/40 backdrop-blur-md"
-        />
-        {/* Edge vignette to focus attention on the centered column */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 -z-10"
-          style={{
-            background:
-              'radial-gradient(ellipse 90% 70% at 50% 40%, transparent 0%, rgba(9,9,11,0.45) 75%, rgba(9,9,11,0.7) 100%)',
-          }}
-        />
         <TooltipProvider>
-          <MouseTracker />
           {children}
         </TooltipProvider>
       </body>

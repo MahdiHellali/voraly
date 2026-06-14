@@ -1,67 +1,66 @@
 'use client'
 
 /**
- * HeroBackground — Aurora mesh gradient canvas 2D
- * Inspiré de "nouveau fond.mp4" : grands blobs flous violet/indigo/rose sur fond
- * noir avec grain noise, réactifs souris + scroll.
- * Zéro WebGL, zéro dépendance externe.
+ * HeroBackground — Aurora canvas 2D réactif souris + scroll
+ * 5 blobs flous (violet/indigo/rose) sur fond #09090b.
+ * Grain noise cinématique. Zéro WebGL, zéro dépendance.
  */
 
 import { useEffect, useRef } from 'react'
 
-// ── Types ─────────────────────────────────────────────────────────
 interface Blob {
-  x: number        // position cible normalisée [0,1]
+  x: number       // position courante px
   y: number
-  vx: number       // vitesse drift autonome
-  vy: number
-  cx: number       // position courante interpolée
-  cy: number
-  r: number        // rayon relatif [0,1]
-  h: number        // hue HSL
-  s: number        // saturation
-  l: number        // luminosité
-  a: number        // alpha max
-  phase: number    // phase d'oscillation
-  speed: number    // vitesse d'oscillation
+  tx: number      // cible drift autonome px
+  ty: number
+  r: number       // rayon px (calculé au resize)
+  rBase: number   // rayon de base relatif [0.25–0.45]
+  phase: number
+  speed: number
+  h: number       // hue HSL
+  s: number
+  l: number
+  a: number       // alpha max
+  mouseWeight: number  // sensibilité souris [0.04–0.12]
 }
 
-function createBlob(W: number, H: number, i: number): Blob {
-  // Palette Voraly : violet, indigo, rose, violet pâle
-  const palettes = [
-    { h: 270, s: 80, l: 58 },  // violet  #8b5cf6
-    { h: 240, s: 84, l: 63 },  // indigo  #6366f1
-    { h: 320, s: 95, l: 64 },  // rose    #FF66CC
-    { h: 285, s: 75, l: 62 },  // violet pâle
-  ]
-  const p = palettes[i % palettes.length]
-  const x = 0.15 + Math.random() * 0.7
-  const y = 0.1 + Math.random() * 0.8
-  return {
-    x, y, cx: x, cy: y,
-    vx: (Math.random() - 0.5) * 0.00015,
-    vy: (Math.random() - 0.5) * 0.00015,
-    r: 0.35 + Math.random() * 0.25,
-    h: p.h + (Math.random() - 0.5) * 20,
-    s: p.s,
-    l: p.l,
-    a: 0.28 + Math.random() * 0.18,
-    phase: Math.random() * Math.PI * 2,
-    speed: 0.0003 + Math.random() * 0.0004,
+// Palette Voraly
+const PALETTE = [
+  { h: 270, s: 78, l: 58, a: 0.9 },  // violet
+  { h: 242, s: 82, l: 62, a: 0.8 },  // indigo
+  { h: 318, s: 92, l: 62, a: 0.75 }, // rose #FF66CC
+  { h: 260, s: 72, l: 65, a: 0.7 },  // violet pâle
+  { h: 300, s: 80, l: 55, a: 0.65 }, // magenta doux
+]
+
+function initBlobs(W: number, H: number): Blob[] {
+  return PALETTE.map((p, i) => {
+    const x = W * (0.15 + (i / PALETTE.length) * 0.7 + (Math.random() - 0.5) * 0.12)
+    const y = H * (0.1 + Math.random() * 0.8)
+    return {
+      x, y, tx: x, ty: y,
+      r: 0, rBase: 0.28 + Math.random() * 0.18,
+      phase: (i / PALETTE.length) * Math.PI * 2,
+      speed: 0.00025 + Math.random() * 0.0003,
+      h: p.h + (Math.random() - 0.5) * 18,
+      s: p.s, l: p.l, a: p.a,
+      mouseWeight: 0.04 + i * 0.02,
+    }
+  })
+}
+
+function buildGrain(size = 200): OffscreenCanvas | HTMLCanvasElement {
+  const makeCanvas = () => {
+    try { return new OffscreenCanvas(size, size) } catch { return document.createElement('canvas') }
   }
-}
-
-// Génère une texture grain (offscreen canvas 256×256)
-function buildGrainTexture(): HTMLCanvasElement {
-  const size = 256
-  const c = document.createElement('canvas')
+  const c = makeCanvas() as HTMLCanvasElement
   c.width = c.height = size
-  const ctx = c.getContext('2d')!
+  const ctx = c.getContext('2d') as CanvasRenderingContext2D
   const img = ctx.createImageData(size, size)
   for (let i = 0; i < img.data.length; i += 4) {
     const v = (Math.random() * 255) | 0
     img.data[i] = img.data[i + 1] = img.data[i + 2] = v
-    img.data[i + 3] = 18  // très transparent
+    img.data[i + 3] = 22
   }
   ctx.putImageData(img, 0, 0)
   return c
@@ -69,152 +68,146 @@ function buildGrainTexture(): HTMLCanvasElement {
 
 export default function HeroBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  // Souris normalisée [-1, 1]
-  const mouse = useRef({ x: 0, y: 0, tx: 0, ty: 0 })
-  // Scroll normalisé [0, 1]
-  const scrollRef = useRef(0)
-  const rafRef = useRef<number>(0)
-  const blobsRef = useRef<Blob[]>([])
-  const grainRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
 
-    // ── Resize ──────────────────────────────────────────────────
+    // ── Scroll : lire depuis le scroll container (main#main-content)
+    const getScrollProgress = () => {
+      const el = document.getElementById('main-content')
+      if (el) return Math.min(el.scrollTop / 1800, 1)
+      return Math.min(window.scrollY / 1800, 1)
+    }
+
+    // ── State
+    let W = 0, H = 0
+    let blobs: Blob[] = []
+    let mouseX = 0.5, mouseY = 0.5    // normalisé [0,1]
+    let tMouseX = 0.5, tMouseY = 0.5  // cible lerp
+    let raf = 0
+    let t = 0
+    const grain = buildGrain(256) as HTMLCanvasElement
+
+    // ── Resize
     const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
+      W = canvas.width  = window.innerWidth
+      H = canvas.height = window.innerHeight
+      blobs = initBlobs(W, H)
+      blobs.forEach(b => { b.r = b.rBase * Math.min(W, H) })
     }
     resize()
     window.addEventListener('resize', resize, { passive: true })
 
-    // ── Init blobs ──────────────────────────────────────────────
-    const N = 5
-    blobsRef.current = Array.from({ length: N }, (_, i) =>
-      createBlob(canvas.width, canvas.height, i)
-    )
-
-    // ── Grain texture ───────────────────────────────────────────
-    grainRef.current = buildGrainTexture()
-
-    // ── Events ──────────────────────────────────────────────────
+    // ── Souris
     const onMouse = (e: MouseEvent) => {
-      // Normalise en [-1, 1] : position relative au centre
-      mouse.current.tx = (e.clientX / window.innerWidth - 0.5) * 2
-      mouse.current.ty = (e.clientY / window.innerHeight - 0.5) * 2
+      tMouseX = e.clientX / W
+      tMouseY = e.clientY / H
     }
-    const onScroll = () => {
-      // scrollRef normalisé [0, 1] sur 2000px de scroll
-      scrollRef.current = Math.min(window.scrollY / 2000, 1)
-    }
-
     window.addEventListener('mousemove', onMouse, { passive: true })
+
+    // ── Scroll — écoute sur le container ET window
+    const scrollEl = document.getElementById('main-content')
+    const onScroll = () => { /* lu directement dans render */ }
+    scrollEl?.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('scroll', onScroll, { passive: true })
 
-    // ── Render loop ──────────────────────────────────────────────
-    let t = 0
+    // ── Drift cibles autonomes (changent lentement)
+    let driftT = 0
+    const updateDrift = () => {
+      driftT += 0.0005
+      blobs.forEach((b, i) => {
+        b.tx = W * (0.12 + 0.76 * (0.5 + 0.38 * Math.sin(driftT * (1 + i * 0.3) + b.phase)))
+        b.ty = H * (0.08 + 0.84 * (0.5 + 0.38 * Math.cos(driftT * (0.8 + i * 0.25) + b.phase * 1.3)))
+      })
+    }
+
+    // ── Render
     const render = () => {
-      rafRef.current = requestAnimationFrame(render)
+      raf = requestAnimationFrame(render)
       t++
 
-      const W = canvas.width
-      const H = canvas.height
-
       // Lerp souris
-      mouse.current.x += (mouse.current.tx - mouse.current.x) * 0.04
-      mouse.current.y += (mouse.current.ty - mouse.current.y) * 0.04
+      mouseX += (tMouseX - mouseX) * 0.05
+      mouseY += (tMouseY - mouseY) * 0.05
 
-      const mx = mouse.current.x  // [-1, 1]
-      const my = mouse.current.y
-      const scroll = scrollRef.current  // [0, 1]
+      const scroll = getScrollProgress()
+      updateDrift()
 
       // Fond
       ctx.fillStyle = '#09090b'
       ctx.fillRect(0, 0, W, H)
 
-      // Blobs
-      ctx.save()
-      ctx.filter = 'blur(0px)' // reset
-      ctx.globalCompositeOperation = 'screen'
+      // ── Blobs avec ctx.filter blur (rendu flou natif canvas 2D)
+      for (const blob of blobs) {
+        // Lerp vers cible
+        blob.x += (blob.tx - blob.x) * 0.012
+        blob.y += (blob.ty - blob.y) * 0.012
 
-      for (const blob of blobsRef.current) {
-        // Drift autonome
-        blob.x += blob.vx
-        blob.y += blob.vy
+        // Offset souris
+        const mx = (mouseX - 0.5) * W * blob.mouseWeight
+        const my = (mouseY - 0.5) * H * blob.mouseWeight * 0.7
 
-        // Rebond aux bords
-        if (blob.x < 0.05 || blob.x > 0.95) blob.vx *= -1
-        if (blob.y < 0.05 || blob.y > 0.95) blob.vy *= -1
+        // Offset scroll (remonte)
+        const sy = -scroll * H * 0.18
 
-        // Interpolation douce vers position cible
-        blob.cx += (blob.x - blob.cx) * 0.008
-        blob.cy += (blob.y - blob.cy) * 0.008
+        const px = blob.x + mx
+        const py = blob.y + my + sy
 
-        // Offset souris : chaque blob réagit différemment
-        const mouseScale = 0.08 + (blobsRef.current.indexOf(blob) * 0.03)
-        const px = (blob.cx + mx * mouseScale) * W
-        // Offset scroll : les blobs dérivent vers le haut au scroll
-        const py = (blob.cy + my * mouseScale * 0.5 - scroll * 0.15) * H
+        // Pulsation rayon
+        const pulse = Math.sin(t * blob.speed * 60 + blob.phase) * 0.12
+        const r = blob.r * (1 + pulse)
 
-        // Pulsation
-        const pulse = Math.sin(t * blob.speed + blob.phase) * 0.08
-        const r = (blob.r + pulse) * Math.min(W, H) * 0.85
+        // Blur natif
+        ctx.save()
+        ctx.filter = `blur(${Math.round(r * 0.72)}px)`
 
-        // Dégradé radial
         const grad = ctx.createRadialGradient(px, py, 0, px, py, r)
-        const alpha = blob.a * (0.85 + Math.sin(t * blob.speed * 0.7 + blob.phase) * 0.15)
-        grad.addColorStop(0,   `hsla(${blob.h}, ${blob.s}%, ${blob.l}%, ${alpha})`)
-        grad.addColorStop(0.4, `hsla(${blob.h}, ${blob.s}%, ${blob.l}%, ${alpha * 0.4})`)
-        grad.addColorStop(1,   `hsla(${blob.h}, ${blob.s}%, ${blob.l}%, 0)`)
+        grad.addColorStop(0,   `hsla(${blob.h},${blob.s}%,${blob.l}%,${blob.a})`)
+        grad.addColorStop(0.5, `hsla(${blob.h},${blob.s}%,${blob.l}%,${blob.a * 0.35})`)
+        grad.addColorStop(1,   `hsla(${blob.h},${blob.s}%,${blob.l}%,0)`)
 
-        ctx.fillStyle = grad
         ctx.beginPath()
         ctx.arc(px, py, r, 0, Math.PI * 2)
+        ctx.fillStyle = grad
         ctx.fill()
+        ctx.restore()
       }
 
-      ctx.restore()
-
       // Vignette radiale
-      const vign = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.75)
-      vign.addColorStop(0.35, 'transparent')
-      vign.addColorStop(1, 'rgba(9,9,11,0.88)')
+      const vign = ctx.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, Math.max(W, H) * 0.72)
+      vign.addColorStop(0.3, 'transparent')
+      vign.addColorStop(1,   'rgba(9,9,11,0.82)')
       ctx.fillStyle = vign
       ctx.fillRect(0, 0, W, H)
 
-      // Gradient bas (lisibilité scroll)
-      const gBot = ctx.createLinearGradient(0, H * 0.65, 0, H)
-      gBot.addColorStop(0, 'transparent')
-      gBot.addColorStop(1, 'rgba(9,9,11,0.96)')
-      ctx.fillStyle = gBot
+      // Gradient bas
+      const bot = ctx.createLinearGradient(0, H * 0.6, 0, H)
+      bot.addColorStop(0, 'transparent')
+      bot.addColorStop(1, 'rgba(9,9,11,0.97)')
+      ctx.fillStyle = bot
       ctx.fillRect(0, 0, W, H)
 
-      // Grain noise (tuilé)
-      if (grainRef.current) {
-        ctx.save()
-        ctx.globalAlpha = 0.055
-        ctx.globalCompositeOperation = 'overlay'
-        const grain = grainRef.current
-        // Décalage aléatoire chaque frame pour effet animé
-        const ox = ((t * 3) % 256)
-        const oy = ((t * 2) % 256)
-        for (let gx = -ox; gx < W + 256; gx += 256) {
-          for (let gy = -oy; gy < H + 256; gy += 256) {
-            ctx.drawImage(grain, gx, gy)
-          }
-        }
-        ctx.restore()
-      }
+      // Grain animé
+      ctx.save()
+      ctx.globalAlpha = 0.045
+      ctx.globalCompositeOperation = 'overlay'
+      const ox = (t * 4) % 256
+      const oy = (t * 3) % 256
+      for (let gx = -ox; gx < W + 256; gx += 256)
+        for (let gy = -oy; gy < H + 256; gy += 256)
+          ctx.drawImage(grain, gx, gy)
+      ctx.restore()
     }
 
     render()
 
     return () => {
-      cancelAnimationFrame(rafRef.current)
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouse)
+      scrollEl?.removeEventListener('scroll', onScroll)
       window.removeEventListener('scroll', onScroll)
     }
   }, [])
@@ -224,7 +217,7 @@ export default function HeroBackground() {
       ref={canvasRef}
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10"
-      style={{ display: 'block' }}
+      style={{ display: 'block', background: '#09090b' }}
     />
   )
 }
