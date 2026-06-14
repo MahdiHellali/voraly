@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, CheckCircle2, Circle, RefreshCw } from 'lucide-react'
 import { LiquidButton } from '@/components/ui/liquid-glass-button'
-import { createClient } from '@/lib/supabase/client'
 import type { AiTask } from '@/lib/dashboard/types'
 
 const priorityDot: Record<string, string> = {
@@ -55,57 +54,47 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
     setLocalTasks(next)
     if (!userId) { setIsPersisting(false); return }
 
-    const supabase = createClient()
-    let error: { message: string } | null = null
+    try {
+      if (isDaily) {
+        const completedDailyTaskIds = next.filter((t) => t.done).map((t) => t.id)
+        const res = await fetch('/api/profile/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ completed_daily_tasks: completedDailyTaskIds }),
+        })
+        if (!res.ok) throw new Error('progress update failed')
 
-    if (isDaily) {
-      // Persister les IDs de tâches quotidiennes complétées.
-      const completedDailyTaskIds = next.filter((t) => t.done).map((t) => t.id)
-      const result = await supabase
-        .from('profiles')
-        .update({ completed_daily_tasks: completedDailyTaskIds })
-        .eq('id', userId)
-      error = result.error
-
-      // Auto-avancement : si toutes les tâches sont cochées, marquer le step comme complété.
-      if (!error && next.every((t) => t.done) && next.length > 0) {
-        // Extraire le step_number depuis l'ID de la première tâche ("stepNum-day-idx").
-        const stepNum = parseInt(next[0].id.split('-')[0], 10)
-        if (!isNaN(stepNum)) {
-          // Lire les completed_steps existants.
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('completed_steps')
-            .eq('id', userId)
-            .single()
-
-          const existing: number[] = Array.isArray(profileData?.completed_steps)
-            ? (profileData.completed_steps as unknown[]).map(Number).filter(Number.isFinite)
-            : []
-
-          if (!existing.includes(stepNum)) {
-            await supabase
-              .from('profiles')
-              .update({ completed_steps: [...existing, stepNum] })
-              .eq('id', userId)
+        // Auto-avancement : si toutes les tâches cochées → marquer le step complété.
+        if (next.every((t) => t.done) && next.length > 0) {
+          const stepNum = parseInt(next[0].id.split('-')[0], 10)
+          if (!isNaN(stepNum)) {
+            // Lire les completed_steps courants via l'API progress (GET n'existe pas, on
+            // envoie une requête fetch séparée côté serveur pour lire puis merger).
+            const profileRes = await fetch('/api/profile/progress/steps')
+            const existing: number[] = profileRes.ok
+              ? ((await profileRes.json()) as { completed_steps: number[] }).completed_steps ?? []
+              : []
+            if (!existing.includes(stepNum)) {
+              await fetch('/api/profile/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completed_steps: [...existing, stepNum] }),
+              })
+            }
+            router.refresh()
           }
-
-          // Rafraîchir pour afficher la semaine suivante.
-          router.refresh()
         }
+      } else {
+        const completedStepNumbers = next.filter((t) => t.done).map((t) => Number(t.id))
+        const res = await fetch('/api/profile/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ completed_steps: completedStepNumbers }),
+        })
+        if (!res.ok) throw new Error('progress update failed')
       }
-    } else {
-      // Fallback legacy : persister les step_numbers.
-      const completedStepNumbers = next.filter((t) => t.done).map((t) => Number(t.id))
-      const result = await supabase
-        .from('profiles')
-        .update({ completed_steps: completedStepNumbers })
-        .eq('id', userId)
-      error = result.error
-    }
-
-    if (error) {
-      console.error('[dashboard] failed to persist task progress', error)
+    } catch (err) {
+      console.error('[dashboard] failed to persist task progress', err)
       setLocalTasks(previous)
     }
     setIsPersisting(false)

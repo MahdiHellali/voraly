@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   normalizeRoadmap,
   QUESTION_BRIEF_LABELS,
@@ -102,31 +103,23 @@ export async function POST(request: NextRequest) {
 
   const aiRoadmapPayload = { roadmap_steps: steps, marketing_strategy: marketingStrategy }
 
-  // 6. Versioning : supprimer toutes les anciennes roadmaps, insérer la nouvelle.
-  //    Best-effort — si la table n'existe pas encore, on continue quand même.
-  try {
-    await supabase
-      .from('roadmaps')
-      .delete()
-      .eq('user_id', user.id)
+  // 6 & 7. Persist via admin client (bypass GRANT — authenticated role non configuré).
+  const admin = createAdminClient()
 
-    await supabase.from('roadmaps').insert({
+  try {
+    await admin.from('roadmaps').delete().eq('user_id', user.id)
+    await admin.from('roadmaps').insert({
       user_id: user.id,
       roadmap_data: aiRoadmapPayload,
       is_active: true,
     })
   } catch (err) {
-    console.warn('[roadmap] roadmaps versioning failed (table may not exist yet)', err)
+    console.warn('[roadmap] roadmaps versioning failed', err)
   }
 
-  // 7. Mettre à jour profiles.ai_roadmap + reset des progressions.
-  const { error: saveError } = await supabase
+  const { error: saveError } = await admin
     .from('profiles')
-    .update({
-      ai_roadmap: aiRoadmapPayload,
-      completed_steps: [],
-      completed_daily_tasks: [],
-    })
+    .update({ ai_roadmap: aiRoadmapPayload, completed_steps: [], completed_daily_tasks: [] })
     .eq('id', user.id)
 
   if (saveError) {

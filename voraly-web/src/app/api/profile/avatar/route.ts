@@ -78,8 +78,8 @@ export async function POST(request: NextRequest) {
   // Cache-buster pour forcer le rechargement côté browser
   const urlWithBust = `${publicUrl}?t=${Date.now()}`
 
-  // 6. Mettre à jour profiles.avatar_url (best-effort — la colonne doit exister, voir NOTE ci-dessus)
-  const { error: updateError } = await supabase
+  // 6. Mettre à jour profiles.avatar_url via admin (bypass GRANT authenticated)
+  const { error: updateError } = await adminClient
     .from('profiles')
     .update({ avatar_url: urlWithBust })
     .eq('id', user.id)
