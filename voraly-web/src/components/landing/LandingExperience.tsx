@@ -256,18 +256,47 @@ export default function LandingExperience() {
           aria-labelledby="hero-title"
         >
           <div className="relative z-10 flex max-w-4xl flex-col items-center gap-8">
-            {/* Eyebrow */}
-            <motion.p
-              variants={blurReveal}
-              initial="hidden"
-              animate="visible"
-              custom={0}
-              className="rounded-full border border-violet-500/25 bg-violet-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-300 backdrop-blur-sm"
+            {/* Eyebrow — animation shimmer + flottement continu */}
+            <motion.div
+              initial={{ opacity: 0, y: 20, filter: 'blur(10px)', scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
-              ✦ La plateforme tout-en-un des freelances
-            </motion.p>
+              <motion.p
+                animate={{
+                  y: [0, -6, 0, 4, 0],
+                  rotate: [-0.3, 0.3, -0.2, 0.2, 0],
+                }}
+                transition={{
+                  duration: 7,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  repeatType: 'loop',
+                }}
+                className="relative inline-block rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-300 backdrop-blur-sm"
+                style={{
+                  background: 'rgba(139,92,246,0.08)',
+                  border: '1px solid rgba(139,92,246,0.3)',
+                  boxShadow: '0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
+                }}
+              >
+                {/* Shimmer sweep */}
+                <motion.span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-full"
+                  animate={{ backgroundPosition: ['200% center', '-200% center'] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    background:
+                      'linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)',
+                    backgroundSize: '200% 100%',
+                  }}
+                />
+                ✦ La plateforme tout-en-un des freelances
+              </motion.p>
+            </motion.div>
 
-            {/* H1 */}
+            {/* H1 — animation gradient shimmer en boucle infinie */}
             <motion.h1
               id="hero-title"
               variants={blurReveal}
@@ -276,8 +305,33 @@ export default function LandingExperience() {
               custom={1}
               className="text-balance text-4xl font-extrabold tracking-tight text-white sm:text-6xl"
             >
-              Pilotez toute votre activité freelance depuis{" "}
-              <span className="gradient-text">un seul endroit.</span>
+              Pilotez toute votre activité freelance depuis{' '}
+              <motion.span
+                className="gradient-text inline-block"
+                animate={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                  textShadow: [
+                    '0 0 40px rgba(139,92,246,0)',
+                    '0 0 40px rgba(139,92,246,0.45)',
+                    '0 0 40px rgba(255,102,204,0.35)',
+                    '0 0 40px rgba(99,102,241,0.4)',
+                    '0 0 40px rgba(139,92,246,0)',
+                  ],
+                }}
+                transition={{
+                  backgroundPosition: { duration: 5, repeat: Infinity, ease: 'linear' },
+                  textShadow: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #a5b4fc 0%, #c084fc 35%, #FF66CC 65%, #a5b4fc 100%)',
+                  backgroundSize: '300% 100%',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                un seul endroit.
+              </motion.span>
             </motion.h1>
 
             {/* Sous-titre — mot-clé principal intégré naturellement */}
