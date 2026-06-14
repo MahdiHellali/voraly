@@ -29,7 +29,7 @@ export async function updateProfileAction(prevState: unknown, formData: FormData
     // Update Profiles Table row
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ full_name: fullName, updated_at: new Date().toISOString() })
+      .update({ full_name: fullName })
       .eq('id', user.id)
     if (profileError) {
       return { error: `Erreur Profil : ${profileError.message}` }
