@@ -4,11 +4,18 @@
 /** The phases of the diagnostic experience. */
 export type Phase = 'empty' | 'analyzing' | 'questionnaire' | 'loading' | 'roadmap'
 
+/** A single day's action items inside a weekly step. */
+export interface DailyTask {
+  day: string   // 'Lundi' | 'Mardi' | 'Mercredi' | 'Jeudi' | 'Vendredi'
+  tasks: string[]
+}
+
 /** One actionable step of the generated growth roadmap. */
 export interface RoadmapStep {
   step_number: number
   title: string
   actionable_advice: string
+  daily_plan?: DailyTask[]
 }
 
 /** The structured payload produced by the n8n agent + output parser. */
@@ -124,10 +131,23 @@ export function normalizeRoadmap(raw: unknown): RoadmapStep[] {
   return steps
     .map((s, i) => {
       const step = (s ?? {}) as Record<string, unknown>
+      const rawDaily = step.daily_plan
+      let daily_plan: DailyTask[] | undefined
+      if (Array.isArray(rawDaily)) {
+        daily_plan = rawDaily
+          .filter((d): d is Record<string, unknown> => d != null && typeof d === 'object')
+          .map((d) => ({
+            day: String(d.day ?? ''),
+            tasks: Array.isArray(d.tasks) ? d.tasks.map((t: unknown) => String(t)) : [],
+          }))
+          .filter((d) => d.day && d.tasks.length > 0)
+        if (daily_plan.length === 0) daily_plan = undefined
+      }
       return {
         step_number: Number(step.step_number ?? i + 1),
         title: String(step.title ?? ''),
         actionable_advice: String(step.actionable_advice ?? ''),
+        daily_plan,
       }
     })
     .filter((s) => s.title || s.actionable_advice)

@@ -162,59 +162,73 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
 
       {/* ── Liste des tâches ── */}
       <div className="flex flex-col gap-2 mb-4">
-        {localTasks.map((task) => (
-          <motion.button
-            key={task.id}
-            onClick={() => toggle(task.id)}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-start gap-3 p-3 rounded-xl text-left transition-all duration-200 hover:bg-white/[0.04] group w-full"
-          >
-            {/* Icône checkbox */}
-            <div className="mt-0.5 flex-shrink-0">
-              <AnimatePresence mode="wait" initial={false}>
-                {task.done ? (
-                  <motion.span
-                    key="checked"
-                    initial={{ scale: 0.4, opacity: 0, rotate: -15 }}
-                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                    exit={{ scale: 0.4, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                    className="block"
-                  >
-                    <CheckCircle2 size={16} className="text-indigo-400" />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="unchecked"
-                    initial={{ scale: 0.4, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.4, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                    className="block text-zinc-500 group-hover:text-indigo-400 transition-colors"
-                  >
-                    <Circle size={16} />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Dot priorité */}
-            <div
-              className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${priorityDot[task.priority]}`}
-            />
-
-            {/* Texte */}
-            <motion.span
-              animate={{ opacity: task.done ? 0.38 : 1 }}
-              transition={{ duration: 0.25 }}
-              className={`text-[13px] leading-snug transition-colors ${
-                task.done ? 'line-through text-zinc-600' : 'text-zinc-300 group-hover:text-zinc-100'
-              }`}
+        {localTasks.map((task) => {
+          const weekMatch = task.text.match(/^(semaine\s+\d+)\s*[:–\-]\s*/i)
+          const weekLabel = weekMatch ? weekMatch[1].replace(/^s/i, 'S') : null
+          const shortText = weekMatch ? task.text.slice(weekMatch[0].length).trim() : task.text
+          return (
+            <motion.button
+              key={task.id}
+              onClick={() => toggle(task.id)}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-start gap-3 p-3 rounded-xl text-left transition-all duration-200 hover:bg-white/[0.04] group w-full"
             >
-              {task.text}
-            </motion.span>
-          </motion.button>
-        ))}
+              {/* Icône checkbox */}
+              <div className="mt-0.5 flex-shrink-0">
+                <AnimatePresence mode="wait" initial={false}>
+                  {task.done ? (
+                    <motion.span
+                      key="checked"
+                      initial={{ scale: 0.4, opacity: 0, rotate: -15 }}
+                      animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                      exit={{ scale: 0.4, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                      className="block"
+                    >
+                      <CheckCircle2 size={16} className="text-indigo-400" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="unchecked"
+                      initial={{ scale: 0.4, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.4, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+                      className="block text-zinc-500 group-hover:text-indigo-400 transition-colors"
+                    >
+                      <Circle size={16} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Dot priorité */}
+              <div
+                className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${priorityDot[task.priority]}`}
+              />
+
+              {/* Texte */}
+              <motion.span
+                animate={{ opacity: task.done ? 0.38 : 1 }}
+                transition={{ duration: 0.25 }}
+                className="flex flex-col gap-0.5 min-w-0"
+              >
+                {weekLabel && (
+                  <span className="text-[9px] font-black uppercase tracking-widest text-pink-400/80">
+                    {weekLabel}
+                  </span>
+                )}
+                <span
+                  className={`text-[13px] leading-snug transition-colors ${
+                    task.done ? 'line-through text-zinc-600' : 'text-zinc-300 group-hover:text-zinc-100'
+                  }`}
+                >
+                  {shortText}
+                </span>
+              </motion.span>
+            </motion.button>
+          )
+        })}
       </div>
 
       {/* ── Bouton régénérer ── */}
