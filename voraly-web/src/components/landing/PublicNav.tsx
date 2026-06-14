@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Menu, X } from 'lucide-react'
@@ -34,23 +35,24 @@ function LogoWordmark({ compact = false }: { compact?: boolean }) {
       aria-label="Voraly — accueil"
       className="flex items-center gap-2 group shrink-0"
     >
-      {/* Monogramme géométrique */}
-      <div
-        className="flex items-center justify-center rounded-lg shrink-0"
-        style={{
-          width: compact ? 28 : 32,
-          height: compact ? 28 : 32,
-          background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 60%, #FF66CC 100%)',
-          boxShadow: '0 0 16px rgba(139,92,246,0.45)',
-        }}
+      {/* Nouveau Logo Circulaire */}
+      <motion.div
+        whileHover={{ scale: 1.08 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+        className="flex-shrink-0"
       >
-        <span
-          className="font-black text-white select-none"
-          style={{ fontSize: compact ? 13 : 15, letterSpacing: '-0.02em' }}
-        >
-          V
-        </span>
-      </div>
+        <Image
+          src="/logo-circle.svg"
+          alt="Voraly"
+          width={compact ? 28 : 32}
+          height={compact ? 28 : 32}
+          className="select-none shrink-0"
+          style={{
+            filter: 'drop-shadow(0 0 8px rgba(139,92,246,0.45))'
+          }}
+          priority
+        />
+      </motion.div>
       {!compact && (
         <span className="text-base font-extrabold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
           Voraly

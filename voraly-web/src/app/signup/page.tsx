@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { signupAction } from '@/app/actions/auth'
 
 export default function SignupPage() {
@@ -16,13 +17,19 @@ export default function SignupPage() {
           <div className="glow-sphere" />
           <div className="relative z-10 flex flex-col items-center gap-6">
             <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg text-white"
+              className="w-12 h-12 flex items-center justify-center"
               style={{
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                boxShadow:  '0 0 24px rgba(139,92,246,0.55)',
+                filter: 'drop-shadow(0 0 16px rgba(139,92,246,0.55))',
               }}
             >
-              V
+              <Image
+                src="/logo-circle.svg"
+                alt="Voraly"
+                width={48}
+                height={48}
+                className="select-none"
+                priority
+              />
             </div>
             <div className="flex flex-col gap-2">
               <h2 className="text-xl font-extrabold text-white">Vérifiez votre email</h2>
@@ -54,16 +61,24 @@ export default function SignupPage() {
 
           {/* ── Logo ── */}
           <div className="flex flex-col items-center gap-3">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg text-white"
-              style={{
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                boxShadow:  '0 0 24px rgba(139,92,246,0.55)',
-              }}
-            >
-              V
-            </div>
-            <span className="gradient-text text-xl font-extrabold tracking-wide">Voraly</span>
+            <Link href="/" className="flex flex-col items-center gap-3 group">
+              <div
+                className="w-12 h-12 flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
+                style={{
+                  filter: 'drop-shadow(0 0 16px rgba(139,92,246,0.55))',
+                }}
+              >
+                <Image
+                  src="/logo-circle.svg"
+                  alt="Voraly"
+                  width={48}
+                  height={48}
+                  className="select-none"
+                  priority
+                />
+              </div>
+              <span className="gradient-text text-xl font-extrabold tracking-wide">Voraly</span>
+            </Link>
           </div>
 
           {/* ── Heading ── */}

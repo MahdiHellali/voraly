@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -95,32 +96,40 @@ export default function Sidebar({ user }: SidebarProps) {
     >
       {/* ── Logo header ── */}
       <div className={cn('flex items-center gap-3 py-5 border-b border-white/[0.06] overflow-hidden', isCollapsed ? 'justify-center px-2' : 'px-4')}>
-        <motion.div
-          whileHover={{ scale: 1.08, rotate: -4 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-          className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-sm text-white"
-          style={{
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            boxShadow:  '0 0 14px rgba(139,92,246,0.45)',
-          }}
-        >
-          V
-        </motion.div>
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <motion.div
+            whileHover={{ scale: 1.08, rotate: -4 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            className="w-9 h-9 flex-shrink-0 flex items-center justify-center"
+          >
+            <Image
+              src="/logo-circle.svg"
+              alt="Voraly"
+              width={36}
+              height={36}
+              className="select-none"
+              style={{
+                filter: 'drop-shadow(0 0 10px rgba(139,92,246,0.45))'
+              }}
+              priority
+            />
+          </motion.div>
 
-        <AnimatePresence initial={false}>
-          {!isCollapsed && (
-            <motion.span
-              key="logo-text"
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.22, ease: 'easeInOut' }}
-              className="gradient-text text-[15px] font-extrabold tracking-wide whitespace-nowrap overflow-hidden"
-            >
-              Voraly
-            </motion.span>
-          )}
-        </AnimatePresence>
+          <AnimatePresence initial={false}>
+            {!isCollapsed && (
+              <motion.span
+                key="logo-text"
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.22, ease: 'easeInOut' }}
+                className="gradient-text text-[15px] font-extrabold tracking-wide whitespace-nowrap overflow-hidden"
+              >
+                Voraly
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Link>
       </div>
 
       {/* ── Nav items ── */}
