@@ -8,7 +8,6 @@
 
 import { Suspense, useRef, useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import Image from 'next/image'
 
 // Chargement paresseux ssr:false — ne se monte QUE côté client, JAMAIS en SSR
 const HeroSceneCanvas = dynamic(
@@ -21,22 +20,6 @@ const HeroSceneCanvas = dynamic(
 function HeroFallback() {
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* Logo flottant */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="relative h-48 w-48 opacity-20"
-          style={{ animation: 'spherePulse 6s ease-in-out infinite alternate' }}
-        >
-          <Image
-            src="/volary-logo.png"
-            alt=""
-            fill
-            priority
-            className="object-contain"
-            style={{ filter: 'drop-shadow(0 0 40px rgba(139,92,246,0.6))' }}
-          />
-        </div>
-      </div>
 
       {/* Halos CSS */}
       <div
