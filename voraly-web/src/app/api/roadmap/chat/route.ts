@@ -98,17 +98,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!marketingStrategy) {
-    return NextResponse.json(
-      {
-        error: 'no_marketing_strategy_found',
-        message: "Veuillez d'abord générer votre diagnostic IA pour obtenir une stratégie marketing.",
-      },
-      { status: 400 },
-    )
-  }
-
-  // 4. Appel n8n chatbot.
+  // 4. Appel n8n chatbot (marketing_strategy peut être null → mode générique).
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)

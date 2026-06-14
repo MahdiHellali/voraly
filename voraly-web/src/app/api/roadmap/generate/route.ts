@@ -77,16 +77,11 @@ export async function POST(request: NextRequest) {
   }
 
   // 5. Extraire steps + marketing_strategy.
-  const payload = webhookJson as {
-    roadmap_steps?: unknown
-    roadmap?: unknown
-    marketing_strategy?: unknown
-  } | null
-
+  const unwrapped = unwrapEnvelope(webhookJson)
   let steps: RoadmapStep[] = normalizeRoadmap(
-    payload?.roadmap_steps ?? payload?.roadmap ?? webhookJson,
+    unwrapped?.roadmap_steps ?? unwrapped?.roadmap ?? webhookJson,
   )
-  let marketingStrategy: unknown = payload?.marketing_strategy ?? null
+  let marketingStrategy: unknown = unwrapped?.marketing_strategy ?? null
 
   if (steps.length === 0) {
     const { data: refreshed } = await supabase
@@ -138,6 +133,20 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ roadmap_steps: steps, marketing_strategy: marketingStrategy })
+}
+
+function unwrapEnvelope(raw: unknown): Record<string, unknown> | null {
+  if (raw == null || typeof raw !== 'object') return null
+  const obj = raw as Record<string, unknown>
+  if ('roadmap_steps' in obj || 'marketing_strategy' in obj || 'roadmap' in obj) return obj
+  if ('output' in obj) {
+    let inner = obj.output
+    if (typeof inner === 'string') {
+      try { inner = JSON.parse(inner) } catch { return obj }
+    }
+    if (inner != null && typeof inner === 'object') return inner as Record<string, unknown>
+  }
+  return obj
 }
 
 function buildBrief(storedText: string | null, answers: Record<string, string>): string {

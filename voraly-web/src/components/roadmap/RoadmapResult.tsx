@@ -527,21 +527,9 @@ export default function RoadmapResult({
 
         {/* ── Conseiller IA ── */}
         {activeTab === 'chat' && (
-          <div>
-            {!hasMarketing ? (
-              <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/5 p-12 text-center backdrop-blur-xl">
-                <AlertCircle size={40} className="mb-4 text-zinc-500" />
-                <h3 className="mb-2 text-lg font-bold text-white">Conseiller IA indisponible</h3>
-                <p className="max-w-md text-sm text-zinc-400">
-                  Générez d&apos;abord un diagnostic complet pour accéder au chatbot de stratégie marketing.
-                </p>
-              </div>
-            ) : (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-                <MarketingChatbot />
-              </motion.div>
-            )}
-          </div>
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+            <MarketingChatbot />
+          </motion.div>
         )}
       </div>
     </motion.div>
