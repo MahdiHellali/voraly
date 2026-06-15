@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   )
 
   try {
-    await Promise.race([
+    const result = await Promise.race([
       resend.emails.send({
         from: 'Voraly Contact <onboarding@resend.dev>',
         to: toEmail,
@@ -77,7 +77,14 @@ export async function POST(request: NextRequest) {
         text: `Nom : ${safeName}\nEmail : ${email}\n\nMessage :\n${message.trim()}`,
       }),
       timeout,
-    ])
+    ]) as { data?: { id?: string } | null; error?: { message?: string; name?: string } | null }
+
+    if (result?.error) {
+      console.error('[contact] resend error', result.error)
+      return NextResponse.json({ error: 'send_failed', detail: result.error.message }, { status: 502 })
+    }
+
+    console.log('[contact] email sent', result?.data?.id)
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[contact] failed to send email', err)
