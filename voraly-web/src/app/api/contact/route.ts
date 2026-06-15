@@ -1,8 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 // In-memory rate limit by IP — 5 req/hour (single Docker instance)
 const ipRateLimit = new Map<string, { count: number; windowStart: number }>()
 const RATE_LIMIT = 5
@@ -55,11 +53,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'invalid_email' }, { status: 400 })
   }
 
-  if (!process.env.RESEND_API_KEY) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
     console.error('[contact] RESEND_API_KEY not configured')
     return NextResponse.json({ error: 'email_not_configured' }, { status: 503 })
   }
 
+  const resend = new Resend(apiKey)
   const safeName = name.trim().replace(/[\r\n]/g, ' ')
 
   const timeout = new Promise<never>((_, reject) =>
