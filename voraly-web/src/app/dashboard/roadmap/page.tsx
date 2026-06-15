@@ -21,12 +21,16 @@ export default async function RoadmapPage() {
   let initialCompleted: number[] = []
   let initialMarketingStrategy: unknown = null
 
+  let isPremium = false
+
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('ai_roadmap, completed_steps')
+      .select('ai_roadmap, completed_steps, is_premium')
       .eq('id', user.id)
       .maybeSingle()
+
+    isPremium = Boolean(profile?.is_premium)
 
     if (profile?.ai_roadmap && typeof profile.ai_roadmap === 'object') {
       const r = profile.ai_roadmap as { roadmap_steps?: unknown; marketing_strategy?: unknown }
@@ -46,6 +50,7 @@ export default async function RoadmapPage() {
       initialCompleted={initialCompleted}
       initialMarketingStrategy={initialMarketingStrategy}
       userId={user?.id ?? null}
+      isPremium={isPremium}
     />
   )
 }

@@ -1,7 +1,25 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const N8N_TIMEOUT_MS = 45_000
+const N8N_TIMEOUT_MS = 30_000
+
+// In-memory quota for free users — resets on server restart (single Docker instance)
+// Format: userId → { count, windowStart (ms) }
+const freeQuota = new Map<string, { count: number; windowStart: number }>()
+const FREE_QUOTA_LIMIT = 1
+const FREE_QUOTA_WINDOW_MS = 24 * 60 * 60 * 1000 // 24h
+
+function checkFreeQuota(userId: string): boolean {
+  const now = Date.now()
+  const entry = freeQuota.get(userId)
+  if (!entry || now - entry.windowStart > FREE_QUOTA_WINDOW_MS) {
+    freeQuota.set(userId, { count: 1, windowStart: now })
+    return true
+  }
+  if (entry.count >= FREE_QUOTA_LIMIT) return false
+  entry.count++
+  return true
+}
 
 const N8N_CHAT_URL =
   process.env.N8N_CHAT_WEBHOOK_URL ??
@@ -69,17 +87,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'missing_message' }, { status: 400 })
   }
 
-  // 3. Récupérer la marketing_strategy — profiles.ai_roadmap en premier,
-  //    puis fallback sur la roadmap active dans la table `roadmaps`.
-  let marketingStrategy: unknown = null
-
+  // 3. Récupérer le profil (is_premium + marketing_strategy).
   const { data: profile } = await supabase
     .from('profiles')
-    .select('ai_roadmap')
+    .select('ai_roadmap, is_premium')
     .eq('id', user.id)
     .maybeSingle()
 
+  const isPremium = Boolean(profile?.is_premium)
+
+  // Quota serveur pour utilisateurs gratuits — 1 message / 24h (in-memory).
+  // Vérifié avant l'appel n8n pour ne pas consommer de quota Gemini.
+  if (!isPremium && !checkFreeQuota(user.id)) {
+    return NextResponse.json({ error: 'free_limit_reached' }, { status: 402 })
+  }
+
+  let marketingStrategy: unknown = null
   marketingStrategy = extractMarketingStrategy(profile?.ai_roadmap)
+
+  // Borner l'historique pour éviter des payloads n8n trop lourds.
+  const boundedHistory = Array.isArray(history) ? history.slice(-20) : []
 
   if (!marketingStrategy) {
     try {
@@ -111,7 +138,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         user_id: user.id,
         message: message.trim(),
-        history,
+        history: boundedHistory,
         marketing_strategy: marketingStrategy,
       }),
       cache: 'no-store',

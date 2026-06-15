@@ -82,7 +82,7 @@ export async function broadcastNotificationAction(
     }
 
     // Founder check
-    const founderEmails = ['hello@voraly.net', 'hellali.amine@gmail.com']
+    const founderEmails = ['contact@voraly.net', 'hellali.amine@gmail.com']
     if (!founderEmails.includes(user.email || '')) {
       return { error: 'Seul le fondateur de Voraly est autorisé à diffuser des messages.' }
     }

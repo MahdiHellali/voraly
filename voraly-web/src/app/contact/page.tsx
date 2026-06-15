@@ -1,27 +1,10 @@
 'use client'
 
-/**
- * Page Contact — formulaire simple.
- * Backend email non implémenté : le submit déclenche une Server Action
- * no-op qui renvoie un message de confirmation.
- * Pour une vraie implémentation, brancher Resend / nodemailer dans la
- * Server Action `sendContactMessage` (src/app/actions/).
- */
-
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LiquidButton } from '@/components/ui/liquid-glass-button'
 import PublicNav from '@/components/landing/PublicNav'
 import PublicFooter from '@/components/landing/PublicFooter'
-
-// ── Server Action no-op (simulée côté client pour l'instant) ────────────────
-// TODO: remplacer par une vraie Server Action qui envoie un email via Resend.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function simulateSend(_formData: { name: string; email: string; message: string }) {
-  // Simule un délai réseau
-  await new Promise((r) => setTimeout(r, 1200))
-  return { ok: true }
-}
 
 export default function ContactPage() {
   const [name, setName] = useState('')
@@ -34,8 +17,17 @@ export default function ContactPage() {
     if (!name.trim() || !email.trim() || !message.trim()) return
     setStatus('sending')
     try {
-      const result = await simulateSend({ name, email, message })
-      setStatus(result.ok ? 'sent' : 'error')
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), message: message.trim() }),
+      })
+      const data = await res.json().catch(() => null)
+      if (res.ok && data?.ok) {
+        setStatus('sent')
+      } else {
+        setStatus('error')
+      }
     } catch {
       setStatus('error')
     }
@@ -156,8 +148,8 @@ export default function ContactPage() {
                 {status === 'error' && (
                   <p className="text-xs font-medium text-red-400">
                     Une erreur s&apos;est produite. Réessayez ou écrivez-nous directement à{' '}
-                    <a href="mailto:hello@voraly.net" className="underline">
-                      hello@voraly.net
+                    <a href="mailto:contact@voraly.net" className="underline">
+                      contact@voraly.net
                     </a>
                     .
                   </p>
@@ -175,10 +167,10 @@ export default function ContactPage() {
                 <p className="text-center text-xs text-zinc-600">
                   Vous pouvez aussi nous écrire directement à{' '}
                   <a
-                    href="mailto:hello@voraly.net"
+                    href="mailto:contact@voraly.net"
                     className="text-zinc-500 underline underline-offset-2 hover:text-zinc-300"
                   >
-                    hello@voraly.net
+                    contact@voraly.net
                   </a>
                 </p>
               </motion.form>

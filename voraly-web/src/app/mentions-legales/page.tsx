@@ -26,10 +26,10 @@ export default function MentionsLegalesPage() {
         <p className="mb-10 text-sm text-zinc-500">
           Document en cours de finalisation — contact :{" "}
           <a
-            href="mailto:hello@voraly.net"
+            href="mailto:contact@voraly.net"
             className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
           >
-            hello@voraly.net
+            contact@voraly.net
           </a>
         </p>
 
@@ -42,10 +42,10 @@ export default function MentionsLegalesPage() {
             <p className="mt-2">
               Contact :{" "}
               <a
-                href="mailto:hello@voraly.net"
+                href="mailto:contact@voraly.net"
                 className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
               >
-                hello@voraly.net
+                contact@voraly.net
               </a>
             </p>
           </section>
@@ -86,10 +86,10 @@ export default function MentionsLegalesPage() {
             Ces mentions légales seront complétées lors de la finalisation juridique du projet.
             En attendant, pour toute question, contactez{" "}
             <a
-              href="mailto:hello@voraly.net"
+              href="mailto:contact@voraly.net"
               className="text-zinc-500 underline underline-offset-2 hover:text-zinc-300"
             >
-              hello@voraly.net
+              contact@voraly.net
             </a>
             .
           </p>

@@ -269,12 +269,14 @@ export default function RoadmapResult({
   marketingStrategy,
   initialCompleted,
   userId,
+  isPremium,
   onRestart,
 }: {
   steps: RoadmapStep[]
   marketingStrategy: unknown
   initialCompleted: number[]
   userId: string | null
+  isPremium: boolean
   onRestart: () => void
 }) {
   const strategy = marketingStrategy as MarketingStrategyData | null
@@ -528,7 +530,7 @@ export default function RoadmapResult({
         {/* ── Conseiller IA ── */}
         {activeTab === 'chat' && (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-            <MarketingChatbot />
+            <MarketingChatbot isPremium={isPremium} />
           </motion.div>
         )}
       </div>

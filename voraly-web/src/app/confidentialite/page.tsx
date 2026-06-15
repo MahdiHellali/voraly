@@ -27,10 +27,10 @@ export default function ConfidentialitePage() {
         <p className="mb-10 text-sm text-zinc-500">
           Document en cours de finalisation — contact :{" "}
           <a
-            href="mailto:hello@voraly.net"
+            href="mailto:contact@voraly.net"
             className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
           >
-            hello@voraly.net
+            contact@voraly.net
           </a>
         </p>
 
@@ -71,10 +71,10 @@ export default function ConfidentialitePage() {
               disposez d&apos;un droit d&apos;accès, de rectification, de suppression et de
               portabilité de vos données. Pour exercer ces droits, contactez-nous à{" "}
               <a
-                href="mailto:hello@voraly.net"
+                href="mailto:contact@voraly.net"
                 className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
               >
-                hello@voraly.net
+                contact@voraly.net
               </a>
               .
             </p>
@@ -93,10 +93,10 @@ export default function ConfidentialitePage() {
             Cette politique de confidentialité sera complétée lors de la finalisation juridique
             du projet. Pour toute question, contactez{" "}
             <a
-              href="mailto:hello@voraly.net"
+              href="mailto:contact@voraly.net"
               className="text-zinc-500 underline underline-offset-2 hover:text-zinc-300"
             >
-              hello@voraly.net
+              contact@voraly.net
             </a>
             .
           </p>

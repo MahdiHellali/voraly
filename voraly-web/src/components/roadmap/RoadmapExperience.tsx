@@ -26,11 +26,13 @@ export default function RoadmapExperience({
   initialCompleted,
   initialMarketingStrategy,
   userId,
+  isPremium,
 }: {
   initialSteps: RoadmapStep[]
   initialCompleted: number[]
   initialMarketingStrategy: unknown
   userId: string | null
+  isPremium: boolean
 }) {
   const [phase, setPhase] = useState<Phase>(
     initialSteps.length > 0 ? 'roadmap' : 'empty',
@@ -166,6 +168,7 @@ export default function RoadmapExperience({
             marketingStrategy={marketingStrategy}
             initialCompleted={completedSeed}
             userId={userId}
+            isPremium={isPremium}
             onRestart={handleStartQuestionnaire}
           />
         )}

@@ -87,7 +87,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
   // Current user info
   const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || 'Utilisateur'
   const email = user.email ?? ''
-  const isFounder = ['hello@voraly.net', 'hellali.amine@gmail.com'].includes(email)
+  const isFounder = ['contact@voraly.net', 'hellali.amine@gmail.com'].includes(email)
   const notifPrefs = user.user_metadata?.notification_preferences ?? {
     email_deadlines: true,
     email_offers: true,
