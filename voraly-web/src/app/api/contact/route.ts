@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   const resend = new Resend(apiKey)
+  const toEmail = process.env.CONTACT_TO_EMAIL ?? 'contact@voraly.net'
   const safeName = name.trim().replace(/[\r\n]/g, ' ')
 
   const timeout = new Promise<never>((_, reject) =>
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
     await Promise.race([
       resend.emails.send({
         from: 'Voraly Contact <onboarding@resend.dev>',
-        to: 'contact@voraly.net',
+        to: toEmail,
         replyTo: email,
         subject: `Message de ${safeName} via voraly.net`,
         text: `Nom : ${safeName}\nEmail : ${email}\n\nMessage :\n${message.trim()}`,
