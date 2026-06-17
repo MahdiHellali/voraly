@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import HeroBackground from '@/components/landing/HeroBackground'
+import AnalyticsProvider from '@/components/AnalyticsProvider'
 import { PostHogProvider } from '@/providers/posthog-provider'
 import { Suspense } from 'react'
 
@@ -38,13 +39,15 @@ export default function RootLayout({
       <body className={inter.className}>
         {/* Fond aurora global — toutes les pages */}
         <HeroBackground />
-        <Suspense fallback={null}>
-          <PostHogProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
-          </PostHogProvider>
-        </Suspense>
+        <TooltipProvider>
+          <AnalyticsProvider>
+            <Suspense fallback={null}>
+              <PostHogProvider>
+                {children}
+              </PostHogProvider>
+            </Suspense>
+          </AnalyticsProvider>
+        </TooltipProvider>
       </body>
     </html>
   )
