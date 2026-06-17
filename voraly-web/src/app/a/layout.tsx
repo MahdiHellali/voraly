@@ -1,10 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-// ─── Voraly · Layout Admin (/a) ───────────────────────────────────────────────
-// Guard double : authentifié + email admin uniquement.
-// Ne pas exposer ce layout sans vérification email côté serveur.
-
 export default async function AdminLayout({
   children,
 }: {
@@ -17,8 +13,13 @@ export default async function AdminLayout({
     redirect('/login')
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL
-  if (!adminEmail || user.email !== adminEmail) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (!profile?.is_admin) {
     redirect('/')
   }
 
