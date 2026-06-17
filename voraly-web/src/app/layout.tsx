@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import HeroBackground from '@/components/landing/HeroBackground'
-import AnalyticsProvider from '@/components/AnalyticsProvider'
-import { PostHogProvider } from '@/providers/posthog-provider'
-import { Suspense } from 'react'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,6 +27,9 @@ export const metadata: Metadata = {
   },
 }
 
+const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL
+const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID
+
 export default function RootLayout({
   children,
 }: {
@@ -40,14 +41,26 @@ export default function RootLayout({
         {/* Fond aurora global — toutes les pages */}
         <HeroBackground />
         <TooltipProvider>
-          <AnalyticsProvider>
-            <Suspense fallback={null}>
-              <PostHogProvider>
-                {children}
-              </PostHogProvider>
-            </Suspense>
-          </AnalyticsProvider>
+          {children}
         </TooltipProvider>
+
+        {/* Matomo Analytics */}
+        {MATOMO_URL && MATOMO_SITE_ID && (
+          <Script id="matomo" strategy="afterInteractive">
+            {`
+              var _paq = window._paq = window._paq || [];
+              _paq.push(['trackPageView']);
+              _paq.push(['enableLinkTracking']);
+              (function() {
+                var u="${MATOMO_URL}";
+                _paq.push(['setTrackerUrl', u+'matomo.php']);
+                _paq.push(['setSiteId', '${MATOMO_SITE_ID}']);
+                var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+              })();
+            `}
+          </Script>
+        )}
       </body>
     </html>
   )
