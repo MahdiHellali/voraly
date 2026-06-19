@@ -34,6 +34,8 @@ services:
         NEXT_PUBLIC_WHOP_PLAN_ID: ${NEXT_PUBLIC_WHOP_PLAN_ID}
         NEXT_PUBLIC_WHOP_COMPANY_ID: ${NEXT_PUBLIC_WHOP_COMPANY_ID}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_MATOMO_URL: ${NEXT_PUBLIC_MATOMO_URL}
+        NEXT_PUBLIC_MATOMO_SITE_ID: ${NEXT_PUBLIC_MATOMO_SITE_ID}
     restart: unless-stopped
     env_file: ./.env.production
     expose:
