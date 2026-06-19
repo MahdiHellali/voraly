@@ -11,5 +11,29 @@ www.{$SITE_DOMAIN} {
 {$N8N_DOMAIN} {
     reverse_proxy n8n:5678
 }
+# Matomo analytics. MATOMO_DOMAIN comes from .env.production (stats.voraly.net).
+# Caddy auto-provisions the Let's Encrypt cert, which also fixes the Cloudflare
+# 525 (origin TLS handshake) once this block exists.
+{$MATOMO_DOMAIN} {
+    encode gzip zstd
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+    }
+    # INSTALL/HARDENING LOCK (security review C1): HTTP basic auth shields the
+    # public Matomo setup wizard from takeover. Works through Cloudflare, unlike
+    # an IP allowlist (Caddy would only see Cloudflare IPs behind the orange proxy).
+    # Generate the hash on the VPS:
+    #   docker run --rm caddy:2-alpine caddy hash-password --plaintext 'your-pass'
+    # Put user + hash in .env.production (MATOMO_SETUP_USER / MATOMO_SETUP_HASH).
+    # ONCE Matomo is installed AND config.ini.php hardened (trusted_hosts,
+    # force_ssl, proxy headers — see deploy/README), delete this basic_auth block
+    # so public visitor tracking works.
+    basic_auth {
+        {$MATOMO_SETUP_USER} {$MATOMO_SETUP_HASH}
+    }
+    reverse_proxy matomo:80
+}
 # Portainer is intentionally NOT proxied here — it's loopback-only on the VPS
 # and reached via SSH tunnel (see docker-compose.yml).

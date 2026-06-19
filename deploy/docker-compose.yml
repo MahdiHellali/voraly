@@ -38,6 +38,7 @@ services:
     env_file: ./.env.production
     expose:
       - "3000"
+    mem_limit: 512m
     networks:
       - voraly
 
@@ -62,6 +63,64 @@ services:
       - n8n_data:/home/node/.n8n
     expose:
       - "5678"
+    mem_limit: 512m
+    networks:
+      - voraly
+
+  # Matomo analytics (self-hosted). Reachable only on the internal `voraly`
+  # network; Caddy is the single public entrypoint and proxies stats.voraly.net
+  # to matomo:80. No host port mapping, like web/n8n.
+  matomo-db:
+    image: mariadb:11
+    restart: unless-stopped
+    # Tuned for a small 4 GB VPS: cap InnoDB pool + connections so MariaDB does
+    # not balloon and trigger the OOM killer on web/n8n (scalability review).
+    command: >
+      --max-allowed-packet=64MB
+      --innodb-buffer-pool-size=128M
+      --innodb-log-file-size=32M
+      --max-connections=50
+      --tmp-table-size=32M
+      --max-heap-table-size=32M
+      --query-cache-type=0
+    env_file: ./.env.production
+    environment:
+      MARIADB_DATABASE: matomo
+      MARIADB_USER: matomo
+      MARIADB_PASSWORD: ${MATOMO_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MATOMO_DB_ROOT_PASSWORD}
+    volumes:
+      - matomo_db:/var/lib/mysql
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - voraly
+
+  matomo:
+    image: matomo:5-apache
+    restart: unless-stopped
+    env_file: ./.env.production
+    environment:
+      MATOMO_DATABASE_HOST: matomo-db
+      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_TABLES_PREFIX: matomo_
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_PASSWORD: ${MATOMO_DB_PASSWORD}
+      MATOMO_DATABASE_DBNAME: matomo
+    volumes:
+      - matomo_data:/var/www/html
+      # Cap Apache workers for a single-core VPS (scalability review).
+      - ./matomo-apache-limits.conf:/etc/apache2/conf-enabled/limits.conf:ro
+    expose:
+      - "80"
+    mem_limit: 384m
+    depends_on:
+      matomo-db:
+        condition: service_healthy
     networks:
       - voraly
 
@@ -89,3 +148,5 @@ volumes:
   caddy_config:
   n8n_data:
   portainer_data:
+  matomo_db:
+  matomo_data:
