@@ -9,6 +9,9 @@ import type { AgendaEvent } from '@/lib/dashboard/types'
 // le refresh Google est persisté. Tout échec d'un provider est isolé → [].
 type Conn = { provider: string; access_token: string | null; refresh_token: string | null; expires_at: string | null }
 
+// Coupe-circuit : un provider lent ne doit jamais bloquer le rendu du dashboard.
+const timeout = () => AbortSignal.timeout(5_000)
+
 export async function getTodayAgenda(supabase: SupabaseClient, userId: string): Promise<AgendaEvent[]> {
   const { data: conns } = await supabase
     .from('integration_connections')
@@ -46,7 +49,7 @@ async function fetchGoogle(c: Conn, supabase: SupabaseClient, userId: string, da
     singleEvents: 'true', orderBy: 'startTime', maxResults: '50',
   }).toString()
 
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store', signal: timeout() })
   if (!res.ok) return []
   const json = await res.json()
   return (json.items ?? [])
@@ -69,7 +72,7 @@ async function refreshGoogle(c: Conn, supabase: SupabaseClient, userId: string):
   const res = await fetch(provider.tokenUrl, {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: c.refresh_token, client_id: clientId, client_secret: clientSecret }),
-    cache: 'no-store',
+    cache: 'no-store', signal: timeout(),
   })
   if (!res.ok) return null
   const json = await res.json() as { access_token?: string; expires_in?: number }
@@ -88,7 +91,7 @@ async function fetchNotion(c: Conn, dayStart: Date, dayEnd: Date): Promise<Agend
     method: 'POST',
     headers: { Authorization: `Bearer ${c.access_token}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
     body: JSON.stringify({ filter: { property: 'object', value: 'page' }, page_size: 50 }),
-    cache: 'no-store',
+    cache: 'no-store', signal: timeout(),
   })
   if (!res.ok) return []
   const json = await res.json()
