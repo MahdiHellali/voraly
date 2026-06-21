@@ -89,7 +89,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
   const [avatarError, setAvatarError] = useState<string | null>(null)
 
   // Current user info
-  const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || 'Utilisateur'
+  const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || t('userFallback')
   const email = user.email ?? ''
   const isFounder = ['contact@voraly.net', 'hellali.amine@gmail.com'].includes(email)
   const notifPrefs = user.user_metadata?.notification_preferences ?? {
@@ -196,7 +196,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
         }
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Une erreur est survenue."
+      const msg = err instanceof Error ? err.message : t('security.errorFallback')
       setMfaError(msg)
     } finally {
       setMfaLoading(false)
@@ -240,13 +240,13 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
       if (verifyError) {
         setMfaError(verifyError.message)
       } else {
-        setMfaSuccess('Double authentification (2FA) configurée et activée avec succès !')
+        setMfaSuccess(t('security.mfaEnabledMsg'))
         setMfaEnabled(true)
         setMfaSetup(false)
         setMfaCode('')
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Une erreur est survenue."
+      const msg = err instanceof Error ? err.message : t('security.errorFallback')
       setMfaError(msg)
     } finally {
       setMfaLoading(false)
@@ -277,11 +277,11 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
       if (unenrollError) {
         setMfaError(unenrollError.message)
       } else {
-        setMfaSuccess('Double authentification (2FA) désactivée avec succès.')
+        setMfaSuccess(t('security.mfaDisabledMsg'))
         setMfaEnabled(false)
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Une erreur est survenue."
+      const msg = err instanceof Error ? err.message : t('security.errorFallback')
       setMfaError(msg)
     } finally {
       setMfaLoading(false)
@@ -301,8 +301,8 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               <UserIcon size={16} className="text-indigo-400" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-zinc-200">Profil</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Informations personnelles et email</div>
+              <div className="text-sm font-semibold text-zinc-200">{t('profile.title')}</div>
+              <div className="text-[11px] text-zinc-500 mt-0.5">{t('profile.subtitle')}</div>
             </div>
           </div>
           <ChevronDown
@@ -352,7 +352,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       onChange={handleAvatarUpload}
                       disabled={avatarUploading}
                     />
-                    <p className="text-[10px] text-zinc-500">Cliquez pour {localAvatarUrl ? 'changer' : 'ajouter'} votre photo · Max 2 Mo</p>
+                    <p className="text-[10px] text-zinc-500">{t('profile.avatarHint', { action: localAvatarUrl ? t('profile.changeAction') : t('profile.addAction') })}</p>
                     {avatarError && (
                       <p className="text-[11px] text-rose-400 text-center">{avatarError}</p>
                     )}
@@ -361,7 +361,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                   {/* Full Name */}
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="fullName" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                      Nom complet
+                      {t('profile.fullName')}
                     </label>
                     <input
                       id="fullName"
@@ -376,7 +376,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                   {/* Email (Readonly) */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                      Adresse email (non modifiable)
+                      {t('profile.emailReadonly')}
                     </label>
                     <input
                       type="email"
@@ -406,7 +406,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     className="self-start inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2.5 text-xs font-semibold text-white hover:from-indigo-400 hover:to-violet-400 transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(139,92,246,0.25)] disabled:opacity-50"
                   >
                     {isProfilePending ? <Loader2 size={13} className="animate-spin" /> : null}
-                    Enregistrer les modifications
+                    {t('profile.save')}
                   </button>
                 </form>
               </div>
@@ -426,8 +426,8 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               <Bell size={16} className="text-violet-400" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-zinc-200">Notifications</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Alertes de synchronisation et de deadlines</div>
+              <div className="text-sm font-semibold text-zinc-200">{t('notifications.title')}</div>
+              <div className="text-[11px] text-zinc-500 mt-0.5">{t('notifications.subtitle')}</div>
             </div>
           </div>
           <ChevronDown
@@ -451,7 +451,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                   {/* Preferences Checkboxes */}
                   <div className="flex flex-col gap-3">
                     <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-                      Préférences email
+                      {t('notifications.emailPrefs')}
                     </label>
 
                     {/* Checkbox 1 */}
@@ -465,10 +465,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       />
                       <div>
                         <div className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
-                          Alertes de Deadlines
+                          {t('notifications.deadlines.title')}
                         </div>
                         <div className="text-[10px] text-zinc-500">
-                          Recevez un rappel par email à l&apos;approche de vos livraisons clients.
+                          {t('notifications.deadlines.desc')}
                         </div>
                       </div>
                     </label>
@@ -484,10 +484,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       />
                       <div>
                         <div className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
-                          Opportunités d&apos;Offres
+                          {t('notifications.offers.title')}
                         </div>
                         <div className="text-[10px] text-zinc-500">
-                          Soyez averti lorsque l&apos;IA trouve de nouveaux axes d&apos;optimisation de revenus.
+                          {t('notifications.offers.desc')}
                         </div>
                       </div>
                     </label>
@@ -503,10 +503,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       />
                       <div>
                         <div className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
-                          Rapports de Synchronisation
+                          {t('notifications.sync.title')}
                         </div>
                         <div className="text-[10px] text-zinc-500">
-                          Bilan hebdomadaire des synchronisations de vos plateformes.
+                          {t('notifications.sync.desc')}
                         </div>
                       </div>
                     </label>
@@ -532,7 +532,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     className="self-start inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2.5 text-xs font-semibold text-white hover:from-indigo-400 hover:to-violet-400 transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(139,92,246,0.25)] disabled:opacity-50"
                   >
                     {isNotifPending ? <Loader2 size={13} className="animate-spin" /> : null}
-                    Enregistrer les préférences
+                    {t('notifications.save')}
                   </button>
                 </form>
               </div>
@@ -552,8 +552,8 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               <Shield size={16} className="text-emerald-400" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-zinc-200">Sécurité</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Mot de passe, 2FA et sessions actives</div>
+              <div className="text-sm font-semibold text-zinc-200">{t('security.title')}</div>
+              <div className="text-[11px] text-zinc-500 mt-0.5">{t('security.subtitle')}</div>
             </div>
           </div>
           <ChevronDown
@@ -577,33 +577,33 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                 {/* 1. Changer le mot de passe */}
                 <form action={pwdFormAction} className="flex flex-col gap-4 max-w-md">
                   <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
-                    Changer le mot de passe
+                    {t('security.changePassword')}
                   </div>
 
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="password" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                      Nouveau mot de passe
+                      {t('security.newPassword')}
                     </label>
                     <input
                       id="password"
                       name="password"
                       type="password"
                       required
-                      placeholder="Min. 6 caractères"
+                      placeholder={t('security.minChars')}
                       className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="confirmPassword" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                      Confirmer le mot de passe
+                      {t('security.confirmPassword')}
                     </label>
                     <input
                       id="confirmPassword"
                       name="confirmPassword"
                       type="password"
                       required
-                      placeholder="Re-saisir le mot de passe"
+                      placeholder={t('security.reenter')}
                       className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                     />
                   </div>
@@ -628,7 +628,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     className="self-start inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2.5 text-xs font-semibold text-white hover:from-indigo-400 hover:to-violet-400 transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(139,92,246,0.25)] disabled:opacity-50"
                   >
                     {isPwdPending ? <Loader2 size={13} className="animate-spin" /> : null}
-                    Mettre à jour le mot de passe
+                    {t('security.updatePassword')}
                   </button>
                 </form>
 
@@ -638,10 +638,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                 <div className="max-w-md flex flex-col gap-4">
                   <div>
                     <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
-                      Double Authentification (2FA)
+                      {t('security.mfaTitle')}
                     </div>
                     <p className="text-[11.5px] text-zinc-500 mt-1 leading-relaxed">
-                      Sécurisez votre compte en exigeant un code de sécurité à chaque connexion.
+                      {t('security.mfaDesc')}
                     </p>
                   </div>
 
@@ -663,7 +663,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     <div className="flex flex-col gap-3">
                       <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 px-4 py-2.5 text-xs text-emerald-400 w-fit">
                         <Check size={14} />
-                        <span>2FA active avec succès (TOTP)</span>
+                        <span>{t('security.mfaActive')}</span>
                       </div>
                       <button
                         onClick={handleDisableMfa}
@@ -671,7 +671,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/[0.03] px-6 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-all duration-200 cursor-pointer disabled:opacity-50"
                       >
                         {mfaLoading ? <Loader2 size={13} className="animate-spin" /> : null}
-                        Désactiver la double authentification
+                        {t('security.mfaDisable')}
                       </button>
                     </div>
                   ) : !mfaSetup ? (
@@ -681,20 +681,20 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
                     >
                       {mfaLoading ? <Loader2 size={13} className="animate-spin" /> : null}
-                      Configurer la double authentification (2FA)
+                      {t('security.mfaSetup')}
                     </button>
                   ) : (
                     <div className="flex flex-col gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
                       <div className="text-xs font-bold text-zinc-200 flex items-center gap-2">
                         <QrCode size={16} className="text-indigo-400" />
-                        Scannez ce QR Code
+                        {t('security.scanQr')}
                       </div>
                       
                       {mfaQrCode && (
                         <div className="w-48 h-48 bg-white p-3 rounded-2xl flex items-center justify-center mx-auto">
                           <img
                             src={mfaQrCode}
-                            alt="QR Code 2FA"
+                            alt={t('security.qrAlt')}
                             className="w-full h-full object-contain"
                           />
                         </div>
@@ -702,14 +702,14 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
 
                       {mfaSecret && (
                         <div className="text-center">
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Clé secrète (saisie manuelle)</p>
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">{t('security.secretKey')}</p>
                           <code className="text-xs text-indigo-300 font-mono select-all mt-1 block tracking-widest">{mfaSecret}</code>
                         </div>
                       )}
 
                       <div className="flex flex-col gap-1.5 mt-2">
                         <label htmlFor="totpCode" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                          Code de validation à 6 chiffres
+                          {t('security.validationCode')}
                         </label>
                         <input
                           id="totpCode"
@@ -729,13 +729,13 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                           className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-xs font-semibold text-white hover:from-indigo-400 hover:to-violet-400 transition-all duration-200 cursor-pointer disabled:opacity-50"
                         >
                           {mfaLoading ? <Loader2 size={12} className="animate-spin" /> : null}
-                          Vérifier et activer
+                          {t('security.verifyEnable')}
                         </button>
                         <button
                           onClick={handleCancelMfaSetup}
                           className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer"
                         >
-                          Annuler
+                          {t('security.cancel')}
                         </button>
                       </div>
                     </div>
@@ -748,10 +748,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                 <div className="max-w-md flex flex-col gap-3">
                   <div>
                     <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
-                      Sessions Actives
+                      {t('security.sessions')}
                     </div>
                     <p className="text-[11.5px] text-zinc-500 mt-1 leading-relaxed">
-                      Si vous suspectez un accès non autorisé, déconnectez tous les autres appareils.
+                      {t('security.sessionsDesc')}
                     </p>
                   </div>
 
@@ -775,7 +775,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
                   >
                     {isDisconnectPending ? <Loader2 size={13} className="animate-spin" /> : null}
-                    Déconnecter toutes les autres sessions
+                    {t('security.disconnectOthers')}
                   </button>
                 </div>
 
@@ -797,8 +797,8 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                 <Crown size={16} className="text-amber-400" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-zinc-200">Console Fondateur</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">Diffuser une notification globale à tous les freelances</div>
+                <div className="text-sm font-semibold text-zinc-200">{t('founder.title')}</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">{t('founder.subtitle')}</div>
               </div>
             </div>
             <ChevronDown
@@ -822,14 +822,14 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     {/* Title */}
                     <div className="flex flex-col gap-1.5">
                       <label htmlFor="broadcastTitle" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                        Titre de la notification
+                        {t('founder.notifTitle')}
                       </label>
                       <input
                         id="broadcastTitle"
                         name="broadcastTitle"
                         type="text"
                         required
-                        placeholder="Ex: Nouvelle mise à jour du tableau de bord !"
+                        placeholder={t('founder.notifTitlePlaceholder')}
                         className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                       />
                     </div>
@@ -837,14 +837,14 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     {/* Content */}
                     <div className="flex flex-col gap-1.5">
                       <label htmlFor="broadcastContent" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                        Message
+                        {t('founder.message')}
                       </label>
                       <textarea
                         id="broadcastContent"
                         name="broadcastContent"
                         required
                         rows={3}
-                        placeholder="Ex: Nous venons de déployer la double authentification..."
+                        placeholder={t('founder.messagePlaceholder')}
                         className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                       />
                     </div>
@@ -869,7 +869,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       className="self-start inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-2.5 text-xs font-semibold text-white hover:from-amber-400 hover:to-orange-400 transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(245,158,11,0.25)] disabled:opacity-50"
                     >
                       {isFounderPending ? <Loader2 size={13} className="animate-spin" /> : null}
-                      Diffuser la notification
+                      {t('founder.broadcast')}
                     </button>
                   </form>
                 </div>
@@ -905,9 +905,9 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
             <CreditCard size={16} className="text-pink-400" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-zinc-200">Abonnement</div>
+            <div className="text-sm font-semibold text-zinc-200">{t('subscription.title')}</div>
             <div className="text-[11px] text-zinc-500 mt-0.5">
-              {isPremium ? 'Plan Pro · Actif à vie' : 'Plan Gratuit · Gérer l\'abonnement'}
+              {isPremium ? t('subscription.proActive') : t('subscription.freeManage')}
             </div>
           </div>
         </div>
@@ -916,9 +916,9 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
 
       {/* ── Zone Sensible ── */}
       <div className="glass rounded-3xl p-6 border border-rose-500/15 mt-4 transition-all duration-300">
-        <div className="text-[11px] font-bold text-rose-400 uppercase tracking-[0.12em] mb-2">Zone sensible</div>
+        <div className="text-[11px] font-bold text-rose-400 uppercase tracking-[0.12em] mb-2">{t('danger.title')}</div>
         <p className="text-[11.5px] text-zinc-500 leading-relaxed mb-4">
-          La suppression de compte est irréversible. Toutes vos plateformes connectées, métriques de revenus et roadmaps générées par l&apos;IA seront définitivement détruites.
+          {t('danger.body')}
         </p>
 
         {!showDeleteConfirm ? (
@@ -926,12 +926,12 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
             onClick={() => setShowDeleteConfirm(true)}
             className="text-[12px] font-semibold text-rose-400 hover:text-rose-350 transition-colors"
           >
-            Supprimer mon compte définitivement
+            {t('danger.delete')}
           </button>
         ) : (
           <div className="flex flex-col gap-3 max-w-md p-4 rounded-2xl bg-rose-500/[0.03] border border-rose-500/20">
             <div className="text-xs font-semibold text-rose-400 flex items-center gap-2">
-              <AlertTriangle size={14} /> Confirmer la suppression ?
+              <AlertTriangle size={14} /> {t('danger.confirm')}
             </div>
             
             {deleteResult?.error && (
@@ -947,13 +947,13 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-2 text-xs font-bold text-white hover:bg-rose-500 transition-all duration-200 cursor-pointer disabled:opacity-50"
               >
                 {isDeletePending ? <Loader2 size={12} className="animate-spin" /> : null}
-                Oui, supprimer mon compte
+                {t('danger.confirmYes')}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer"
               >
-                Annuler
+                {t('danger.cancel')}
               </button>
             </div>
           </div>

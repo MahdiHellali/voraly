@@ -2,7 +2,10 @@
 // Rendered automatically by Next.js (App Router) while a Server Component
 // page is fetching. No 'use client' needed — pure CSS animation.
 
-export default function DashboardLoading() {
+import { getTranslations } from 'next-intl/server'
+
+export default async function DashboardLoading() {
+  const t = await getTranslations('dashboard.common')
   return (
     <div className="flex min-h-[60vh] w-full items-center justify-center">
       <div className="relative flex flex-col items-center gap-7">
@@ -34,7 +37,7 @@ export default function DashboardLoading() {
         </div>
 
         <span className="relative text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500">
-          Chargement…
+          {t('loading')}
         </span>
       </div>
     </div>

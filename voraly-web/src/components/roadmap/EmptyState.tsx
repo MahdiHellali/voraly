@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Compass, ArrowRight } from 'lucide-react'
 
@@ -12,6 +13,7 @@ export default function EmptyState({
   /** When a roadmap already exists, the copy invites a fresh diagnostic. */
   regenerate?: boolean
 }) {
+  const t = useTranslations('roadmap.empty')
   return (
     <motion.div
       initial={{ filter: 'blur(6px)', opacity: 0, y: 20 }}
@@ -28,14 +30,10 @@ export default function EmptyState({
           <Compass size={28} className="text-pink-400" />
         </div>
         <h2 className="max-w-md text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          {regenerate
-            ? 'Prêt à recalibrer votre stratégie ?'
-            : 'Construisons votre stratégie de croissance'}
+          {regenerate ? t('titleRegenerate') : t('title')}
         </h2>
         <p className="max-w-sm text-sm leading-relaxed text-zinc-400">
-          {regenerate
-            ? 'Relancez le diagnostic pour générer un nouveau plan d’action adapté à votre situation actuelle.'
-            : 'Quatre questions ciblées suffisent à notre IA pour bâtir votre plan d’action personnalisé en quelques secondes.'}
+          {regenerate ? t('subtitleRegenerate') : t('subtitle')}
         </p>
       </div>
 
@@ -47,7 +45,7 @@ export default function EmptyState({
         className="group inline-flex items-center gap-3 rounded-full border border-pink-500/40 bg-pink-500/10 px-8 py-4 text-base font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20"
         style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
       >
-        {regenerate ? 'Relancer mon diagnostic' : 'Lancer mon diagnostic stratégique'}
+        {regenerate ? t('ctaRegenerate') : t('cta')}
         <ArrowRight
           size={18}
           className="transition-transform duration-300 group-hover:translate-x-1"

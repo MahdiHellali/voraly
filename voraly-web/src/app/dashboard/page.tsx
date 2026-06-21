@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from '@/lib/dashboard/data'
 import DashboardContent from '@/components/dashboard/DashboardContent'
@@ -14,10 +15,11 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const t = await getTranslations('dashboard.hero')
   const firstName =
     user?.user_metadata?.full_name?.trim().split(/\s+/)[0] ??
     user?.email?.split('@')[0] ??
-    'Freelance'
+    t('freelanceFallback')
 
   const data = user
     ? await getDashboardData(supabase, user.id)

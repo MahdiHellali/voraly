@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { getTranslations } from 'next-intl/server'
 import { CheckCircle2, Clock, Plus, ArrowRight, Unplug, AlertTriangle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { OAUTH_PROVIDERS, type ProviderId } from '@/lib/oauth/providers'
@@ -21,35 +22,31 @@ export const dynamic = 'force-dynamic'
 // ─── Visual metadata (presentation only) ──────────────────────────────────────
 const PLATFORM_META: Record<
   ProviderId,
-  { icon: string; color: string; border: string; glow: string; desc: string }
+  { icon: string; color: string; border: string; glow: string }
 > = {
   upwork: {
     icon: '/platforms/upwork.png',
     color: 'from-green-600/20 to-emerald-500/10',
     border: 'border-green-500/20 hover:border-green-500/40',
     glow: 'rgba(34,197,94,0.15)',
-    desc: 'La plus grande marketplace freelance mondiale. Connectez votre compte pour synchroniser vos revenus et commandes.',
   },
   linkedin: {
     icon: '/platforms/linkedin.png',
     color: 'from-blue-600/20 to-indigo-500/10',
     border: 'border-blue-500/20 hover:border-blue-500/40',
     glow: 'rgba(59,130,246,0.15)',
-    desc: 'Optimisation du profil LinkedIn et suivi des opportunités entrantes via l’API officielle.',
   },
   fiverr: {
     icon: '/platforms/fiverr.png',
     color: 'from-emerald-600/20 to-teal-500/10',
     border: 'border-teal-500/20 hover:border-teal-500/40',
     glow: 'rgba(20,184,166,0.15)',
-    desc: 'Plateforme de services à la demande. Synchronisez vos Gigs et commandes actives en temps réel.',
   },
   malt: {
     icon: '/platforms/malt.png',
     color: 'from-rose-600/20 to-pink-500/10',
     border: 'border-rose-500/20 hover:border-rose-500/40',
     glow: 'rgba(244,63,94,0.15)',
-    desc: 'La référence du freelancing en France. Connectez votre profil Malt pour suivre vos missions.',
   },
 }
 
@@ -76,23 +73,6 @@ const INTEGRATION_META: Record<
 
 const INTEGRATION_ORDER: IntegrationId[] = ['google_calendar', 'notion']
 
-// ─── Banner messages ──────────────────────────────────────────────────────────
-const ERROR_MESSAGES: Record<string, string> = {
-  access_denied: 'Connexion annulée — vous avez refusé l’accès à la plateforme.',
-  invalid_state: 'Échec de sécurité (jeton anti-CSRF invalide). Merci de réessayer.',
-  config: 'Cette plateforme n’est pas encore disponible. Revenez bientôt.',
-  unknown_provider: 'Plateforme inconnue.',
-  missing_code: 'Réponse incomplète de la plateforme. Réessayez.',
-  exchange_failed: 'Impossible de récupérer les jetons d’accès. Réessayez.',
-  save_failed: 'Connexion établie mais l’enregistrement a échoué. Réessayez.',
-  provider_error: 'La plateforme a renvoyé une erreur. Réessayez.',
-  disconnect_failed: 'La déconnexion a échoué. Réessayez.',
-}
-const SUCCESS_MESSAGES: Record<string, string> = {
-  connected: 'Plateforme connectée avec succès.',
-  disconnected: 'Plateforme déconnectée.',
-}
-
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -101,9 +81,13 @@ export default async function PlatformsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
+  const t = await getTranslations('dashboard.platforms')
+  const tInteg = await getTranslations('dashboard.integrations')
   const sp = await searchParams
-  const errorMsg = ERROR_MESSAGES[first(sp.error) ?? '']
-  const successMsg = SUCCESS_MESSAGES[first(sp.success) ?? '']
+  const errCode = first(sp.error) ?? ''
+  const okCode = first(sp.success) ?? ''
+  const errorMsg = errCode && t.has(`errors.${errCode}`) ? t(`errors.${errCode}`) : undefined
+  const successMsg = okCode && t.has(`success.${okCode}`) ? t(`success.${okCode}`) : undefined
 
   // Live connection state — token columns are intentionally NOT selected.
   const supabase = await createClient()
@@ -125,6 +109,7 @@ export default async function PlatformsPage({
     return {
       id,
       label: provider.label,
+      desc: t(`platforms.${id}.desc`),
       ...PLATFORM_META[id],
       // 'connected' | 'disconnected' (connectable) | 'coming_soon' (no endpoint yet)
       state: connected ? 'connected' : connectable ? 'disconnected' : 'coming_soon',
@@ -148,7 +133,7 @@ export default async function PlatformsPage({
     return {
       id,
       label: provider.label,
-      desc: provider.description,
+      desc: tInteg(`providers.${id}.description`),
       ...INTEGRATION_META[id],
       state,
     }
@@ -159,14 +144,13 @@ export default async function PlatformsPage({
       {/* ── Header ── */}
       <div>
         <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-indigo-400">
-          🧩 Intégrations
+          {t('eyebrow')}
         </p>
         <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-white">
-          Plateformes Connectées
+          {t('title')}
         </h1>
         <p className="text-sm leading-relaxed text-zinc-400">
-          Connectez vos comptes freelance via OAuth&nbsp;2.0 pour centraliser revenus,
-          commandes et performances dans Voraly.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -193,9 +177,9 @@ export default async function PlatformsPage({
       {/* ── Stats summary ── */}
       <div className="grid grid-cols-3 gap-4 fade-2">
         {[
-          { label: 'Plateformes actives', value: `${connectedCount} / ${connectableCount}`, color: 'text-indigo-300' },
-          { label: 'Connexions OAuth', value: String(connectedCount), color: 'text-emerald-400' },
-          { label: 'Disponibles', value: String(connectableCount), color: 'text-indigo-300' },
+          { label: t('stats.active'), value: `${connectedCount} / ${connectableCount}`, color: 'text-indigo-300' },
+          { label: t('stats.oauth'), value: String(connectedCount), color: 'text-emerald-400' },
+          { label: t('stats.available'), value: String(connectableCount), color: 'text-indigo-300' },
         ].map((s) => (
           <div key={s.label} className="glass rounded-2xl p-5 text-center">
             <div className={`mb-1 text-2xl font-bold tracking-tight ${s.color}`}>{s.value}</div>
@@ -240,7 +224,7 @@ export default async function PlatformsPage({
                     <div className="truncate text-base font-bold text-zinc-100">{p.label}</div>
                   </div>
                 </div>
-                <StatusBadge state={p.state} />
+                <StatusBadge state={p.state} t={t} />
               </div>
 
               {/* Description */}
@@ -254,7 +238,7 @@ export default async function PlatformsPage({
                     type="submit"
                     className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 py-2.5 text-[12px] font-semibold text-rose-300 transition-all duration-200 hover:bg-rose-500/20"
                   >
-                    <Unplug size={13} /> Déconnecter
+                    <Unplug size={13} /> {t('disconnect')}
                   </button>
                 </form>
               ) : p.state === 'disconnected' ? (
@@ -262,12 +246,12 @@ export default async function PlatformsPage({
                   href={`/api/platforms/${p.id}/connect`}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 py-2.5 text-[12px] font-semibold text-indigo-300 transition-all duration-200 hover:bg-indigo-500/20 group-hover:border-indigo-400/40"
                 >
-                  <Plus size={13} /> Connecter {p.label}
+                  <Plus size={13} /> {t('connect', { label: p.label })}
                   <ArrowRight size={12} className="ml-auto opacity-0 transition-opacity group-hover:opacity-100" />
                 </a>
               ) : (
                 <div className="w-full rounded-xl border border-white/[0.04] bg-white/[0.02] py-2.5 text-center text-[12px] text-zinc-500">
-                  Disponible prochainement
+                  {t('comingSoon')}
                 </div>
               )}
             </div>
@@ -278,10 +262,10 @@ export default async function PlatformsPage({
       <div className="mt-2 fade-4">
         <div className="mb-5">
           <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-indigo-400">
-            Agenda & Outils
+            {t('toolsTitle')}
           </p>
           <p className="text-[12px] leading-relaxed text-zinc-500">
-            Connectez vos outils pour suivre vos deadlines et livraisons.
+            {t('toolsSubtitle')}
           </p>
         </div>
 
@@ -320,7 +304,7 @@ export default async function PlatformsPage({
                       <div className="truncate text-base font-bold text-zinc-100">{p.label}</div>
                     </div>
                   </div>
-                  <IntegrationStatusBadge state={p.state} />
+                  <IntegrationStatusBadge state={p.state} t={t} />
                 </div>
 
                 {/* Description */}
@@ -334,7 +318,7 @@ export default async function PlatformsPage({
                       type="submit"
                       className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 py-2.5 text-[12px] font-semibold text-rose-300 transition-all duration-200 hover:bg-rose-500/20"
                     >
-                      <Unplug size={13} /> Déconnecter
+                      <Unplug size={13} /> {t('disconnect')}
                     </button>
                   </form>
                 ) : p.state === 'configured' ? (
@@ -342,13 +326,13 @@ export default async function PlatformsPage({
                     href={`/api/integrations/${p.id}/connect`}
                     className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 py-2.5 text-[12px] font-semibold text-indigo-300 transition-all duration-200 hover:bg-indigo-500/20 group-hover:border-indigo-400/40"
                   >
-                    <Plus size={13} /> Connecter {p.label}
+                    <Plus size={13} /> {t('connect', { label: p.label })}
                     <ArrowRight size={12} className="ml-auto opacity-0 transition-opacity group-hover:opacity-100" />
                   </a>
                 ) : (
                   // 'soon' — configuration env manquante : bloc inerte, pas de lien mort
                   <div className="w-full rounded-xl border border-white/[0.04] bg-white/[0.02] py-2.5 text-center text-[12px] text-zinc-500">
-                    Configuration requise
+                    {t('configRequired')}
                   </div>
                 )}
               </div>
@@ -361,47 +345,49 @@ export default async function PlatformsPage({
 }
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
-function StatusBadge({ state }: { state: string }) {
+type PlatformsT = Awaited<ReturnType<typeof getTranslations>>
+
+function StatusBadge({ state, t }: { state: string; t: PlatformsT }) {
   if (state === 'connected') {
     return (
       <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
-        <CheckCircle2 size={10} className="shrink-0" /> Connecté
+        <CheckCircle2 size={10} className="shrink-0" /> {t('badge.connected')}
       </span>
     )
   }
   if (state === 'coming_soon') {
     return (
       <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-bold text-indigo-400">
-        <Clock size={10} className="shrink-0" /> Bientôt
+        <Clock size={10} className="shrink-0" /> {t('badge.soon')}
       </span>
     )
   }
   return (
     <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-zinc-500">
-      Non connecté
+      {t('badge.notConnected')}
     </span>
   )
 }
 
-function IntegrationStatusBadge({ state }: { state: 'connected' | 'configured' | 'soon' }) {
+function IntegrationStatusBadge({ state, t }: { state: 'connected' | 'configured' | 'soon'; t: PlatformsT }) {
   if (state === 'connected') {
     return (
       <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
-        <CheckCircle2 size={10} className="shrink-0" /> Connecté
+        <CheckCircle2 size={10} className="shrink-0" /> {t('badge.connected')}
       </span>
     )
   }
   if (state === 'soon') {
     return (
       <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-bold text-indigo-400">
-        <Clock size={10} className="shrink-0" /> Bientôt
+        <Clock size={10} className="shrink-0" /> {t('badge.soon')}
       </span>
     )
   }
   // 'configured' — prêt à connecter
   return (
     <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-zinc-500">
-      Non connecté
+      {t('badge.notConnected')}
     </span>
   )
 }

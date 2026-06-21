@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { RevenueSeries } from '@/lib/dashboard/types'
 
@@ -24,6 +25,7 @@ function buildArea(xs: number[], ys: number[], baseline: number): string {
 }
 
 export default function RevenueChart({ series }: RevenueChartProps) {
+  const t = useTranslations('dashboard.revenueChart')
   const [period, setPeriod] = useState<Period>('6M')
 
   // Détermine les périodes disponibles depuis la série de données
@@ -63,9 +65,9 @@ export default function RevenueChart({ series }: RevenueChartProps) {
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <div className="text-sm font-bold text-zinc-100">Évolution des Revenus</div>
+          <div className="text-sm font-bold text-zinc-100">{t('title')}</div>
           <div className="text-[11px] text-zinc-500 mt-0.5">
-            Toutes plateformes · {period}
+            {t('allPlatforms')} · {period}
           </div>
         </div>
         <div className="flex gap-1">

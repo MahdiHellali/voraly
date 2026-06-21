@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Plug, ArrowRight } from 'lucide-react'
 
@@ -20,6 +21,9 @@ export default function HeroBento({
   score = null,
   chips = null,
 }: HeroBentoProps) {
+  const t = useTranslations('dashboard.hero')
+  const locale = useLocale()
+  const numberLocale = locale === 'en' ? 'en-US' : 'fr-FR'
   const ringRef = useRef<SVGCircleElement>(null)
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export default function HeroBento({
         transition={{ duration: 0.5, delay: 0.04 }}
         className="text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.18em] mb-5"
       >
-        Bonjour, {firstName}
+        {t('greeting', { name: firstName })}
       </motion.p>
 
       {/* ── Hero row: metric ou bienvenue + score ring ── */}
@@ -55,7 +59,7 @@ export default function HeroBento({
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
               className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2"
             >
-              Revenus ce mois
+              {t('revenueThisMonth')}
             </motion.p>
 
             <motion.div
@@ -65,7 +69,7 @@ export default function HeroBento({
               className="flex items-baseline gap-2.5"
             >
               <span className="text-[58px] font-black text-white tracking-tight leading-none tabular-nums">
-                {revenue.monthTotal.toLocaleString('fr-FR')}
+                {revenue.monthTotal.toLocaleString(numberLocale)}
               </span>
               <span className="text-[26px] font-bold text-zinc-400">€</span>
             </motion.div>
@@ -83,10 +87,10 @@ export default function HeroBento({
                 {revenue.deltaPct >= 0 ? '+' : ''}
                 {revenue.deltaPct}%
               </span>
-              <span className="text-[13px] text-zinc-400">vs. mois dernier</span>
+              <span className="text-[13px] text-zinc-400">{t('vsLastMonth')}</span>
               <span className="text-zinc-800 select-none">·</span>
               <span className="text-[13px] text-zinc-400">
-                {revenue.activePlatforms} plateforme{revenue.activePlatforms > 1 ? 's' : ''} active{revenue.activePlatforms > 1 ? 's' : ''}
+                {t('activePlatforms', { count: revenue.activePlatforms })}
               </span>
             </motion.div>
           </div>
@@ -99,22 +103,22 @@ export default function HeroBento({
             className="max-w-md"
           >
             <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2">
-              Tableau de bord
+              {t('dashboardLabel')}
             </p>
             <h2 className="text-[28px] sm:text-[32px] font-black text-white tracking-tight leading-[1.1]">
-              Bienvenue sur Voraly
+              {t('welcome')}
             </h2>
             {connectedPlatformsCount > 0 ? (
               <p className="text-[14px] text-zinc-400 mt-3 leading-relaxed">
-                <span className="font-bold text-violet-300">{connectedPlatformsCount}</span>{' '}
-                plateforme{connectedPlatformsCount > 1 ? 's' : ''} connectée{connectedPlatformsCount > 1 ? 's' : ''}.{' '}
-                Vos premières métriques apparaîtront ici dès la première synchronisation.
+                {t.rich('connectedIntro', {
+                  count: connectedPlatformsCount,
+                  b: (chunks) => <span className="font-bold text-violet-300">{chunks}</span>,
+                })}
               </p>
             ) : (
               <>
                 <p className="text-[14px] text-zinc-400 mt-3 leading-relaxed">
-                  Connectez une plateforme pour commencer à suivre vos revenus, commandes et
-                  conversion en temps réel.
+                  {t('emptyIntro')}
                 </p>
                 <Link
                   href="/dashboard/platforms"
@@ -122,7 +126,7 @@ export default function HeroBento({
                   style={{ boxShadow: '0 0 24px rgba(139,92,246,0.18)' }}
                 >
                   <Plug size={15} className="text-violet-300" />
-                  Connecter une plateforme
+                  {t('connectPlatform')}
                   <ArrowRight
                     size={14}
                     className="transition-transform duration-200 group-hover:translate-x-0.5"
@@ -181,7 +185,7 @@ export default function HeroBento({
                   {score}
                 </span>
                 <span className="text-[9px] text-zinc-400 font-semibold mt-0.5 uppercase tracking-wider">
-                  score
+                  {t('score')}
                 </span>
               </div>
             </div>
@@ -194,17 +198,17 @@ export default function HeroBento({
         <div className="flex gap-3 flex-wrap">
           {[
             chips!.revenueToday && {
-              label: "Revenus aujourd'hui",
+              label: t('chips.revenueToday'),
               value: chips!.revenueToday!,
               accent: 'text-emerald-400',
             },
             chips!.newProposals != null && {
-              label: 'Nouvelles propositions',
+              label: t('chips.newProposals'),
               value: String(chips!.newProposals),
               accent: 'text-violet-300',
             },
             chips!.pendingReplies != null && {
-              label: 'Réponses en attente',
+              label: t('chips.pendingReplies'),
               value: String(chips!.pendingReplies),
               accent: 'text-amber-400',
             },

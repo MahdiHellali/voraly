@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle } from 'lucide-react'
 import type { Phase, RoadmapStep, Question } from '@/lib/roadmap/types'
@@ -8,18 +9,6 @@ import EmptyState from './EmptyState'
 import QuestionnaireFlow from './QuestionnaireFlow'
 import CinematicLoader from './CinematicLoader'
 import RoadmapResult from './RoadmapResult'
-
-// Human-readable mapping for the structured errors returned by the route handler.
-const ERROR_COPY: Record<string, string> = {
-  workflow_not_listening:
-    "Le service de génération est momentanément indisponible. Réessayez dans quelques secondes.",
-  workflow_failed: "Le workflow a renvoyé une erreur. Réessayez dans un instant.",
-  workflow_unreachable:
-    "Impossible de joindre le service de génération. Réessayez dans quelques instants.",
-  empty_roadmap:
-    "La génération n’a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.",
-  unauthorized: "Votre session a expiré. Reconnectez-vous puis réessayez.",
-}
 
 export default function RoadmapExperience({
   initialSteps,
@@ -34,6 +23,9 @@ export default function RoadmapExperience({
   userId: string | null
   isPremium: boolean
 }) {
+  const t = useTranslations('roadmap.experience')
+  const resolveError = (code: string) =>
+    t.has(`errors.${code}`) ? t(`errors.${code}`) : t('errors.generic')
   const [phase, setPhase] = useState<Phase>(
     initialSteps.length > 0 ? 'roadmap' : 'empty',
   )
@@ -101,14 +93,13 @@ export default function RoadmapExperience({
       {phase === 'empty' && (
         <div>
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">
-            ✦ IA · Diagnostic stratégique
+            {t('eyebrow')}
           </p>
           <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-white">
-            Stratégie & Roadmap
+            {t('title')}
           </h1>
           <p className="text-sm text-zinc-400">
-            Votre plan d&apos;action personnalisé pour trouver plus de clients, généré
-            par l&apos;IA Voraly.
+            {t('subtitle')}
           </p>
         </div>
       )}
@@ -123,7 +114,7 @@ export default function RoadmapExperience({
             className="flex items-start gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-200"
           >
             <AlertTriangle size={18} className="mt-0.5 shrink-0" />
-            <span>{ERROR_COPY[error] ?? "Une erreur est survenue. Réessayez."}</span>
+            <span>{resolveError(error)}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -141,12 +132,7 @@ export default function RoadmapExperience({
         {phase === 'analyzing' && (
           <CinematicLoader
             key="analyzing"
-            messages={[
-              "Analyse de vos intégrations…",
-              "Lecture des comptes connectés…",
-              "Récupération de vos métriques de revenus…",
-              "Conception d’un diagnostic sur-mesure…",
-            ]}
+            messages={t.raw('analyzingMessages') as string[]}
           />
         )}
 

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Infinity as InfinityIcon, Crown, Clock } from 'lucide-react'
 
@@ -21,10 +22,12 @@ export default function SubscriptionBadge({
   isPremium,
   renewalDate,
 }: SubscriptionBadgeProps) {
+  const t = useTranslations('dashboard.subscription')
+  const locale = useLocale()
   // ── Non abonné → CTA animé vers /pricing ──
   if (!isPremium) {
     return (
-      <Link href="/pricing" aria-label="Passer à Pro">
+      <Link href="/pricing" aria-label={t('upgrade')}>
         <motion.span
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -60,7 +63,7 @@ export default function SubscriptionBadge({
             }}
           />
           <Crown size={13} className="relative text-pink-300" />
-          <span className="relative">Passer à Pro</span>
+          <span className="relative">{t('upgrade')}</span>
         </motion.span>
       </Link>
     )
@@ -71,12 +74,12 @@ export default function SubscriptionBadge({
     const d = daysUntil(renewalDate)
     return (
       <span
-        title={`Renouvellement le ${new Date(renewalDate).toLocaleDateString('fr-FR')}`}
+        title={t('renewalOn', { date: new Date(renewalDate).toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR') })}
         className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/30 bg-pink-500/10 px-3.5 py-1.5 text-[12px] font-bold text-pink-100 backdrop-blur-xl"
         style={{ boxShadow: '0 0 14px rgba(255,102,204,0.2)' }}
       >
         <Clock size={13} className="text-pink-300" />
-        Pro · {d}&nbsp;j
+        {t('proDays', { count: d })}
       </span>
     )
   }
@@ -84,12 +87,12 @@ export default function SubscriptionBadge({
   // ── Abonné à vie → logo infini ──
   return (
     <span
-      title="Abonnement Pro — à vie"
+      title={t('lifetimeTitle')}
       className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/30 bg-pink-500/10 px-3.5 py-1.5 text-[12px] font-bold text-pink-100 backdrop-blur-xl"
       style={{ boxShadow: '0 0 14px rgba(255,102,204,0.22)' }}
     >
       <InfinityIcon size={14} className="text-pink-300" />
-      Pro · À vie
+      {t('proLifetime')}
     </span>
   )
 }

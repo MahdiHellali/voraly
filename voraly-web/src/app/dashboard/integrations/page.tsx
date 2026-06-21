@@ -5,6 +5,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { CalendarDays, FileText, ArrowLeft } from 'lucide-react'
 import { INTEGRATION_PROVIDERS, type IntegrationId } from '@/lib/integrations/providers'
 
@@ -15,7 +16,8 @@ export const metadata: Metadata = {
   description: 'Connectez Google Calendar et Notion à votre dashboard Voraly.',
 }
 
-export default function IntegrationsPage() {
+export default async function IntegrationsPage() {
+  const t = await getTranslations('dashboard.integrations')
   return (
     <div className="flex flex-col gap-8 max-w-xl">
       {/* ── En-tête ── */}
@@ -25,11 +27,11 @@ export default function IntegrationsPage() {
           className="inline-flex items-center gap-1.5 text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors mb-6"
         >
           <ArrowLeft size={13} />
-          Retour au dashboard
+          {t('back')}
         </Link>
-        <h1 className="text-[26px] font-black text-white tracking-tight">Intégrations</h1>
+        <h1 className="text-[26px] font-black text-white tracking-tight">{t('title')}</h1>
         <p className="mt-2 text-[13.5px] text-zinc-400 leading-relaxed">
-          Connectez vos outils pour importer deadlines et livrables directement dans votre dashboard.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -50,11 +52,11 @@ export default function IntegrationsPage() {
               <div className="flex-1 min-w-0">
                 <div className="text-[14px] font-semibold text-zinc-100">{provider.label}</div>
                 <div className="text-[12px] text-zinc-500 mt-0.5 leading-relaxed">
-                  {provider.description}
+                  {t(`providers.${id}.description`)}
                 </div>
               </div>
               <span className="flex-shrink-0 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500">
-                Bientôt
+                {t('soon')}
               </span>
             </div>
           )
@@ -62,12 +64,13 @@ export default function IntegrationsPage() {
       </div>
 
       <p className="text-[12px] text-zinc-600 leading-relaxed">
-        Les flux de connexion OAuth seront disponibles prochainement.
-        En attendant, vos données de plateformes (Upwork, Fiverr, Malt) sont accessibles via{' '}
-        <Link href="/dashboard/platforms" className="text-violet-400 hover:text-violet-300 transition-colors">
-          la page Plateformes
-        </Link>
-        .
+        {t.rich('footerNote', {
+          platforms: (chunks) => (
+            <Link href="/dashboard/platforms" className="text-violet-400 hover:text-violet-300 transition-colors">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </div>
   )

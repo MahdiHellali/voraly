@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Wallet, ArrowRight } from 'lucide-react'
 import { LiquidButton } from '@/components/ui/liquid-glass-button'
 
 export function KpiEmptyState({ className }: { className?: string }) {
+  const t = useTranslations('dashboard.kpiEmpty')
   return (
     <motion.div
       initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
@@ -38,17 +40,16 @@ export function KpiEmptyState({ className }: { className?: string }) {
         </motion.div>
 
         <h3 className="mt-5 text-[19px] font-bold tracking-tight text-white">
-          Vos revenus apparaîtront ici
+          {t('title')}
         </h3>
         <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-zinc-400">
-          Connectez vos plateformes (Upwork, Fiverr, Malt, LinkedIn) pour suivre revenus,
-          commandes et conversion en temps réel.
+          {t('body')}
         </p>
 
         <Link href="/dashboard/platforms" className="mt-6 inline-block">
           <LiquidButton size="lg" className="group/liquid text-[13px] font-semibold text-zinc-100">
             <span className="flex items-center justify-center gap-2">
-              Connecter une plateforme
+              {t('connect')}
               <ArrowRight
                 size={14}
                 className="text-violet-300 transition-transform duration-200 group-hover/liquid:translate-x-0.5"

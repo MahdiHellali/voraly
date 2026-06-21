@@ -207,7 +207,301 @@
       "language": {
         "title": "Language",
         "subtitle": "Choose the interface language"
+      },
+      "profile": {
+        "title": "Profile",
+        "subtitle": "Personal information and email",
+        "avatarHint": "Click to {action} your photo · Max 2 MB",
+        "changeAction": "change",
+        "addAction": "add",
+        "fullName": "Full name",
+        "emailReadonly": "Email address (not editable)",
+        "save": "Save changes"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "subtitle": "Sync and deadline alerts",
+        "emailPrefs": "Email preferences",
+        "deadlines": {
+          "title": "Deadline alerts",
+          "desc": "Get an email reminder as your client deliveries approach."
+        },
+        "offers": {
+          "title": "Offer opportunities",
+          "desc": "Be notified when the AI finds new revenue optimization angles."
+        },
+        "sync": {
+          "title": "Sync reports",
+          "desc": "Weekly summary of your platform syncs."
+        },
+        "save": "Save preferences"
+      },
+      "security": {
+        "title": "Security",
+        "subtitle": "Password, 2FA and active sessions",
+        "changePassword": "Change password",
+        "newPassword": "New password",
+        "minChars": "Min. 6 characters",
+        "confirmPassword": "Confirm password",
+        "reenter": "Re-enter the password",
+        "updatePassword": "Update password",
+        "mfaTitle": "Two-Factor Authentication (2FA)",
+        "mfaDesc": "Secure your account by requiring a security code at every sign-in.",
+        "mfaActive": "2FA successfully active (TOTP)",
+        "mfaDisable": "Disable two-factor authentication",
+        "mfaSetup": "Set up two-factor authentication (2FA)",
+        "scanQr": "Scan this QR Code",
+        "qrAlt": "2FA QR Code",
+        "secretKey": "Secret key (manual entry)",
+        "validationCode": "6-digit validation code",
+        "verifyEnable": "Verify and enable",
+        "cancel": "Cancel",
+        "sessions": "Active Sessions",
+        "sessionsDesc": "If you suspect unauthorized access, sign out all other devices.",
+        "disconnectOthers": "Sign out all other sessions",
+        "mfaEnabledMsg": "Two-factor authentication (2FA) set up and enabled successfully!",
+        "mfaDisabledMsg": "Two-factor authentication (2FA) disabled successfully.",
+        "errorFallback": "Something went wrong."
+      },
+      "founder": {
+        "title": "Founder Console",
+        "subtitle": "Broadcast a global notification to all freelancers",
+        "notifTitle": "Notification title",
+        "notifTitlePlaceholder": "e.g. New dashboard update!",
+        "message": "Message",
+        "messagePlaceholder": "e.g. We just rolled out two-factor authentication...",
+        "broadcast": "Broadcast the notification"
+      },
+      "subscription": {
+        "title": "Subscription",
+        "proActive": "Pro plan · Active lifetime",
+        "freeManage": "Free plan · Manage subscription"
+      },
+      "danger": {
+        "title": "Danger zone",
+        "body": "Account deletion is irreversible. All your connected platforms, revenue metrics and AI-generated roadmaps will be permanently destroyed.",
+        "delete": "Delete my account permanently",
+        "confirm": "Confirm deletion?",
+        "confirmYes": "Yes, delete my account",
+        "cancel": "Cancel"
       }
+    },
+    "common": {
+      "loading": "Loading…"
+    },
+    "hero": {
+      "freelanceFallback": "Freelancer",
+      "greeting": "Hello, {name}",
+      "revenueThisMonth": "Revenue this month",
+      "vsLastMonth": "vs. last month",
+      "activePlatforms": "{count, plural, one {# active platform} other {# active platforms}}",
+      "dashboardLabel": "Dashboard",
+      "welcome": "Welcome to Voraly",
+      "connectedIntro": "<b>{count}</b> {count, plural, one {connected platform} other {connected platforms}}. Your first metrics will appear here as soon as you sync.",
+      "emptyIntro": "Connect a platform to start tracking your revenue, orders and conversion in real time.",
+      "connectPlatform": "Connect a platform",
+      "score": "score",
+      "chips": {
+        "revenueToday": "Revenue today",
+        "newProposals": "New proposals",
+        "pendingReplies": "Pending replies"
+      }
+    },
+    "kpiEmpty": {
+      "title": "Your revenue will appear here",
+      "body": "Connect your platforms (Upwork, Fiverr, Malt, LinkedIn) to track revenue, orders and conversion in real time.",
+      "connect": "Connect a platform"
+    },
+    "subscription": {
+      "upgrade": "Upgrade to Pro",
+      "renewalOn": "Renews on {date}",
+      "proDays": "Pro · {count} d",
+      "lifetimeTitle": "Pro subscription — lifetime",
+      "proLifetime": "Pro · Lifetime"
+    },
+    "revenueChart": {
+      "title": "Revenue trend",
+      "allPlatforms": "All platforms"
+    },
+    "deadlines": {
+      "title": "⚡ Urgent & Deadlines",
+      "subtitle": "Upcoming deliveries",
+      "urgentCount": "{count} urgent",
+      "expired": "Expired",
+      "daysHours": "{d}d {h}h",
+      "hoursMins": "{h}h {m}m",
+      "connected": "Connected",
+      "soon": "Soon",
+      "connect": "Connect",
+      "sourceCalendar": "Calendar",
+      "sourceNotion": "Notion",
+      "emptyBody": "Connect Google Calendar or Notion to see your upcoming deliveries."
+    },
+    "aiTasks": {
+      "aiBadge": "AI",
+      "title": "AI To-Do",
+      "autoGenerated": "Generated automatically",
+      "generatedByAi": "Generated by Voraly AI",
+      "weekLabel": "Week {n}",
+      "emptyBody": "Let Voraly AI build your personalized action plan to land more projects.",
+      "generate": "Generate the to-do list with Voraly AI",
+      "viewFullRoadmap": "View the full roadmap"
+    },
+    "optimize": {
+      "eyebrow": "📈 AI analysis",
+      "title": "Offer optimization",
+      "subtitle": "Analyze your offers' performance and get AI recommendations to maximize your conversion rate.",
+      "comingTitle": "Analysis under development",
+      "comingBody": "This section will automatically analyze your Upwork, Fiverr and Malt offers to identify areas for improvement.",
+      "notifyMe": "Get notified at launch"
+    },
+    "integrations": {
+      "back": "Back to dashboard",
+      "title": "Integrations",
+      "subtitle": "Connect your tools to import deadlines and deliverables straight into your dashboard.",
+      "soon": "Soon",
+      "providers": {
+        "google_calendar": { "description": "Sync your deadlines and client deliveries from Google Calendar." },
+        "notion": { "description": "Import your projects and deliverables from Notion." }
+      },
+      "footerNote": "OAuth connection flows will be available soon. In the meantime, your platform data (Upwork, Fiverr, Malt) is accessible via <platforms>the Platforms page</platforms>."
+    },
+    "platforms": {
+      "eyebrow": "🧩 Integrations",
+      "title": "Connected Platforms",
+      "subtitle": "Connect your freelance accounts via OAuth 2.0 to centralize revenue, orders and performance in Voraly.",
+      "disconnect": "Disconnect",
+      "connect": "Connect {label}",
+      "comingSoon": "Available soon",
+      "configRequired": "Configuration required",
+      "toolsTitle": "Calendar & Tools",
+      "toolsSubtitle": "Connect your tools to track your deadlines and deliveries.",
+      "stats": {
+        "active": "Active platforms",
+        "oauth": "OAuth connections",
+        "available": "Available"
+      },
+      "badge": {
+        "connected": "Connected",
+        "soon": "Soon",
+        "notConnected": "Not connected"
+      },
+      "platforms": {
+        "upwork": { "desc": "The largest freelance marketplace in the world. Connect your account to sync your revenue and orders." },
+        "linkedin": { "desc": "LinkedIn profile optimization and inbound opportunity tracking via the official API." },
+        "fiverr": { "desc": "On-demand services platform. Sync your Gigs and active orders in real time." },
+        "malt": { "desc": "The freelancing reference in France. Connect your Malt profile to track your projects." }
+      },
+      "errors": {
+        "access_denied": "Connection cancelled — you denied access to the platform.",
+        "invalid_state": "Security failure (invalid anti-CSRF token). Please try again.",
+        "config": "This platform isn't available yet. Check back soon.",
+        "unknown_provider": "Unknown platform.",
+        "missing_code": "Incomplete response from the platform. Try again.",
+        "exchange_failed": "Couldn't retrieve access tokens. Try again.",
+        "save_failed": "Connection established but saving failed. Try again.",
+        "provider_error": "The platform returned an error. Try again.",
+        "disconnect_failed": "Disconnection failed. Try again."
+      },
+      "success": {
+        "connected": "Platform connected successfully.",
+        "disconnected": "Platform disconnected."
+      }
+    }
+  },
+  "roadmap": {
+    "empty": {
+      "title": "Let's build your growth strategy",
+      "titleRegenerate": "Ready to recalibrate your strategy?",
+      "subtitle": "Four targeted questions are all our AI needs to build your personalized action plan in seconds.",
+      "subtitleRegenerate": "Run the diagnostic again to generate a new action plan tailored to your current situation.",
+      "cta": "Start my strategic diagnostic",
+      "ctaRegenerate": "Run my diagnostic again"
+    },
+    "loader": {
+      "messages": [
+        "Analyzing your positioning…",
+        "Calculating market opportunities…",
+        "Mapping your growth levers…",
+        "Generating your personalized action plan…"
+      ]
+    },
+    "experience": {
+      "eyebrow": "✦ AI · Strategic diagnostic",
+      "title": "Strategy & Roadmap",
+      "subtitle": "Your personalized action plan to find more clients, generated by Voraly AI.",
+      "analyzingMessages": [
+        "Analyzing your integrations…",
+        "Reading connected accounts…",
+        "Fetching your revenue metrics…",
+        "Designing a tailored diagnostic…"
+      ],
+      "errors": {
+        "generic": "Something went wrong. Try again.",
+        "workflow_not_listening": "The generation service is momentarily unavailable. Try again in a few seconds.",
+        "workflow_failed": "The workflow returned an error. Try again in a moment.",
+        "workflow_unreachable": "Couldn't reach the generation service. Try again in a few moments.",
+        "empty_roadmap": "The generation returned no steps. Try again with more detailed answers.",
+        "unauthorized": "Your session has expired. Sign in again and retry."
+      }
+    },
+    "questionnaire": {
+      "cancel": "Cancel",
+      "previous": "Previous",
+      "next": "Next",
+      "generate": "Generate my roadmap"
+    },
+    "result": {
+      "weekShort": "WK.",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "seeDetailedPlan": "See the detailed day-by-day plan",
+      "detailedPlan": "Detailed plan",
+      "completed": "Completed",
+      "markComplete": "Mark as complete",
+      "weekValidated": "✦ Week validated",
+      "eyebrow": "✦ Your strategic hub",
+      "title": "Growth Strategy & AI",
+      "weeksCompleted": "{done} / {total} {total, plural, one {week completed} other {weeks completed}}",
+      "newDiagnostic": "New diagnostic",
+      "tabs": {
+        "roadmap": "Action Plan",
+        "marketing": "Marketing Strategy",
+        "chat": "AI Advisor"
+      },
+      "marketingMissingTitle": "Marketing strategy missing",
+      "marketingMissingBody": "You have an older roadmap version without a marketing strategy. Click \"New diagnostic\" above to generate it.",
+      "organic": "Organic Content",
+      "paid": "Paid Content",
+      "shortsTitle": "Recommended Shorts Video Scripts",
+      "video": "Video {n}",
+      "structure": "Structure:",
+      "hideScript": "Hide script",
+      "showScript": "Show full script",
+      "hookLabel": "HOOK (0-3s)",
+      "bodyLabel": "MESSAGE (3-45s)",
+      "ctaLabel": "CTA (45-50s)"
+    },
+    "chatbot": {
+      "welcome": "Hi! I'm your AI marketing advisor. I'm here to answer your questions about your organic strategy, paid strategy, your Shorts scripts or anything else related to growing your freelance business. How can I help you today?",
+      "starterPrompts": [
+        "Give me post ideas for LinkedIn",
+        "How can I improve my Shorts script?",
+        "Which paid strategy to find clients?",
+        "Help me refine my positioning"
+      ],
+      "proBenefits": ["Unlimited AI advisor", "Personalized AI roadmaps", "Priority support"],
+      "errors": {
+        "generic": "Something went wrong.",
+        "unreachable": "The AI advisor is momentarily unavailable. Try again in a few moments.",
+        "empty": "The advisor couldn't generate a response. Rephrase your question.",
+        "cantReach": "Couldn't reach the chatbot."
+      },
+      "paywallEyebrow": "✦ Voraly Pro",
+      "paywallTitle": "Unlock the AI Advisor",
+      "paywallBody": "Upgrade to Voraly Pro for unlimited conversations with your personal marketing advisor.",
+      "upgrade": "Upgrade to Voraly Pro",
+      "placeholder": "Ask your marketing question..."
     }
   },
   "faqPage": {

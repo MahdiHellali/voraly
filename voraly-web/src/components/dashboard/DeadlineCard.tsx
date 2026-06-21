@@ -1,10 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { CalendarClock, CalendarDays, FileText, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Deadline, IntegrationsState } from '@/lib/dashboard/types'
+
+type DeadlineT = ReturnType<typeof useTranslations>
 
 type Urgency = 'red' | 'orange' | 'green'
 
@@ -22,13 +25,13 @@ function computeUrgency(dueAt: string): Urgency {
   return 'green'
 }
 
-function computeTimeLeft(dueAt: string): string {
+function computeTimeLeft(dueAt: string, t: DeadlineT): string {
   const msLeft = new Date(dueAt).getTime() - Date.now()
-  if (msLeft <= 0) return 'Expiré'
+  if (msLeft <= 0) return t('expired')
   const h = Math.floor(msLeft / (1000 * 60 * 60))
   const m = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60))
-  if (h >= 48) return `${Math.floor(h / 24)}j ${h % 24}h`
-  return `${h}h ${m.toString().padStart(2, '0')}m`
+  if (h >= 48) return t('daysHours', { d: Math.floor(h / 24), h: h % 24 })
+  return t('hoursMins', { h, m: m.toString().padStart(2, '0') })
 }
 
 function ConnectorButton({
@@ -36,11 +39,13 @@ function ConnectorButton({
   icon,
   state,
   href,
+  t,
 }: {
   label: string
   icon: React.ReactNode
   state: 'connect' | 'soon' | 'connected'
   href: string
+  t: DeadlineT
 }) {
   const isSoon = state === 'soon'
   const isConnected = state === 'connected'
@@ -53,14 +58,14 @@ function ConnectorButton({
       <span className="text-[12.5px] font-semibold text-zinc-200">{label}</span>
       <span className="ml-auto text-[10px] font-bold">
         {isConnected ? (
-          <span className="inline-flex items-center gap-1 text-emerald-400">Connecté</span>
+          <span className="inline-flex items-center gap-1 text-emerald-400">{t('connected')}</span>
         ) : isSoon ? (
           <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide text-zinc-500">
-            Bientôt
+            {t('soon')}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-violet-300">
-            Connecter <ArrowRight size={12} />
+            {t('connect')} <ArrowRight size={12} />
           </span>
         )}
       </span>
@@ -100,6 +105,7 @@ interface DeadlineCardProps {
 }
 
 export default function DeadlineCard({ deadlines, integrations }: DeadlineCardProps) {
+  const t = useTranslations('dashboard.deadlines')
   const hasDeadlines = !!deadlines && deadlines.length > 0
 
   return (
@@ -110,12 +116,12 @@ export default function DeadlineCard({ deadlines, integrations }: DeadlineCardPr
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <div className="text-sm font-bold text-zinc-100">⚡ Urgences &amp; Deadlines</div>
-          <div className="text-[11px] text-zinc-500 mt-0.5">Livraisons imminentes</div>
+          <div className="text-sm font-bold text-zinc-100">{t('title')}</div>
+          <div className="text-[11px] text-zinc-500 mt-0.5">{t('subtitle')}</div>
         </div>
         {hasDeadlines && (
           <span className="text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/25 px-2.5 py-1 rounded-full">
-            {deadlines.filter((d) => computeUrgency(d.dueAt) === 'red').length} urgents
+            {t('urgentCount', { count: deadlines.filter((d) => computeUrgency(d.dueAt) === 'red').length })}
           </span>
         )}
       </div>
@@ -125,7 +131,7 @@ export default function DeadlineCard({ deadlines, integrations }: DeadlineCardPr
         <div className="flex flex-col gap-2">
           {deadlines.map((d, index) => {
             const urgency = computeUrgency(d.dueAt)
-            const timeLeft = computeTimeLeft(d.dueAt)
+            const timeLeft = computeTimeLeft(d.dueAt, t)
             const cfg = urgencyConfig[urgency]
 
             return (
@@ -172,7 +178,7 @@ export default function DeadlineCard({ deadlines, integrations }: DeadlineCardPr
                 {/* Source + temps restant */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 capitalize">
-                    {d.source === 'google_calendar' ? 'Calendar' : 'Notion'}
+                    {d.source === 'google_calendar' ? t('sourceCalendar') : t('sourceNotion')}
                   </span>
                   <span className={cn('text-[10px] font-bold', cfg.time)}>⏱ {timeLeft}</span>
                 </div>
@@ -202,7 +208,7 @@ export default function DeadlineCard({ deadlines, integrations }: DeadlineCardPr
             <CalendarClock className="h-5 w-5 text-indigo-300" />
           </div>
           <p className="relative mt-4 max-w-[260px] text-[13px] leading-relaxed text-zinc-400">
-            Connectez Google Calendar ou Notion pour voir vos livraisons imminentes.
+            {t('emptyBody')}
           </p>
           <div className="relative mt-5 flex w-full max-w-[280px] flex-col gap-2">
             <ConnectorButton
@@ -210,12 +216,14 @@ export default function DeadlineCard({ deadlines, integrations }: DeadlineCardPr
               icon={<CalendarDays size={15} className="text-indigo-300" />}
               state={integrations?.googleCalendar ?? 'soon'}
               href="/dashboard/integrations/google-calendar"
+              t={t}
             />
             <ConnectorButton
               label="Notion"
               icon={<FileText size={15} className="text-zinc-300" />}
               state={integrations?.notion ?? 'soon'}
               href="/dashboard/integrations/notion"
+              t={t}
             />
           </div>
         </motion.div>

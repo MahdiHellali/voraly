@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Check, Circle, RotateCcw, Sparkles, Megaphone, MessageSquare,
@@ -12,6 +13,7 @@ import type { RoadmapStep } from '@/lib/roadmap/types'
 import MarketingChatbot from './MarketingChatbot'
 
 type TabId = 'roadmap' | 'marketing' | 'chat'
+type RoadmapResultT = ReturnType<typeof useTranslations>
 
 interface MarketingScript {
   topic?: string
@@ -107,6 +109,7 @@ function WeekCard({
   onToggleDone,
   onToggleExpand,
   index,
+  t,
 }: {
   step: RoadmapStep
   isDone: boolean
@@ -114,6 +117,7 @@ function WeekCard({
   onToggleDone: () => void
   onToggleExpand: () => void
   index: number
+  t: RoadmapResultT
 }) {
   const weekLabel = extractWeekLabel(step.title, step.step_number)
   const shortTitle = extractShortTitle(step.title)
@@ -158,7 +162,7 @@ function WeekCard({
             className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-pink-500/30 bg-pink-500/10 leading-none"
             style={{ boxShadow: '0 0 18px rgba(255,102,204,0.18)' }}
           >
-            <span className="text-[9px] font-black uppercase tracking-widest text-pink-400/80">SEM.</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-pink-400/80">{t('weekShort')}</span>
             <span className="text-xl font-black text-pink-300">{weekNum}</span>
           </div>
 
@@ -181,7 +185,7 @@ function WeekCard({
           <button
             type="button"
             onClick={onToggleExpand}
-            aria-label={isExpanded ? 'Réduire' : 'Développer'}
+            aria-label={isExpanded ? t('collapse') : t('expand')}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-white/5 text-zinc-400 transition-all hover:border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-300"
           >
             {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
@@ -196,7 +200,7 @@ function WeekCard({
             className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-violet-400/70 transition-colors hover:text-violet-300"
           >
             <Calendar size={11} />
-            Voir le plan détaillé jour par jour
+            {t('seeDetailedPlan')}
           </button>
         )}
 
@@ -215,7 +219,7 @@ function WeekCard({
                   <div className="mt-5 flex items-center gap-2 border-t border-white/5 pt-5">
                     <Calendar size={13} className="text-violet-400" />
                     <span className="text-[11px] font-bold uppercase tracking-widest text-violet-400">
-                      Plan détaillé — {weekLabel}
+                      {t('detailedPlan')} — {weekLabel}
                     </span>
                   </div>
                   <WeekCalendar step={step} />
@@ -242,9 +246,9 @@ function WeekCard({
             )}
           >
             {isDone ? (
-              <><Check size={14} strokeWidth={3} /> Complétée</>
+              <><Check size={14} strokeWidth={3} /> {t('completed')}</>
             ) : (
-              <><Circle size={14} /> Marquer complétée</>
+              <><Circle size={14} /> {t('markComplete')}</>
             )}
           </button>
 
@@ -254,7 +258,7 @@ function WeekCard({
               animate={{ opacity: 1, scale: 1 }}
               className="text-[11px] font-semibold text-pink-400"
             >
-              ✦ Semaine validée
+              {t('weekValidated')}
             </motion.span>
           )}
         </div>
@@ -279,6 +283,7 @@ export default function RoadmapResult({
   isPremium: boolean
   onRestart: () => void
 }) {
+  const t = useTranslations('roadmap.result')
   const strategy = marketingStrategy as MarketingStrategyData | null
   const [activeTab, setActiveTab] = useState<TabId>('roadmap')
   const [completed, setCompleted] = useState<number[]>(initialCompleted)
@@ -315,9 +320,9 @@ export default function RoadmapResult({
   )
 
   const TABS = [
-    { id: 'roadmap' as TabId,    label: "Plan d'Action",      icon: <Sparkles size={15} className="text-pink-400" /> },
-    { id: 'marketing' as TabId,  label: 'Stratégie Marketing', icon: <Megaphone size={15} className="text-indigo-400" /> },
-    { id: 'chat' as TabId,       label: 'Conseiller IA',       icon: <MessageSquare size={15} className="text-fuchsia-400" /> },
+    { id: 'roadmap' as TabId,    label: t('tabs.roadmap'),   icon: <Sparkles size={15} className="text-pink-400" /> },
+    { id: 'marketing' as TabId,  label: t('tabs.marketing'), icon: <Megaphone size={15} className="text-indigo-400" /> },
+    { id: 'chat' as TabId,       label: t('tabs.chat'),      icon: <MessageSquare size={15} className="text-fuchsia-400" /> },
   ]
 
   return (
@@ -332,10 +337,10 @@ export default function RoadmapResult({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-pink-400">
-            ✦ Votre hub stratégique
+            {t('eyebrow')}
           </p>
           <h2 className="text-balance text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Stratégie de Croissance & IA
+            {t('title')}
           </h2>
           <div className="mt-3 flex items-center gap-3">
             <div className="h-1.5 w-40 overflow-hidden rounded-full bg-white/5">
@@ -347,7 +352,7 @@ export default function RoadmapResult({
               />
             </div>
             <span className="text-sm text-zinc-400">
-              {doneCount} / {steps.length} semaine{steps.length > 1 ? 's' : ''} complétée{steps.length > 1 ? 's' : ''}
+              {t('weeksCompleted', { done: doneCount, total: steps.length })}
             </span>
           </div>
         </div>
@@ -358,7 +363,7 @@ export default function RoadmapResult({
           className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-300 backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white"
         >
           <RotateCcw size={14} />
-          Nouveau diagnostic
+          {t('newDiagnostic')}
         </button>
       </div>
 
@@ -399,6 +404,7 @@ export default function RoadmapResult({
                 onToggleDone={() => toggle(step.step_number)}
                 onToggleExpand={() => toggleStep(step.step_number)}
                 index={i}
+                t={t}
               />
             ))}
           </div>
@@ -410,9 +416,9 @@ export default function RoadmapResult({
             {!hasMarketing ? (
               <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/5 p-12 text-center backdrop-blur-xl">
                 <AlertCircle size={40} className="mb-4 text-zinc-500" />
-                <h3 className="mb-2 text-lg font-bold text-white">Stratégie marketing manquante</h3>
+                <h3 className="mb-2 text-lg font-bold text-white">{t('marketingMissingTitle')}</h3>
                 <p className="max-w-md text-sm text-zinc-400">
-                  Vous possédez une ancienne version de roadmap sans stratégie marketing. Cliquez sur &quot;Nouveau diagnostic&quot; ci-dessus pour la générer.
+                  {t('marketingMissingBody')}
                 </p>
               </div>
             ) : (
@@ -426,7 +432,7 @@ export default function RoadmapResult({
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-300">
                       <Sparkles size={16} />
                     </span>
-                    <h3 className="text-lg font-bold text-white">Contenu Organique</h3>
+                    <h3 className="text-lg font-bold text-white">{t('organic')}</h3>
                   </div>
                   <div className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
                     {strategy?.organic}
@@ -442,7 +448,7 @@ export default function RoadmapResult({
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-pink-500/30 bg-pink-500/10 text-pink-300">
                       <Megaphone size={16} />
                     </span>
-                    <h3 className="text-lg font-bold text-white">Contenu Payant</h3>
+                    <h3 className="text-lg font-bold text-white">{t('paid')}</h3>
                   </div>
                   <div className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
                     {strategy?.paid}
@@ -452,7 +458,7 @@ export default function RoadmapResult({
                 {strategy?.shorts_scripts && strategy.shorts_scripts.length > 0 && (
                   <div className="col-span-1 space-y-6 md:col-span-2">
                     <h3 className="mt-4 text-xl font-bold tracking-tight text-white">
-                      Scripts Vidéos de Shorts Recommandés
+                      {t('shortsTitle')}
                     </h3>
                     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                       {strategy.shorts_scripts.map((script, idx) => {
@@ -469,21 +475,21 @@ export default function RoadmapResult({
                             <div className="flex flex-col gap-4">
                               <div>
                                 <span className="mb-2 inline-flex items-center rounded-full border border-pink-500/20 bg-pink-500/10 px-2.5 py-0.5 text-xs font-medium text-pink-300">
-                                  Vidéo {idx + 1}
+                                  {t('video', { n: idx + 1 })}
                                 </span>
                                 <h4 className="text-base font-bold leading-snug text-white transition-colors group-hover:text-pink-300">
                                   {script.topic}
                                 </h4>
                               </div>
                               <div className="text-xs text-zinc-400">
-                                <span className="font-semibold text-zinc-300">Structure :</span> {script.structure}
+                                <span className="font-semibold text-zinc-300">{t('structure')}</span> {script.structure}
                               </div>
                               <button
                                 type="button"
                                 onClick={() => toggleScript(idx)}
                                 className="inline-flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-2 text-xs font-semibold text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white"
                               >
-                                <span>{isExpanded ? 'Masquer le script' : 'Afficher le script complet'}</span>
+                                <span>{isExpanded ? t('hideScript') : t('showScript')}</span>
                                 {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                               </button>
                               <AnimatePresence>
@@ -496,19 +502,19 @@ export default function RoadmapResult({
                                   >
                                     <div>
                                       <span className="mb-1 inline-flex rounded-full border border-pink-500/20 bg-pink-500/10 px-2 py-0.5 text-[10px] font-bold text-pink-300">
-                                        ACCROCHE (0-3s)
+                                        {t('hookLabel')}
                                       </span>
                                       <p className="text-sm font-medium italic text-white">&ldquo;{script.hook}&rdquo;</p>
                                     </div>
                                     <div>
                                       <span className="mb-1 inline-flex rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold text-indigo-300">
-                                        MESSAGE (3-45s)
+                                        {t('bodyLabel')}
                                       </span>
                                       <p className="whitespace-pre-line text-xs leading-relaxed text-zinc-300">{script.body}</p>
                                     </div>
                                     <div>
                                       <span className="mb-1 inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                                        CTA (45-50s)
+                                        {t('ctaLabel')}
                                       </span>
                                       <p className="text-sm font-semibold text-white">{script.cta}</p>
                                     </div>

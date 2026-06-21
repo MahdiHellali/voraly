@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Sparkles, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -17,6 +18,7 @@ export default function QuestionnaireFlow({
   onComplete: (answers: Record<string, string>) => void
   onCancel: () => void
 }) {
+  const t = useTranslations('roadmap.questionnaire')
   const activeQuestions = questions.length > 0 ? questions : QUESTIONS
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<1 | -1>(1)
@@ -164,7 +166,7 @@ export default function QuestionnaireFlow({
           className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
         >
           <ArrowLeft size={16} />
-          {index === 0 ? 'Annuler' : 'Précédent'}
+          {index === 0 ? t('cancel') : t('previous')}
         </button>
 
         <motion.button
@@ -187,11 +189,11 @@ export default function QuestionnaireFlow({
           {isLast ? (
             <>
               <Sparkles size={16} />
-              Générer ma roadmap
+              {t('generate')}
             </>
           ) : (
             <>
-              Suivant
+              {t('next')}
               <ArrowRight size={16} />
             </>
           )}

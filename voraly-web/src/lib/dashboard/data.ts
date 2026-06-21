@@ -2,6 +2,7 @@
 // Agrège toutes les données pour le dashboard.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { getTranslations } from 'next-intl/server'
 import { normalizeRoadmap, normalizeCompletedSteps } from '@/lib/roadmap/types'
 import type { DashboardData, AiTask, Deadline, IntegrationsState } from './types'
 
@@ -29,6 +30,7 @@ export async function getDashboardData(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<DashboardData> {
+  const t = await getTranslations('dashboard.aiTasks')
 
   // ── 1. Nb plateformes connectées ──────────────────────────────────────────
   let connectedPlatformsCount = 0
@@ -88,7 +90,7 @@ export async function getDashboardData(
               done: completedDailyTasks.includes(id),
               priority: mapPriority(dayIndex),
               dayLabel: day.day,
-              weekLabel: `Semaine ${currentStep.step_number}`,
+              weekLabel: t('weekLabel', { n: currentStep.step_number }),
             } satisfies AiTask]
           })
         } else {
@@ -100,7 +102,7 @@ export async function getDashboardData(
             priority: mapPriority(step.step_number - 1),
           }))
         }
-        roadmapGeneratedLabel = 'Générée par Voraly AI'
+        roadmapGeneratedLabel = t('generatedByAi')
       }
     }
   } catch (err) {

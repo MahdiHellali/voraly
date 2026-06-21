@@ -207,7 +207,301 @@
       "language": {
         "title": "Langue",
         "subtitle": "Choisissez la langue de l'interface"
+      },
+      "profile": {
+        "title": "Profil",
+        "subtitle": "Informations personnelles et email",
+        "avatarHint": "Cliquez pour {action} votre photo · Max 2 Mo",
+        "changeAction": "changer",
+        "addAction": "ajouter",
+        "fullName": "Nom complet",
+        "emailReadonly": "Adresse email (non modifiable)",
+        "save": "Enregistrer les modifications"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "subtitle": "Alertes de synchronisation et de deadlines",
+        "emailPrefs": "Préférences email",
+        "deadlines": {
+          "title": "Alertes de Deadlines",
+          "desc": "Recevez un rappel par email à l'approche de vos livraisons clients."
+        },
+        "offers": {
+          "title": "Opportunités d'Offres",
+          "desc": "Soyez averti lorsque l'IA trouve de nouveaux axes d'optimisation de revenus."
+        },
+        "sync": {
+          "title": "Rapports de Synchronisation",
+          "desc": "Bilan hebdomadaire des synchronisations de vos plateformes."
+        },
+        "save": "Enregistrer les préférences"
+      },
+      "security": {
+        "title": "Sécurité",
+        "subtitle": "Mot de passe, 2FA et sessions actives",
+        "changePassword": "Changer le mot de passe",
+        "newPassword": "Nouveau mot de passe",
+        "minChars": "Min. 6 caractères",
+        "confirmPassword": "Confirmer le mot de passe",
+        "reenter": "Re-saisir le mot de passe",
+        "updatePassword": "Mettre à jour le mot de passe",
+        "mfaTitle": "Double Authentification (2FA)",
+        "mfaDesc": "Sécurisez votre compte en exigeant un code de sécurité à chaque connexion.",
+        "mfaActive": "2FA active avec succès (TOTP)",
+        "mfaDisable": "Désactiver la double authentification",
+        "mfaSetup": "Configurer la double authentification (2FA)",
+        "scanQr": "Scannez ce QR Code",
+        "qrAlt": "QR Code 2FA",
+        "secretKey": "Clé secrète (saisie manuelle)",
+        "validationCode": "Code de validation à 6 chiffres",
+        "verifyEnable": "Vérifier et activer",
+        "cancel": "Annuler",
+        "sessions": "Sessions Actives",
+        "sessionsDesc": "Si vous suspectez un accès non autorisé, déconnectez tous les autres appareils.",
+        "disconnectOthers": "Déconnecter toutes les autres sessions",
+        "mfaEnabledMsg": "Double authentification (2FA) configurée et activée avec succès !",
+        "mfaDisabledMsg": "Double authentification (2FA) désactivée avec succès.",
+        "errorFallback": "Une erreur est survenue."
+      },
+      "founder": {
+        "title": "Console Fondateur",
+        "subtitle": "Diffuser une notification globale à tous les freelances",
+        "notifTitle": "Titre de la notification",
+        "notifTitlePlaceholder": "Ex: Nouvelle mise à jour du tableau de bord !",
+        "message": "Message",
+        "messagePlaceholder": "Ex: Nous venons de déployer la double authentification...",
+        "broadcast": "Diffuser la notification"
+      },
+      "subscription": {
+        "title": "Abonnement",
+        "proActive": "Plan Pro · Actif à vie",
+        "freeManage": "Plan Gratuit · Gérer l'abonnement"
+      },
+      "danger": {
+        "title": "Zone sensible",
+        "body": "La suppression de compte est irréversible. Toutes vos plateformes connectées, métriques de revenus et roadmaps générées par l'IA seront définitivement détruites.",
+        "delete": "Supprimer mon compte définitivement",
+        "confirm": "Confirmer la suppression ?",
+        "confirmYes": "Oui, supprimer mon compte",
+        "cancel": "Annuler"
       }
+    },
+    "common": {
+      "loading": "Chargement…"
+    },
+    "hero": {
+      "freelanceFallback": "Freelance",
+      "greeting": "Bonjour, {name}",
+      "revenueThisMonth": "Revenus ce mois",
+      "vsLastMonth": "vs. mois dernier",
+      "activePlatforms": "{count, plural, one {# plateforme active} other {# plateformes actives}}",
+      "dashboardLabel": "Tableau de bord",
+      "welcome": "Bienvenue sur Voraly",
+      "connectedIntro": "<b>{count}</b> {count, plural, one {plateforme connectée} other {plateformes connectées}}. Vos premières métriques apparaîtront ici dès la première synchronisation.",
+      "emptyIntro": "Connectez une plateforme pour commencer à suivre vos revenus, commandes et conversion en temps réel.",
+      "connectPlatform": "Connecter une plateforme",
+      "score": "score",
+      "chips": {
+        "revenueToday": "Revenus aujourd'hui",
+        "newProposals": "Nouvelles propositions",
+        "pendingReplies": "Réponses en attente"
+      }
+    },
+    "kpiEmpty": {
+      "title": "Vos revenus apparaîtront ici",
+      "body": "Connectez vos plateformes (Upwork, Fiverr, Malt, LinkedIn) pour suivre revenus, commandes et conversion en temps réel.",
+      "connect": "Connecter une plateforme"
+    },
+    "subscription": {
+      "upgrade": "Passer à Pro",
+      "renewalOn": "Renouvellement le {date}",
+      "proDays": "Pro · {count} j",
+      "lifetimeTitle": "Abonnement Pro — à vie",
+      "proLifetime": "Pro · À vie"
+    },
+    "revenueChart": {
+      "title": "Évolution des revenus",
+      "allPlatforms": "Toutes plateformes"
+    },
+    "deadlines": {
+      "title": "⚡ Urgences & Deadlines",
+      "subtitle": "Livraisons imminentes",
+      "urgentCount": "{count} urgents",
+      "expired": "Expiré",
+      "daysHours": "{d}j {h}h",
+      "hoursMins": "{h}h {m}m",
+      "connected": "Connecté",
+      "soon": "Bientôt",
+      "connect": "Connecter",
+      "sourceCalendar": "Calendar",
+      "sourceNotion": "Notion",
+      "emptyBody": "Connectez Google Calendar ou Notion pour voir vos livraisons imminentes."
+    },
+    "aiTasks": {
+      "aiBadge": "IA",
+      "title": "To-Do IA",
+      "autoGenerated": "Générée automatiquement",
+      "generatedByAi": "Générée par Voraly AI",
+      "weekLabel": "Semaine {n}",
+      "emptyBody": "Laissez Voraly AI bâtir votre plan d'action personnalisé pour décrocher plus de missions.",
+      "generate": "Générer la to-do list avec Voraly AI",
+      "viewFullRoadmap": "Voir la roadmap complète"
+    },
+    "optimize": {
+      "eyebrow": "📈 Analyse IA",
+      "title": "Optimisation des offres",
+      "subtitle": "Analysez la performance de vos offres et recevez des recommandations IA pour maximiser votre taux de conversion.",
+      "comingTitle": "Analyse en cours de développement",
+      "comingBody": "Cette section analysera automatiquement vos offres Upwork, Fiverr et Malt pour identifier les axes d'amélioration.",
+      "notifyMe": "Être notifié au lancement"
+    },
+    "integrations": {
+      "back": "Retour au dashboard",
+      "title": "Intégrations",
+      "subtitle": "Connectez vos outils pour importer deadlines et livrables directement dans votre dashboard.",
+      "soon": "Bientôt",
+      "providers": {
+        "google_calendar": { "description": "Synchronisez vos deadlines et livraisons client depuis Google Calendar." },
+        "notion": { "description": "Importez vos projets et livrables depuis Notion." }
+      },
+      "footerNote": "Les flux de connexion OAuth seront disponibles prochainement. En attendant, vos données de plateformes (Upwork, Fiverr, Malt) sont accessibles via <platforms>la page Plateformes</platforms>."
+    },
+    "platforms": {
+      "eyebrow": "🧩 Intégrations",
+      "title": "Plateformes Connectées",
+      "subtitle": "Connectez vos comptes freelance via OAuth 2.0 pour centraliser revenus, commandes et performances dans Voraly.",
+      "disconnect": "Déconnecter",
+      "connect": "Connecter {label}",
+      "comingSoon": "Disponible prochainement",
+      "configRequired": "Configuration requise",
+      "toolsTitle": "Agenda & Outils",
+      "toolsSubtitle": "Connectez vos outils pour suivre vos deadlines et livraisons.",
+      "stats": {
+        "active": "Plateformes actives",
+        "oauth": "Connexions OAuth",
+        "available": "Disponibles"
+      },
+      "badge": {
+        "connected": "Connecté",
+        "soon": "Bientôt",
+        "notConnected": "Non connecté"
+      },
+      "platforms": {
+        "upwork": { "desc": "La plus grande marketplace freelance mondiale. Connectez votre compte pour synchroniser vos revenus et commandes." },
+        "linkedin": { "desc": "Optimisation du profil LinkedIn et suivi des opportunités entrantes via l'API officielle." },
+        "fiverr": { "desc": "Plateforme de services à la demande. Synchronisez vos Gigs et commandes actives en temps réel." },
+        "malt": { "desc": "La référence du freelancing en France. Connectez votre profil Malt pour suivre vos missions." }
+      },
+      "errors": {
+        "access_denied": "Connexion annulée — vous avez refusé l'accès à la plateforme.",
+        "invalid_state": "Échec de sécurité (jeton anti-CSRF invalide). Merci de réessayer.",
+        "config": "Cette plateforme n'est pas encore disponible. Revenez bientôt.",
+        "unknown_provider": "Plateforme inconnue.",
+        "missing_code": "Réponse incomplète de la plateforme. Réessayez.",
+        "exchange_failed": "Impossible de récupérer les jetons d'accès. Réessayez.",
+        "save_failed": "Connexion établie mais l'enregistrement a échoué. Réessayez.",
+        "provider_error": "La plateforme a renvoyé une erreur. Réessayez.",
+        "disconnect_failed": "La déconnexion a échoué. Réessayez."
+      },
+      "success": {
+        "connected": "Plateforme connectée avec succès.",
+        "disconnected": "Plateforme déconnectée."
+      }
+    }
+  },
+  "roadmap": {
+    "empty": {
+      "title": "Construisons votre stratégie de croissance",
+      "titleRegenerate": "Prêt à recalibrer votre stratégie ?",
+      "subtitle": "Quatre questions ciblées suffisent à notre IA pour bâtir votre plan d'action personnalisé en quelques secondes.",
+      "subtitleRegenerate": "Relancez le diagnostic pour générer un nouveau plan d'action adapté à votre situation actuelle.",
+      "cta": "Lancer mon diagnostic stratégique",
+      "ctaRegenerate": "Relancer mon diagnostic"
+    },
+    "loader": {
+      "messages": [
+        "Analyse de votre positionnement…",
+        "Calcul des opportunités de marché…",
+        "Cartographie de vos leviers de croissance…",
+        "Génération de votre plan d'action personnalisé…"
+      ]
+    },
+    "experience": {
+      "eyebrow": "✦ IA · Diagnostic stratégique",
+      "title": "Stratégie & Roadmap",
+      "subtitle": "Votre plan d'action personnalisé pour trouver plus de clients, généré par l'IA Voraly.",
+      "analyzingMessages": [
+        "Analyse de vos intégrations…",
+        "Lecture des comptes connectés…",
+        "Récupération de vos métriques de revenus…",
+        "Conception d'un diagnostic sur-mesure…"
+      ],
+      "errors": {
+        "generic": "Une erreur est survenue. Réessayez.",
+        "workflow_not_listening": "Le service de génération est momentanément indisponible. Réessayez dans quelques secondes.",
+        "workflow_failed": "Le workflow a renvoyé une erreur. Réessayez dans un instant.",
+        "workflow_unreachable": "Impossible de joindre le service de génération. Réessayez dans quelques instants.",
+        "empty_roadmap": "La génération n'a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.",
+        "unauthorized": "Votre session a expiré. Reconnectez-vous puis réessayez."
+      }
+    },
+    "questionnaire": {
+      "cancel": "Annuler",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "generate": "Générer ma roadmap"
+    },
+    "result": {
+      "weekShort": "SEM.",
+      "collapse": "Réduire",
+      "expand": "Développer",
+      "seeDetailedPlan": "Voir le plan détaillé jour par jour",
+      "detailedPlan": "Plan détaillé",
+      "completed": "Complétée",
+      "markComplete": "Marquer complétée",
+      "weekValidated": "✦ Semaine validée",
+      "eyebrow": "✦ Votre hub stratégique",
+      "title": "Stratégie de Croissance & IA",
+      "weeksCompleted": "{done} / {total} {total, plural, one {semaine complétée} other {semaines complétées}}",
+      "newDiagnostic": "Nouveau diagnostic",
+      "tabs": {
+        "roadmap": "Plan d'Action",
+        "marketing": "Stratégie Marketing",
+        "chat": "Conseiller IA"
+      },
+      "marketingMissingTitle": "Stratégie marketing manquante",
+      "marketingMissingBody": "Vous possédez une ancienne version de roadmap sans stratégie marketing. Cliquez sur « Nouveau diagnostic » ci-dessus pour la générer.",
+      "organic": "Contenu Organique",
+      "paid": "Contenu Payant",
+      "shortsTitle": "Scripts Vidéos de Shorts Recommandés",
+      "video": "Vidéo {n}",
+      "structure": "Structure :",
+      "hideScript": "Masquer le script",
+      "showScript": "Afficher le script complet",
+      "hookLabel": "ACCROCHE (0-3s)",
+      "bodyLabel": "MESSAGE (3-45s)",
+      "ctaLabel": "CTA (45-50s)"
+    },
+    "chatbot": {
+      "welcome": "Bonjour ! Je suis votre conseiller marketing IA. Je suis ici pour répondre à vos questions concernant votre stratégie organique, payante, vos scripts de Shorts ou toute autre question liée à la croissance de votre activité freelance. Comment puis-je vous aider aujourd'hui ?",
+      "starterPrompts": [
+        "Donne-moi des idées de posts pour LinkedIn",
+        "Comment améliorer mon script de Shorts ?",
+        "Quelle stratégie payante pour trouver des clients ?",
+        "Aide-moi à affiner mon positionnement"
+      ],
+      "proBenefits": ["Conseiller IA illimité", "Roadmaps IA personnalisées", "Support prioritaire"],
+      "errors": {
+        "generic": "Une erreur est survenue.",
+        "unreachable": "Le conseiller IA est momentanément indisponible. Réessayez dans quelques instants.",
+        "empty": "Le conseiller n'a pas pu générer de réponse. Reformulez votre question.",
+        "cantReach": "Impossible de joindre le chatbot."
+      },
+      "paywallEyebrow": "✦ Voraly Pro",
+      "paywallTitle": "Débloquez le Conseiller IA",
+      "paywallBody": "Passez à Voraly Pro pour des conversations illimitées avec votre conseiller marketing personnel.",
+      "upgrade": "Passer à Voraly Pro",
+      "placeholder": "Posez votre question marketing..."
     }
   },
   "faqPage": {

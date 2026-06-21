@@ -1,20 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
 
 // Phase 'loading' — a glowing frosted-glass ring breathing with neon-pink rim
 // light, under cycling minimalist micro-copy.
-const DEFAULT_MESSAGES = [
-  'Analyse de votre positionnement…',
-  'Calcul des opportunités de marché…',
-  'Cartographie de vos leviers de croissance…',
-  'Génération de votre plan d’action personnalisé…',
-]
-
 export default function CinematicLoader({ messages }: { messages?: string[] }) {
+  const t = useTranslations('roadmap.loader')
   const [step, setStep] = useState(0)
-  const list = messages ?? DEFAULT_MESSAGES
+  const list = messages ?? (t.raw('messages') as string[])
 
   useEffect(() => {
     const id = setInterval(

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Send, Sparkles, User, AlertCircle, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -11,22 +12,15 @@ interface Message {
   content: string
 }
 
-const STARTER_PROMPTS = [
-  "Donne-moi des idées de posts pour LinkedIn",
-  "Comment améliorer mon script de Shorts ?",
-  "Quelle stratégie payante pour trouver des clients ?",
-  "Aide-moi à affiner mon positionnement",
-]
-
-const PRO_BENEFITS = ['Conseiller IA illimité', 'Roadmaps IA personnalisées', 'Support prioritaire']
-
 export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) {
   const router = useRouter()
+  const t = useTranslations('roadmap.chatbot')
+  const starterPrompts = t.raw('starterPrompts') as string[]
+  const proBenefits = t.raw('proBenefits') as string[]
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content:
-        "Bonjour ! Je suis votre conseiller marketing IA. Je suis ici pour répondre à vos questions concernant votre stratégie organique, payante, vos scripts de Shorts ou toute autre question liée à la croissance de votre activité freelance. Comment puis-je vous aider aujourd'hui ?",
+      content: t('welcome'),
     },
   ])
   const [input, setInput] = useState('')
@@ -70,7 +64,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
       apiData = await res.json()
 
       if (!res.ok) {
-        throw new Error(apiData?.error || 'Une erreur est survenue.')
+        throw new Error(apiData?.error || t('errors.generic'))
       }
 
       setMessages((prev) => [
@@ -89,10 +83,10 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
       }
       const friendlyMsg =
         errorCode === 'chatbot_unreachable' || errorCode === 'chatbot_failed'
-          ? 'Le conseiller IA est momentanément indisponible. Réessayez dans quelques instants.'
+          ? t('errors.unreachable')
           : errorCode === 'empty_response'
-            ? "Le conseiller n'a pas pu générer de réponse. Reformulez votre question."
-            : errMsg || 'Impossible de joindre le chatbot.'
+            ? t('errors.empty')
+            : errMsg || t('errors.cantReach')
       setError(friendlyMsg)
     } finally {
       setIsLoading(false)
@@ -119,13 +113,13 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
               />
             </div>
             <div className="relative z-10 flex flex-col items-center gap-5">
-              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">✦ Voraly Pro</p>
-              <h3 className="text-xl font-extrabold tracking-tight text-white">Débloquez le Conseiller IA</h3>
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">{t('paywallEyebrow')}</p>
+              <h3 className="text-xl font-extrabold tracking-tight text-white">{t('paywallTitle')}</h3>
               <p className="max-w-xs text-sm text-zinc-400">
-                Passez à Voraly Pro pour des conversations illimitées avec votre conseiller marketing personnel.
+                {t('paywallBody')}
               </p>
               <ul className="flex flex-col gap-2 text-left">
-                {PRO_BENEFITS.map((b) => (
+                {proBenefits.map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-zinc-200">
                     <span className="flex h-4 w-4 items-center justify-center rounded-full border border-pink-500/40 bg-pink-500/10 text-pink-400 text-[9px]">✓</span>
                     {b}
@@ -140,7 +134,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
                 className="mt-1 inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-500/10 px-7 py-3.5 text-sm font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20"
                 style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
               >
-                Passer à Voraly Pro
+                {t('upgrade')}
                 <ArrowRight size={16} />
               </motion.button>
             </div>
@@ -220,7 +214,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
       {/* Starter Prompts */}
       {messages.length === 1 && !isLoading && (
         <div className="mt-4 flex flex-wrap gap-2">
-          {STARTER_PROMPTS.map((prompt) => (
+          {starterPrompts.map((prompt) => (
             <button
               key={prompt}
               type="button"
@@ -246,7 +240,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}
-          placeholder="Posez votre question marketing..."
+          placeholder={t('placeholder')}
           className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none backdrop-blur-xl transition-colors placeholder:text-zinc-500 focus:border-pink-500/50"
         />
         <button
