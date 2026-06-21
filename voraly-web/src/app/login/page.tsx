@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Loader2, Shield } from 'lucide-react'
@@ -8,6 +9,7 @@ import { loginAction } from '@/app/actions/auth'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
+  const t = useTranslations('auth')
   const [state, formAction, isPending] = useActionState(loginAction, null)
   const [totpCode, setTotpCode] = useState('')
   const [mfaError, setMfaError] = useState<string | null>(null)
@@ -70,7 +72,7 @@ export default function LoginPage() {
         window.location.href = '/dashboard'
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Une erreur est survenue lors de la vérification."
+      const msg = err instanceof Error ? err.message : t('mfa.errorFallback')
       setMfaError(msg)
     } finally {
       setMfaVerifying(false)
@@ -85,7 +87,7 @@ export default function LoginPage() {
         className="absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-md px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.06] transition-all duration-200"
       >
         <ArrowLeft size={13} />
-        {"Retour à l'accueil"}
+        {t('backHome')}
       </Link>
       {/* Glass card */}
       <div className="glass relative overflow-hidden rounded-3xl w-full max-w-md p-8 fade-1">
@@ -126,10 +128,10 @@ export default function LoginPage() {
                   <Shield className="text-indigo-400" size={20} />
                 </div>
                 <h1 className="text-xl font-extrabold text-white tracking-tight">
-                  Double authentification (2FA)
+                  {t('mfa.title')}
                 </h1>
                 <p className="text-xs text-zinc-400 mt-1.5 px-4 leading-relaxed">
-                  Saisissez le code de sécurité à 6 chiffres généré par votre application d&apos;authentification pour valider votre connexion.
+                  {t('mfa.subtitle')}
                 </p>
               </div>
 
@@ -145,7 +147,7 @@ export default function LoginPage() {
               <form onSubmit={handleVerifyOtp} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="totpCode" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Code de sécurité
+                    {t('mfa.codeLabel')}
                   </label>
                   <input
                     id="totpCode"
@@ -178,10 +180,10 @@ export default function LoginPage() {
                   {mfaVerifying ? (
                     <div className="flex items-center justify-center gap-2">
                       <Loader2 size={16} className="animate-spin" />
-                      <span>Vérification…</span>
+                      <span>{t('mfa.verifying')}</span>
                     </div>
                   ) : (
-                    'Vérifier et se connecter'
+                    t('mfa.verify')
                   )}
                 </button>
 
@@ -192,7 +194,7 @@ export default function LoginPage() {
                   }}
                   className="w-full py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03] border border-transparent hover:border-white/[0.05] transition-all duration-200"
                 >
-                  Retour à la connexion
+                  {t('mfa.backToLogin')}
                 </button>
               </form>
             </>
@@ -201,10 +203,10 @@ export default function LoginPage() {
               {/* ── Heading ── */}
               <div className="text-center">
                 <h1 className="text-2xl font-extrabold text-white tracking-tight">
-                  Bon retour&nbsp;👋
+                  {t('login.heading')}&nbsp;👋
                 </h1>
                 <p className="text-sm text-zinc-400 mt-1.5">
-                  Connectez-vous à votre tableau de bord freelance
+                  {t('login.subtitle')}
                 </p>
               </div>
 
@@ -221,7 +223,7 @@ export default function LoginPage() {
                 {/* Email */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="email" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                    Adresse email
+                    {t('login.emailLabel')}
                   </label>
                   <input
                     id="email"
@@ -229,7 +231,7 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     required
-                    placeholder="vous@exemple.com"
+                    placeholder={t('login.emailPlaceholder')}
                     className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600
                       bg-white/[0.05] border border-white/[0.10]
                       focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25
@@ -241,7 +243,7 @@ export default function LoginPage() {
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <label htmlFor="password" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                      Mot de passe
+                      {t('login.passwordLabel')}
                     </label>
                   </div>
                   <input
@@ -272,15 +274,15 @@ export default function LoginPage() {
                     hover:shadow-[0_6px_28px_rgba(139,92,246,0.5)]
                     active:scale-[0.98]"
                 >
-                  {isPending ? 'Connexion en cours…' : 'Se connecter'}
+                  {isPending ? t('login.signingIn') : t('login.signIn')}
                 </button>
               </form>
 
               {/* ── Footer ── */}
               <p className="text-center text-sm text-zinc-500">
-                Pas encore de compte ?{' '}
+                {t('login.noAccount')}{' '}
                 <Link href="/signup" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                  Créer un compte →
+                  {t('login.createAccount')} →
                 </Link>
               </p>
             </>

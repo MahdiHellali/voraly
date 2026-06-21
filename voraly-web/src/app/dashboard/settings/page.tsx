@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import SettingsForm from '@/components/dashboard/SettingsForm'
 
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function SettingsPage() {
+  const t = await getTranslations('dashboard.settings')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -23,7 +25,7 @@ export default async function SettingsPage() {
   const isPremium = Boolean(profile?.is_premium)
   const avatarUrl = (profile?.avatar_url as string | null) ?? null
 
-  const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || 'Utilisateur'
+  const fullName = user.user_metadata?.full_name?.trim() || user.email?.split('@')[0] || t('userFallback')
   const email = user.email ?? ''
   const initials = (() => {
     const parts = fullName.split(/\s+/).filter(Boolean)
@@ -36,10 +38,10 @@ export default async function SettingsPage() {
       {/* Header */}
       <div>
         <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.15em] mb-2">
-          ⚙️ Configuration
+          {t('eyebrow')}
         </p>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">Paramètres</h1>
-        <p className="text-sm text-zinc-400">Gérez votre compte et vos préférences Voraly.</p>
+        <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">{t('title')}</h1>
+        <p className="text-sm text-zinc-400">{t('subtitle')}</p>
       </div>
 
       {/* User preview card */}
@@ -60,7 +62,7 @@ export default async function SettingsPage() {
           <div className="text-base font-bold text-zinc-100">{fullName}</div>
           <div className="text-[12px] text-zinc-400 mt-0.5">{email}</div>
           <div className={`text-[10px] mt-1 font-semibold ${isPremium ? 'text-pink-400' : 'text-indigo-400'}`}>
-            {isPremium ? 'Plan Pro · À vie' : 'Plan Gratuit · Actif'}
+            {isPremium ? t('planPro') : t('planFree')}
           </div>
         </div>
       </div>

@@ -189,6 +189,345 @@
       "justNow": "À l'instant",
       "minutesAgo": "Il y a {count} min",
       "hoursAgo": "Il y a {count} h"
+    },
+    "nav": {
+      "overview": "Accueil",
+      "platforms": "Plateformes",
+      "roadmap": "Stratégie",
+      "optimize": "Optimiser",
+      "settings": "Réglages"
+    },
+    "settings": {
+      "eyebrow": "⚙️ Configuration",
+      "title": "Paramètres",
+      "subtitle": "Gérez votre compte et vos préférences Voraly.",
+      "planPro": "Plan Pro · À vie",
+      "planFree": "Plan Gratuit · Actif",
+      "userFallback": "Utilisateur",
+      "language": {
+        "title": "Langue",
+        "subtitle": "Choisissez la langue de l'interface"
+      }
+    }
+  },
+  "faqPage": {
+    "eyebrow": "FAQ",
+    "title": "Questions fréquentes",
+    "subtitle": "Tout ce que vous devez savoir sur Voraly. Vous ne trouvez pas la réponse ?",
+    "contactCta": "Contactez-nous.",
+    "categories": [
+      {
+        "slug": "plateformes",
+        "title": "Plateformes",
+        "items": [
+          { "q": "Quelles plateformes sont compatibles ?", "a": "Upwork, Fiverr, Malt et LinkedIn dès aujourd'hui, avec de nouvelles intégrations chaque mois. Vos deadlines se synchronisent avec Google Calendar et Notion." },
+          { "q": "Puis-je connecter plusieurs comptes sur la même plateforme ?", "a": "Oui, vous pouvez connecter plusieurs comptes Upwork ou Fiverr si vous gérez plusieurs profils. Chaque compte apparaît comme une source distincte dans votre tableau de bord." },
+          { "q": "Comment se fait la synchronisation des données ?", "a": "Voraly synchronise vos données automatiquement toutes les heures via les API officielles de chaque plateforme. Vous pouvez aussi forcer une synchronisation manuelle depuis vos réglages." }
+        ]
+      },
+      {
+        "slug": "compte",
+        "title": "Compte",
+        "items": [
+          { "q": "Combien de temps pour démarrer ?", "a": "Environ deux minutes : créez votre compte, connectez vos plateformes, et votre tableau de bord se remplit automatiquement." },
+          { "q": "Puis-je annuler à tout moment ?", "a": "Oui. Aucun engagement — résiliez votre abonnement Pro en un clic depuis vos réglages." },
+          { "q": "Puis-je utiliser Voraly sur mobile ?", "a": "Voraly est une application web responsive, accessible depuis n'importe quel navigateur mobile. Une application native iOS/Android est prévue dans la roadmap." }
+        ]
+      },
+      {
+        "slug": "ia",
+        "title": "Intelligence artificielle",
+        "items": [
+          { "q": "Comment fonctionne la roadmap IA ?", "a": "L'IA analyse vos revenus, vos missions et vos tarifs pour générer une feuille de route personnalisée, mise à jour au fil de votre activité." },
+          { "q": "L'IA a-t-elle accès à mes messages privés ?", "a": "Non. L'IA analyse uniquement les données agrégées de vos missions et revenus. Elle n'a pas accès à vos conversations, vos fichiers ou vos messages clients." },
+          { "q": "À quelle fréquence la roadmap est-elle mise à jour ?", "a": "La roadmap se met à jour automatiquement chaque semaine, ou à chaque nouvelle synchronisation si un changement significatif est détecté (nouvelle mission, hausse ou baisse de revenus)." }
+        ]
+      },
+      {
+        "slug": "securite",
+        "title": "Sécurité",
+        "items": [
+          { "q": "Mes données sont-elles en sécurité ?", "a": "Vos connexions sont chiffrées et nous ne stockons jamais vos identifiants de plateforme. Vous gardez le contrôle total et pouvez déconnecter un compte à tout moment." },
+          { "q": "Où sont hébergées mes données ?", "a": "Vos données sont hébergées dans des datacenters européens (UE) conformes au RGPD. Nous ne transférons aucune donnée personnelle en dehors de l'Union européenne sans votre accord." },
+          { "q": "Voraly est-il conforme au RGPD ?", "a": "Oui. Voraly respecte le Règlement Général sur la Protection des Données. Vous pouvez demander l'export ou la suppression de vos données à tout moment depuis vos réglages ou en nous contactant." }
+        ]
+      },
+      {
+        "slug": "facturation",
+        "title": "Facturation",
+        "items": [
+          { "q": "Voraly est-il vraiment gratuit ?", "a": "Vous démarrez gratuitement, sans carte bancaire. L'offre Pro débloque la roadmap IA avancée et les intégrations illimitées." },
+          { "q": "Quels modes de paiement sont acceptés ?", "a": "Voraly Pro accepte les cartes bancaires (Visa, Mastercard, Amex) via Stripe. Le paiement est entièrement sécurisé — nous n'avons jamais accès à vos données de carte." },
+          { "q": "Y a-t-il des frais cachés ?", "a": "Aucun frais caché. Le prix affiché est le prix final. Vous recevez une facture à chaque renouvellement." }
+        ]
+      }
+    ]
+  },
+  "aboutPage": {
+    "eyebrow": "À propos",
+    "titleLead": "Own your career —",
+    "titleAccent": "notre mission.",
+    "intro": "Voraly est né d'une frustration simple : pourquoi les freelances passent-ils autant de temps à gérer leurs outils plutôt qu'à exercer leur métier ?",
+    "mission": {
+      "title": "Notre mission",
+      "body": "Rendre aux freelances la visibilité et le contrôle de leur activité. Centraliser ce qui était dispersé. Simplifier ce qui était complexe. Automatiser ce qui était répétitif. Vous laisser vous concentrer sur ce qui compte : votre travail et votre croissance."
+    },
+    "vision": {
+      "title": "Notre vision",
+      "body": "Un monde où chaque freelance dispose des mêmes outils stratégiques que les grandes entreprises — adaptés à sa réalité, accessibles depuis un seul écran. L'IA au service de votre indépendance, pas à la place de votre jugement."
+    },
+    "problem": {
+      "title": "Le problème que nous avons observé",
+      "p1": "Un freelance actif sur plusieurs plateformes passe une part significative de son temps à des tâches de gestion : vérifier les paiements ici, répondre aux messages là, mettre à jour une feuille de calcul pour suivre les deadlines. Ce temps n'est pas du temps de production — c'est du temps perdu à cause de la fragmentation des outils.",
+      "p2": "Ce problème concerne tous les freelances, quel que soit leur domaine ou leur niveau d'expérience. Les grandes plateformes ont chacune leur propre silo de données, sans passerelle vers les autres. Il n'existait pas d'espace commun pour piloter l'ensemble."
+    },
+    "story": {
+      "title": "Comment Voraly a été construit",
+      "p1": "Voraly est né de ce constat. Pas en ajoutant une plateforme de plus à la liste — mais en créant le hub central depuis lequel toutes les autres sont pilotées. L'idée directrice : un seul endroit, une vision complète, une stratégie claire.",
+      "p2": "Nous avons commencé par les intégrations les plus demandées — Upwork, Fiverr, Malt, LinkedIn — et construit autour d'elles un tableau de bord conçu pour la clarté. L'IA est venue ensuite, pour transformer les données brutes en recommandations actionnables : la roadmap freelance que chacun mérite d'avoir, sans avoir besoin d'être analyste de données.",
+      "p3": "Voraly continue d'évoluer avec sa communauté. Chaque nouvelle intégration, chaque amélioration de la roadmap IA, chaque fonctionnalité est guidée par un principe simple : est-ce que cela rend le freelance plus libre et plus efficace ?"
+    },
+    "valuesTitle": "Ce en quoi nous croyons",
+    "values": [
+      { "title": "Clarté", "desc": "Votre activité mérite d'être lisible. Nous transformons la complexité en décisions simples." },
+      { "title": "Autonomie", "desc": "Vous êtes le pilote. Voraly vous donne les instruments — pas les ordres." },
+      { "title": "Croissance", "desc": "Chaque fonctionnalité est conçue pour faire progresser votre activité, pas seulement la surveiller." },
+      { "title": "Confiance", "desc": "Vos données vous appartiennent. Notre sécurité est un socle, pas une promesse creuse." }
+    ],
+    "cta": {
+      "title": "Rejoignez la communauté Voraly.",
+      "subtitle": "Des questions ? Une idée ? L'équipe vous répond.",
+      "contact": "Nous contacter"
+    }
+  },
+  "contactPage": {
+    "eyebrow": "Contact",
+    "titleLead": "Parlons de",
+    "titleAccent": "votre activité.",
+    "subtitle": "Une question, une suggestion, un bug ? L'équipe Voraly vous répond sous 24 h.",
+    "sentTitle": "Message envoyé !",
+    "sentBody": "Merci {name}. On vous répond sous 24 h.",
+    "sendAnother": "Envoyer un autre message",
+    "nameLabel": "Nom",
+    "namePlaceholder": "Votre nom",
+    "emailLabel": "Email",
+    "emailPlaceholder": "vous@exemple.com",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Décrivez votre question ou demande...",
+    "errorPrefix": "Une erreur s'est produite. Réessayez ou écrivez-nous directement à",
+    "sending": "Envoi en cours…",
+    "send": "Envoyer",
+    "directPrefix": "Vous pouvez aussi nous écrire directement à"
+  },
+  "featuresPage": {
+    "eyebrow": "Fonctionnalités",
+    "titleLead": "Tout ce qu'il faut pour faire grandir",
+    "titleAccent": "votre activité freelance.",
+    "subtitle": "Voraly est un tableau de bord freelance qui centralise Upwork, Fiverr, Malt et LinkedIn, génère une roadmap de croissance par IA et synchronise vos deadlines avec Google Calendar et Notion. Quatre piliers conçus pour vous faire gagner du temps, de la visibilité et des revenus.",
+    "whyLabel": "Pourquoi c'est important",
+    "pillars": {
+      "tableau-de-bord": {
+        "title": "Tableau de bord freelance temps réel",
+        "hook": "Tout votre business, visible d'un coup d'œil.",
+        "body": "Voraly agrège en temps réel les données de toutes vos plateformes freelance. Revenus du mois, missions en cours, taux de conversion, notes clients — plus besoin d'ouvrir dix onglets. Votre tableau de bord se met à jour automatiquement dès qu'une nouvelle mission est assignée ou qu'un paiement est reçu.",
+        "why": "Quand vos revenus sont éparpillés entre Upwork, Fiverr, Malt et LinkedIn, il est difficile de savoir où vous en êtes réellement. Un tableau de bord centralisé vous donne une vision d'ensemble instantanée : vous prenez de meilleures décisions, plus vite, sans la fatigue de consolider manuellement vos données.",
+        "details": [
+          "Agrégation multi-plateformes en temps réel",
+          "KPIs : revenus, missions actives, taux de complétion",
+          "Historique et courbes de progression",
+          "Alertes intelligentes (paiement en attente, mission expirante)"
+        ]
+      },
+      "roadmap-ia": {
+        "title": "Roadmap IA freelance",
+        "hook": "Votre prochain mois, déjà planifié.",
+        "body": "La roadmap IA de Voraly est une feuille de route personnalisée générée automatiquement à partir de vos données d'activité. L'IA croise vos revenus, vos tarifs et les tendances de vos plateformes pour vous indiquer précisément quels services pousser, quels tarifs ajuster, quelles plateformes prioriser — sans que vous ayez besoin d'analyser vous-même des tableurs.",
+        "why": "La plupart des freelances prennent leurs décisions stratégiques à l'instinct, faute de données exploitables. Une roadmap IA comble ce manque : elle transforme vos chiffres bruts en actions concrètes, mises à jour chaque semaine selon votre activité réelle.",
+        "details": [
+          "Analyse de vos données sur 3, 6 ou 12 mois",
+          "Recommandations de tarifs par service et par plateforme",
+          "Suggestions de positionnement et de niche",
+          "Mise à jour automatique au fil de votre activité"
+        ]
+      },
+      "integrations": {
+        "title": "Multi-plateformes",
+        "hook": "Un seul tableau de bord pour toutes vos plateformes freelance.",
+        "body": "Connectez Upwork, Fiverr, Malt et LinkedIn en quelques clics. Voraly utilise des connexions OAuth sécurisées — vos identifiants ne transitent jamais par nos serveurs. De nouvelles intégrations arrivent chaque mois, selon les votes de la communauté.",
+        "why": "Chaque plateforme a ses propres règles, ses propres métriques et sa propre interface. Passer de l'une à l'autre pour consolider son activité prend du temps et crée des angles morts. Centraliser toutes vos sources en un seul endroit, c'est retrouver du temps disponible pour votre vrai travail.",
+        "details": [
+          "Upwork, Fiverr, Malt, LinkedIn dès le lancement",
+          "Connexion OAuth sécurisée, déconnexion en un clic",
+          "Données synchronisées automatiquement toutes les heures",
+          "Nouvelles intégrations mensuelles (vote communauté)"
+        ]
+      },
+      "deadlines": {
+        "title": "Suivi des deadlines",
+        "hook": "Plus jamais d'échéance oubliée.",
+        "body": "Voraly synchronise vos missions et leurs échéances avec Google Calendar et Notion. Chaque deadline apparaît dans votre calendrier, avec rappels configurables. L'IA tient également compte de vos deadlines pour prioriser ses recommandations.",
+        "why": "Gérer plusieurs missions simultanément sur plusieurs plateformes, c'est multiplier les risques d'oubli. Synchroniser automatiquement vos échéances avec les outils que vous utilisez déjà — Calendar, Notion — c'est éliminer ce risque sans changer vos habitudes.",
+        "details": [
+          "Synchronisation bidirectionnelle avec Google Calendar",
+          "Intégration Notion (base de données de tâches)",
+          "Rappels par email et notification push",
+          "Vue timeline par plateforme et par client"
+        ]
+      }
+    },
+    "cta": {
+      "title": "Prêt à reprendre le contrôle de votre activité freelance ?",
+      "subtitle": "Gratuit, sans carte bancaire. Configuration en 2 minutes."
+    }
+  },
+  "auth": {
+    "backHome": "Retour à l'accueil",
+    "mfa": {
+      "title": "Double authentification (2FA)",
+      "subtitle": "Saisissez le code de sécurité à 6 chiffres généré par votre application d'authentification pour valider votre connexion.",
+      "errorFallback": "Une erreur est survenue lors de la vérification.",
+      "codeLabel": "Code de sécurité",
+      "verifying": "Vérification…",
+      "verify": "Vérifier et se connecter",
+      "backToLogin": "Retour à la connexion"
+    },
+    "login": {
+      "heading": "Bon retour",
+      "subtitle": "Connectez-vous à votre tableau de bord freelance",
+      "emailLabel": "Adresse email",
+      "emailPlaceholder": "vous@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "signingIn": "Connexion en cours…",
+      "signIn": "Se connecter",
+      "noAccount": "Pas encore de compte ?",
+      "createAccount": "Créer un compte"
+    },
+    "signup": {
+      "checkEmailTitle": "Vérifiez votre email",
+      "goToLogin": "Aller à la connexion",
+      "heading": "Créer un compte",
+      "subtitle": "Rejoignez des milliers de freelances qui optimisent leurs revenus",
+      "nameLabel": "Nom complet",
+      "namePlaceholder": "Jean Dupont",
+      "emailLabel": "Adresse email",
+      "emailPlaceholder": "vous@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "12 caractères minimum",
+      "passwordHint": "Au moins 12 caractères.",
+      "creating": "Création en cours…",
+      "createAccount": "Créer mon compte",
+      "haveAccount": "Déjà un compte ?",
+      "signIn": "Se connecter"
+    }
+  },
+  "legalNoticePage": {
+    "title": "Mentions légales",
+    "intro": "Document en cours de finalisation — contact : <mail>contact@voraly.net</mail>",
+    "editor": {
+      "title": "Éditeur du site",
+      "body": "Le site <strong>voraly.net</strong> est édité par Voraly.",
+      "contact": "Contact : <mail>contact@voraly.net</mail>"
+    },
+    "hosting": {
+      "title": "Hébergement",
+      "body": "Le site est hébergé dans des infrastructures situées dans l'Union européenne. Les données des utilisateurs sont stockées dans des datacenters conformes au RGPD."
+    },
+    "ip": {
+      "title": "Propriété intellectuelle",
+      "body": "L'ensemble des contenus présents sur ce site (textes, visuels, code) sont protégés par le droit de la propriété intellectuelle et appartiennent à Voraly ou à leurs auteurs respectifs. Toute reproduction sans autorisation écrite est interdite."
+    },
+    "data": {
+      "title": "Données personnelles",
+      "body": "Pour toute question relative au traitement de vos données personnelles, consultez notre <privacy>Politique de confidentialité</privacy>."
+    },
+    "footerNote": "Ces mentions légales seront complétées lors de la finalisation juridique du projet. En attendant, pour toute question, contactez <mail>contact@voraly.net</mail>."
+  },
+  "termsPage": {
+    "title": "Conditions générales d'utilisation",
+    "intro": "Document en cours de finalisation — contact : <mail>contact@voraly.net</mail>",
+    "sections": {
+      "access": {
+        "title": "Accès au service",
+        "body": "Voraly est un service en ligne accessible depuis <strong>voraly.net</strong>. L'accès est ouvert à toute personne physique majeure disposant d'une connexion internet. Une inscription est requise pour accéder aux fonctionnalités du tableau de bord."
+      },
+      "plans": {
+        "title": "Plan gratuit et plan Pro",
+        "body": "Voraly propose un plan gratuit sans carte bancaire, donnant accès aux fonctionnalités de base. Le plan Pro, soumis à abonnement, débloque la roadmap IA avancée et les intégrations illimitées. L'abonnement peut être résilié à tout moment depuis les réglages du compte, sans frais."
+      },
+      "responsibility": {
+        "title": "Responsabilité de l'utilisateur",
+        "body": "L'utilisateur est seul responsable des comptes tiers connectés à Voraly et de l'exactitude des informations fournies lors de l'inscription. Il s'engage à ne pas utiliser le service à des fins illicites."
+      },
+      "availability": {
+        "title": "Disponibilité du service",
+        "body": "Voraly s'efforce de maintenir le service disponible en permanence. Des interruptions de maintenance ou des incidents techniques peuvent survenir. Voraly ne peut être tenu responsable des préjudices liés à une indisponibilité temporaire du service."
+      },
+      "modification": {
+        "title": "Modification des CGU",
+        "body": "Ces CGU peuvent être mises à jour. En cas de modification substantielle, l'utilisateur sera informé par email. La poursuite de l'utilisation du service après notification vaut acceptation des nouvelles conditions."
+      }
+    },
+    "footerNote": "Ces conditions générales seront complétées lors de la finalisation juridique du projet. Pour toute question, contactez <mail>contact@voraly.net</mail>."
+  },
+  "privacyPage": {
+    "title": "Politique de confidentialité",
+    "intro": "Document en cours de finalisation — contact : <mail>contact@voraly.net</mail>",
+    "sections": {
+      "collected": {
+        "title": "Données collectées",
+        "body": "Voraly collecte uniquement les données nécessaires au fonctionnement du service : adresse email lors de l'inscription, et données agrégées de vos plateformes freelance (revenus, missions, métriques) via des connexions OAuth. Nous ne stockons jamais vos identifiants de plateforme."
+      },
+      "usage": {
+        "title": "Utilisation des données",
+        "body": "Vos données sont utilisées exclusivement pour fournir le service Voraly : alimenter votre tableau de bord, générer votre roadmap IA et synchroniser vos deadlines. Aucune donnée personnelle n'est vendue ni transmise à des tiers à des fins commerciales."
+      },
+      "security": {
+        "title": "Sécurité",
+        "body": "Les données en transit sont chiffrées (TLS). Les connexions aux plateformes tierces utilisent le protocole OAuth 2.0 — vos mots de passe ne transitent jamais par nos serveurs. L'hébergement est situé dans l'Union européenne."
+      },
+      "rights": {
+        "title": "Vos droits (RGPD)",
+        "body": "Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès, de rectification, de suppression et de portabilité de vos données. Pour exercer ces droits, contactez-nous à <mail>contact@voraly.net</mail>."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "body": "Voraly utilise des cookies de session nécessaires au fonctionnement de l'authentification. Aucun cookie publicitaire ou de tracking tiers n'est déposé sans votre consentement."
+      }
+    },
+    "footerNote": "Cette politique de confidentialité sera complétée lors de la finalisation juridique du projet. Pour toute question, contactez <mail>contact@voraly.net</mail>."
+  },
+  "pricingPage": {
+    "backToDashboard": "Retour au tableau de bord",
+    "preparing": "Préparation de votre paiement sécurisé…",
+    "securePayment": "✦ Paiement sécurisé",
+    "finalizeSubtitle": "Finalisez votre abonnement sans quitter Voraly.",
+    "loadingPayment": "Chargement du paiement sécurisé…",
+    "cancel": "Annuler",
+    "successTitle": "Bienvenue dans Voraly Pro ✦",
+    "successBody": "Votre paiement est confirmé. Vos avantages Pro sont en cours d'activation — cela prend quelques secondes.",
+    "goToDashboard": "Accéder à mon tableau de bord",
+    "errors": {
+      "fallback": "Impossible de préparer le paiement. Réessayez dans un instant.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous puis réessayez.",
+      "not_configured": "Le paiement n'est pas encore configuré. Réessayez plus tard.",
+      "whop_error": "Impossible de préparer le paiement. Réessayez dans un instant."
+    },
+    "pro": {
+      "eyebrow": "✦ Voraly Pro",
+      "title": "Passez à la vitesse supérieure",
+      "subtitle": "Débloquez tout le potentiel de Voraly et donnez à votre activité freelance l'élan qu'elle mérite.",
+      "benefits": [
+        "Roadmaps IA illimitées",
+        "Optimisation d'offres avancée",
+        "Connexions plateformes illimitées",
+        "Support prioritaire",
+        "Accès anticipé aux nouvelles fonctionnalités"
+      ],
+      "alreadyMember": "✓ Vous êtes membre Voraly Pro",
+      "backToDashboard": "Retourner à mon tableau de bord",
+      "upgrade": "Passer à Voraly Pro",
+      "signInToContinue": "Se connecter pour continuer",
+      "billingNote": "Facturation gérée de façon sécurisée par Whop"
     }
   }
 }

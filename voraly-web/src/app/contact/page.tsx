@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LiquidButton } from '@/components/ui/liquid-glass-button'
 import PublicNav from '@/components/landing/PublicNav'
 import PublicFooter from '@/components/landing/PublicFooter'
 
 export default function ContactPage() {
+  const t = useTranslations('contactPage')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
@@ -43,14 +45,14 @@ export default function ContactPage() {
       {/* Hero */}
       <section className="mx-auto max-w-2xl px-6 py-20 text-center">
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
-          Contact
+          {t('eyebrow')}
         </p>
         <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-          Parlons de{' '}
-          <span className="gradient-text">votre activité.</span>
+          {t('titleLead')}{' '}
+          <span className="gradient-text">{t('titleAccent')}</span>
         </h1>
         <p className="text-base text-zinc-400">
-          Une question, une suggestion, un bug ? L&apos;équipe Voraly vous répond sous 24 h.
+          {t('subtitle')}
         </p>
       </section>
 
@@ -72,9 +74,9 @@ export default function ContactPage() {
                 >
                   <span className="gradient-text text-2xl font-bold">✦</span>
                 </div>
-                <h2 className="text-xl font-bold text-white">Message envoyé !</h2>
+                <h2 className="text-xl font-bold text-white">{t('sentTitle')}</h2>
                 <p className="text-sm text-zinc-400">
-                  Merci {name}. On vous répond sous 24 h.
+                  {t('sentBody', { name })}
                 </p>
                 <button
                   type="button"
@@ -86,7 +88,7 @@ export default function ContactPage() {
                   }}
                   className="mt-2 text-sm text-violet-400 underline underline-offset-2 hover:text-violet-300"
                 >
-                  Envoyer un autre message
+                  {t('sendAnother')}
                 </button>
               </motion.div>
             ) : (
@@ -101,12 +103,12 @@ export default function ContactPage() {
               >
                 <div className="flex flex-col gap-2">
                   <label htmlFor="contact-name" className="text-xs font-semibold text-zinc-400">
-                    Nom
+                    {t('nameLabel')}
                   </label>
                   <input
                     id="contact-name"
                     type="text"
-                    placeholder="Votre nom"
+                    placeholder={t('namePlaceholder')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -116,12 +118,12 @@ export default function ContactPage() {
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="contact-email" className="text-xs font-semibold text-zinc-400">
-                    Email
+                    {t('emailLabel')}
                   </label>
                   <input
                     id="contact-email"
                     type="email"
-                    placeholder="vous@exemple.com"
+                    placeholder={t('emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -131,11 +133,11 @@ export default function ContactPage() {
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="contact-message" className="text-xs font-semibold text-zinc-400">
-                    Message
+                    {t('messageLabel')}
                   </label>
                   <textarea
                     id="contact-message"
-                    placeholder="Décrivez votre question ou demande..."
+                    placeholder={t('messagePlaceholder')}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     required
@@ -147,7 +149,7 @@ export default function ContactPage() {
 
                 {status === 'error' && (
                   <p className="text-xs font-medium text-red-400">
-                    Une erreur s&apos;est produite. Réessayez ou écrivez-nous directement à{' '}
+                    {t('errorPrefix')}{' '}
                     <a href="mailto:contact@voraly.net" className="underline">
                       contact@voraly.net
                     </a>
@@ -161,11 +163,11 @@ export default function ContactPage() {
                   disabled={status === 'sending'}
                   className="w-full rounded-full text-base font-bold text-white disabled:opacity-50"
                 >
-                  {status === 'sending' ? 'Envoi en cours…' : 'Envoyer'}
+                  {status === 'sending' ? t('sending') : t('send')}
                 </LiquidButton>
 
                 <p className="text-center text-xs text-zinc-600">
-                  Vous pouvez aussi nous écrire directement à{' '}
+                  {t('directPrefix')}{' '}
                   <a
                     href="mailto:contact@voraly.net"
                     className="text-zinc-500 underline underline-offset-2 hover:text-zinc-300"

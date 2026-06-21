@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { getTranslations } from "next-intl/server"
 import { LayoutDashboard, Sparkles, Plug, CalendarClock } from "lucide-react"
 import PublicNav from "@/components/landing/PublicNav"
 import PublicFooter from "@/components/landing/PublicFooter"
@@ -28,81 +29,21 @@ export const metadata: Metadata = {
   },
 }
 
-const TRUST_BADGES = [
-  "OAuth 2.0",
-  "Données chiffrées en transit",
-  "Conforme RGPD",
-  "Hébergement UE",
-]
+const TRUST_KEYS = ["oauth", "encrypted", "gdpr", "eu"] as const
 
-const PILLARS = [
-  {
-    id: "tableau-de-bord",
-    icon: LayoutDashboard,
-    color: "text-violet-400",
-    glow: "rgba(139,92,246,0.12)",
-    title: "Tableau de bord freelance temps réel",
-    hook: "Tout votre business, visible d'un coup d'œil.",
-    body: "Voraly agrège en temps réel les données de toutes vos plateformes freelance. Revenus du mois, missions en cours, taux de conversion, notes clients — plus besoin d'ouvrir dix onglets. Votre tableau de bord se met à jour automatiquement dès qu'une nouvelle mission est assignée ou qu'un paiement est reçu.",
-    why: "Quand vos revenus sont éparpillés entre Upwork, Fiverr, Malt et LinkedIn, il est difficile de savoir où vous en êtes réellement. Un tableau de bord centralisé vous donne une vision d'ensemble instantanée : vous prenez de meilleures décisions, plus vite, sans la fatigue de consolider manuellement vos données.",
-    details: [
-      "Agrégation multi-plateformes en temps réel",
-      "KPIs : revenus, missions actives, taux de complétion",
-      "Historique et courbes de progression",
-      "Alertes intelligentes (paiement en attente, mission expirante)",
-    ],
-  },
-  {
-    id: "roadmap-ia",
-    icon: Sparkles,
-    color: "text-pink-400",
-    glow: "rgba(255,102,204,0.12)",
-    title: "Roadmap IA freelance",
-    hook: "Votre prochain mois, déjà planifié.",
-    body: "La roadmap IA de Voraly est une feuille de route personnalisée générée automatiquement à partir de vos données d'activité. L'IA croise vos revenus, vos tarifs et les tendances de vos plateformes pour vous indiquer précisément quels services pousser, quels tarifs ajuster, quelles plateformes prioriser — sans que vous ayez besoin d'analyser vous-même des tableurs.",
-    why: "La plupart des freelances prennent leurs décisions stratégiques à l'instinct, faute de données exploitables. Une roadmap IA comble ce manque : elle transforme vos chiffres bruts en actions concrètes, mises à jour chaque semaine selon votre activité réelle.",
-    details: [
-      "Analyse de vos données sur 3, 6 ou 12 mois",
-      "Recommandations de tarifs par service et par plateforme",
-      "Suggestions de positionnement et de niche",
-      "Mise à jour automatique au fil de votre activité",
-    ],
-  },
-  {
-    id: "integrations",
-    icon: Plug,
-    color: "text-indigo-400",
-    glow: "rgba(99,102,241,0.12)",
-    title: "Multi-plateformes",
-    hook: "Un seul tableau de bord pour toutes vos plateformes freelance.",
-    body: "Connectez Upwork, Fiverr, Malt et LinkedIn en quelques clics. Voraly utilise des connexions OAuth sécurisées — vos identifiants ne transitent jamais par nos serveurs. De nouvelles intégrations arrivent chaque mois, selon les votes de la communauté.",
-    why: "Chaque plateforme a ses propres règles, ses propres métriques et sa propre interface. Passer de l'une à l'autre pour consolider son activité prend du temps et crée des angles morts. Centraliser toutes vos sources en un seul endroit, c'est retrouver du temps disponible pour votre vrai travail.",
-    details: [
-      "Upwork, Fiverr, Malt, LinkedIn dès le lancement",
-      "Connexion OAuth sécurisée, déconnexion en un clic",
-      "Données synchronisées automatiquement toutes les heures",
-      "Nouvelles intégrations mensuelles (vote communauté)",
-    ],
-  },
-  {
-    id: "deadlines",
-    icon: CalendarClock,
-    color: "text-violet-400",
-    glow: "rgba(139,92,246,0.12)",
-    title: "Suivi des deadlines",
-    hook: "Plus jamais d'échéance oubliée.",
-    body: "Voraly synchronise vos missions et leurs échéances avec Google Calendar et Notion. Chaque deadline apparaît dans votre calendrier, avec rappels configurables. L'IA tient également compte de vos deadlines pour prioriser ses recommandations.",
-    why: "Gérer plusieurs missions simultanément sur plusieurs plateformes, c'est multiplier les risques d'oubli. Synchroniser automatiquement vos échéances avec les outils que vous utilisez déjà — Calendar, Notion — c'est éliminer ce risque sans changer vos habitudes.",
-    details: [
-      "Synchronisation bidirectionnelle avec Google Calendar",
-      "Intégration Notion (base de données de tâches)",
-      "Rappels par email et notification push",
-      "Vue timeline par plateforme et par client",
-    ],
-  },
-]
+// Méta visuelle des piliers ; le texte vient des messages (featuresPage.pillars.<id>).
+const PILLAR_META = [
+  { id: "tableau-de-bord", icon: LayoutDashboard, color: "text-violet-400", glow: "rgba(139,92,246,0.12)" },
+  { id: "roadmap-ia",      icon: Sparkles,        color: "text-pink-400",   glow: "rgba(255,102,204,0.12)" },
+  { id: "integrations",    icon: Plug,            color: "text-indigo-400", glow: "rgba(99,102,241,0.12)" },
+  { id: "deadlines",       icon: CalendarClock,   color: "text-violet-400", glow: "rgba(139,92,246,0.12)" },
+] as const
 
-export default function FonctionnalitesPage() {
+export default async function FonctionnalitesPage() {
+  const t = await getTranslations("featuresPage")
+  const tc = await getTranslations("common")
+  const tTrust = await getTranslations("landing.trust")
+
   return (
     <main className="h-dvh overflow-y-auto">
       {/* JSON-LD SoftwareApplication */}
@@ -146,21 +87,18 @@ export default function FonctionnalitesPage() {
         />
         <div className="relative flex flex-col items-center gap-6">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
-            Fonctionnalités
+            {t("eyebrow")}
           </p>
           <h1 className="text-balance text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Tout ce qu&apos;il faut pour faire grandir{" "}
-            <span className="gradient-text">votre activité freelance.</span>
+            {t("titleLead")}{" "}
+            <span className="gradient-text">{t("titleAccent")}</span>
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-zinc-400">
-            Voraly est un tableau de bord freelance qui centralise Upwork, Fiverr, Malt et LinkedIn,
-            génère une roadmap de croissance par IA et synchronise vos deadlines avec Google Calendar
-            et Notion. Quatre piliers conçus pour vous faire gagner du temps, de la visibilité et
-            des revenus.
+            {t("subtitle")}
           </p>
           <Link href="/signup">
             <LiquidButton size="xl" className="rounded-full px-8 text-base font-bold text-white">
-              Commencer gratuitement
+              {tc("getStartedFree")}
             </LiquidButton>
           </Link>
         </div>
@@ -169,8 +107,9 @@ export default function FonctionnalitesPage() {
       {/* Pilliers */}
       <section className="mx-auto max-w-5xl px-6 pb-28">
         <div className="flex flex-col gap-16">
-          {PILLARS.map((pillar, i) => {
+          {PILLAR_META.map((pillar, i) => {
             const Icon = pillar.icon
+            const details = t.raw(`pillars.${pillar.id}.details`) as string[]
             return (
               <div
                 key={pillar.id}
@@ -189,11 +128,11 @@ export default function FonctionnalitesPage() {
                     <Icon size={26} className={pillar.color} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <h2 className="text-2xl font-extrabold text-white">{pillar.title}</h2>
-                    <p className="text-base font-semibold text-zinc-300">{pillar.hook}</p>
+                    <h2 className="text-2xl font-extrabold text-white">{t(`pillars.${pillar.id}.title`)}</h2>
+                    <p className="text-base font-semibold text-zinc-300">{t(`pillars.${pillar.id}.hook`)}</p>
                   </div>
                   <ul className="flex flex-col gap-2.5">
-                    {pillar.details.map((d) => (
+                    {details.map((d) => (
                       <li key={d} className="flex items-start gap-3 text-sm text-zinc-400">
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
                         {d}
@@ -204,12 +143,12 @@ export default function FonctionnalitesPage() {
 
                 {/* Corps */}
                 <div className="flex flex-col gap-6 justify-center md:w-3/5">
-                  <p className="text-sm leading-relaxed text-zinc-400">{pillar.body}</p>
+                  <p className="text-sm leading-relaxed text-zinc-400">{t(`pillars.${pillar.id}.body`)}</p>
                   <div className="border-l-2 border-violet-500/30 pl-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-violet-400 mb-2">
-                      Pourquoi c&apos;est important
+                      {t("whyLabel")}
                     </p>
-                    <p className="text-sm leading-relaxed text-zinc-500">{pillar.why}</p>
+                    <p className="text-sm leading-relaxed text-zinc-500">{t(`pillars.${pillar.id}.why`)}</p>
                   </div>
                 </div>
               </div>
@@ -221,12 +160,12 @@ export default function FonctionnalitesPage() {
       {/* Badges confiance */}
       <section className="mx-auto max-w-3xl px-6 pb-10 flex justify-center">
         <div className="flex flex-wrap items-center justify-center gap-2">
-          {TRUST_BADGES.map((badge) => (
+          {TRUST_KEYS.map((key) => (
             <span
-              key={badge}
+              key={key}
               className="glass inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-zinc-400"
             >
-              {badge}
+              {tTrust(key)}
             </span>
           ))}
         </div>
@@ -236,14 +175,14 @@ export default function FonctionnalitesPage() {
       <section className="mx-auto max-w-3xl px-6 pb-28 text-center">
         <div className="glass-hero rounded-3xl px-8 py-14">
           <h2 className="mb-4 text-2xl font-extrabold text-white">
-            Prêt à reprendre le contrôle de votre activité freelance ?
+            {t("cta.title")}
           </h2>
           <p className="mb-8 text-sm text-zinc-400">
-            Gratuit, sans carte bancaire. Configuration en 2 minutes.
+            {t("cta.subtitle")}
           </p>
           <Link href="/signup">
             <LiquidButton size="xl" className="rounded-full px-8 text-base font-bold text-white">
-              Commencer gratuitement
+              {tc("getStartedFree")}
             </LiquidButton>
           </Link>
         </div>

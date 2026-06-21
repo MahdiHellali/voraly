@@ -1,19 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check, ShieldCheck } from 'lucide-react'
 
 // Phase 'idle' — la carte de conversion « Voraly Pro ». Plan unique : le prix
 // réel est affiché par l'embed Whop, jamais codé en dur ici.
-
-const BENEFITS = [
-  'Roadmaps IA illimitées',
-  'Optimisation d’offres avancée',
-  'Connexions plateformes illimitées',
-  'Support prioritaire',
-  'Accès anticipé aux nouvelles fonctionnalités',
-]
 
 export default function ProCard({
   isAuthenticated,
@@ -25,6 +18,8 @@ export default function ProCard({
   isPremium: boolean
   onUpgrade: () => void
 }) {
+  const t = useTranslations('pricingPage.pro')
+  const benefits = t.raw('benefits') as string[]
   return (
     <motion.section
       initial={{ filter: 'blur(6px)', opacity: 0, y: 20 }}
@@ -48,20 +43,19 @@ export default function ProCard({
         {/* ── En-tête ── */}
         <div className="flex flex-col gap-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">
-            ✦ Voraly Pro
+            {t('eyebrow')}
           </p>
           <h1 className="text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Passez à la vitesse supérieure
+            {t('title')}
           </h1>
           <p className="max-w-md text-sm leading-relaxed text-zinc-400">
-            Débloquez tout le potentiel de Voraly et donnez à votre activité
-            freelance l’élan qu’elle mérite.
+            {t('subtitle')}
           </p>
         </div>
 
         {/* ── Avantages ── */}
         <ul className="flex flex-col gap-3.5">
-          {BENEFITS.map((benefit) => (
+          {benefits.map((benefit) => (
             <li
               key={benefit}
               className="flex items-start gap-3 text-sm text-zinc-200"
@@ -82,13 +76,13 @@ export default function ProCard({
                 className="inline-flex items-center rounded-full border border-pink-500/40 bg-pink-500/10 px-5 py-2.5 text-sm font-semibold text-pink-300"
                 style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
               >
-                ✓ Vous êtes membre Voraly Pro
+                {t('alreadyMember')}
               </span>
               <Link
                 href="/dashboard"
                 className="text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-200"
               >
-                Retourner à mon tableau de bord →
+                {t('backToDashboard')} →
               </Link>
             </>
           ) : isAuthenticated ? (
@@ -101,7 +95,7 @@ export default function ProCard({
               className="group inline-flex items-center gap-3 rounded-full border border-pink-500/40 bg-pink-500/10 px-8 py-4 text-base font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20"
               style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
             >
-              Passer à Voraly Pro
+              {t('upgrade')}
               <ArrowRight
                 size={18}
                 className="transition-transform duration-300 group-hover:translate-x-1"
@@ -113,7 +107,7 @@ export default function ProCard({
               className="group inline-flex items-center gap-3 rounded-full border border-pink-500/40 bg-pink-500/10 px-8 py-4 text-base font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20 active:scale-95"
               style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
             >
-              Se connecter pour continuer
+              {t('signInToContinue')}
               <ArrowRight
                 size={18}
                 className="transition-transform duration-300 group-hover:translate-x-1"
@@ -124,7 +118,7 @@ export default function ProCard({
           {!isPremium && (
             <p className="flex items-center gap-1.5 text-xs text-zinc-500">
               <ShieldCheck size={14} className="shrink-0" />
-              Facturation gérée de façon sécurisée par Whop
+              {t('billingNote')}
             </p>
           )}
         </div>

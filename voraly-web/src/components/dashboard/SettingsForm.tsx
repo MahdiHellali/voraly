@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useActionState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import {
@@ -14,8 +15,10 @@ import {
   AlertTriangle,
   ChevronDown,
   Crown,
-  QrCode
+  QrCode,
+  Languages
 } from 'lucide-react'
+import LanguageSwitcher from '@/components/i18n/LanguageSwitcher'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -36,6 +39,7 @@ interface SettingsFormProps {
 type SectionId = 'profile' | 'notifications' | 'security' | 'founder'
 
 export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFormProps) {
+  const t = useTranslations('dashboard.settings')
   const [activeSection, setActiveSection] = useState<SectionId | null>(null)
   const [isDisconnectPending, startDisconnectTransition] = useTransition()
   const [isDeletePending, startDeleteTransition] = useTransition()
@@ -874,6 +878,22 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
           </AnimatePresence>
         </div>
       )}
+
+      {/* ── Section LANGUE ── */}
+      <div className="glass rounded-3xl p-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+            <Languages size={16} className="text-violet-400" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-zinc-200">{t('language.title')}</div>
+            <div className="text-[11px] text-zinc-500 mt-0.5">{t('language.subtitle')}</div>
+          </div>
+        </div>
+        <div className="w-44 flex-shrink-0">
+          <LanguageSwitcher variant="inline" />
+        </div>
+      </div>
 
       {/* ── Section ABONNEMENT (Lien direct vers tarifs) ── */}
       <Link

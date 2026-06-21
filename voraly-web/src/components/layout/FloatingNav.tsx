@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -13,12 +14,12 @@ import {
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/dashboard',           icon: LayoutDashboard, label: 'Accueil'      },
-  { href: '/dashboard/platforms', icon: Puzzle,          label: 'Plateformes'  },
-  { href: '/dashboard/roadmap',   icon: Rocket,          label: 'Stratégie'    },
-  { href: '/dashboard/optimize',  icon: TrendingUp,      label: 'Optimiser'    },
-  { href: '/dashboard/settings',  icon: Settings,        label: 'Réglages'     },
-]
+  { href: '/dashboard',           icon: LayoutDashboard, key: 'overview'   },
+  { href: '/dashboard/platforms', icon: Puzzle,          key: 'platforms'  },
+  { href: '/dashboard/roadmap',   icon: Rocket,          key: 'roadmap'    },
+  { href: '/dashboard/optimize',  icon: TrendingUp,      key: 'optimize'   },
+  { href: '/dashboard/settings',  icon: Settings,        key: 'settings'   },
+] as const
 
 const tabVariants = {
   initial: {
@@ -43,6 +44,7 @@ const spring = { delay: 0.05, type: 'spring', bounce: 0, duration: 0.55 } as con
 
 export default function FloatingNav() {
   const pathname = usePathname()
+  const t = useTranslations('dashboard.nav')
 
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
@@ -53,11 +55,12 @@ export default function FloatingNav() {
         className="glass-pill flex items-center gap-1 rounded-[1.75rem] p-2 pointer-events-auto"
         aria-label="Navigation principale"
       >
-        {navItems.map(({ href, icon: Icon, label }) => {
+        {navItems.map(({ href, icon: Icon, key }) => {
           const isActive =
             href === '/dashboard'
               ? pathname === '/dashboard'
               : pathname.startsWith(href)
+          const label = t(key)
 
           return (
             <Link

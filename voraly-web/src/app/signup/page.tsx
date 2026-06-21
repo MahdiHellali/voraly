@@ -1,12 +1,14 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import { signupAction } from '@/app/actions/auth'
 
 export default function SignupPage() {
+  const t = useTranslations('auth')
   const [state, formAction, isPending] = useActionState(signupAction, null)
 
   // After successful signup, show the confirmation message only
@@ -19,7 +21,7 @@ export default function SignupPage() {
           className="absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-md px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.06] transition-all duration-200"
         >
           <ArrowLeft size={13} />
-          {"Retour à l'accueil"}
+          {t('backHome')}
         </Link>
         <div className="glass relative overflow-hidden rounded-3xl w-full max-w-md p-8 text-center fade-1">
           <div className="glow-line" />
@@ -41,7 +43,7 @@ export default function SignupPage() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h2 className="text-xl font-extrabold text-white">Vérifiez votre email</h2>
+              <h2 className="text-xl font-extrabold text-white">{t('signup.checkEmailTitle')}</h2>
               <p className="text-sm text-zinc-400 leading-relaxed">{state.message}</p>
             </div>
             <Link
@@ -51,7 +53,7 @@ export default function SignupPage() {
                 hover:from-indigo-400 hover:to-violet-400
                 transition-all duration-200 shadow-[0_4px_20px_rgba(139,92,246,0.35)]"
             >
-              Aller à la connexion
+              {t('signup.goToLogin')}
             </Link>
           </div>
         </div>
@@ -67,7 +69,7 @@ export default function SignupPage() {
         className="absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-md px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.06] transition-all duration-200"
       >
         <ArrowLeft size={13} />
-        {"Retour à l'accueil"}
+        {t('backHome')}
       </Link>
       {/* Glass card */}
       <div className="glass relative overflow-hidden rounded-3xl w-full max-w-md p-8 fade-1">
@@ -101,10 +103,10 @@ export default function SignupPage() {
           {/* ── Heading ── */}
           <div className="text-center">
             <h1 className="text-2xl font-extrabold text-white tracking-tight">
-              Créer un compte
+              {t('signup.heading')}
             </h1>
             <p className="text-sm text-zinc-400 mt-1.5">
-              Rejoignez des milliers de freelances qui optimisent leurs revenus
+              {t('signup.subtitle')}
             </p>
           </div>
 
@@ -121,7 +123,7 @@ export default function SignupPage() {
             {/* Full name */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="full_name" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Nom complet
+                {t('signup.nameLabel')}
               </label>
               <input
                 id="full_name"
@@ -129,7 +131,7 @@ export default function SignupPage() {
                 type="text"
                 autoComplete="name"
                 required
-                placeholder="Jean Dupont"
+                placeholder={t('signup.namePlaceholder')}
                 className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600
                   bg-white/[0.05] border border-white/[0.10]
                   focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25
@@ -140,7 +142,7 @@ export default function SignupPage() {
             {/* Email */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Adresse email
+                {t('signup.emailLabel')}
               </label>
               <input
                 id="email"
@@ -148,7 +150,7 @@ export default function SignupPage() {
                 type="email"
                 autoComplete="email"
                 required
-                placeholder="vous@exemple.com"
+                placeholder={t('signup.emailPlaceholder')}
                 className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600
                   bg-white/[0.05] border border-white/[0.10]
                   focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25
@@ -159,7 +161,7 @@ export default function SignupPage() {
             {/* Password */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="password" className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Mot de passe
+                {t('signup.passwordLabel')}
               </label>
               <input
                 id="password"
@@ -168,13 +170,13 @@ export default function SignupPage() {
                 autoComplete="new-password"
                 required
                 minLength={12}
-                placeholder="12 caractères minimum"
+                placeholder={t('signup.passwordPlaceholder')}
                 className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600
                   bg-white/[0.05] border border-white/[0.10]
                   focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25
                   transition-all duration-200"
               />
-              <p className="text-[11px] text-zinc-600">Au moins 12 caractères.</p>
+              <p className="text-[11px] text-zinc-600">{t('signup.passwordHint')}</p>
             </div>
 
             {/* Submit */}
@@ -191,15 +193,15 @@ export default function SignupPage() {
                 hover:shadow-[0_6px_28px_rgba(139,92,246,0.5)]
                 active:scale-[0.98]"
             >
-              {isPending ? 'Création en cours…' : 'Créer mon compte'}
+              {isPending ? t('signup.creating') : t('signup.createAccount')}
             </button>
           </form>
 
           {/* ── Footer ── */}
           <p className="text-center text-sm text-zinc-500">
-            Déjà un compte ?{' '}
+            {t('signup.haveAccount')}{' '}
             <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-              Se connecter →
+              {t('signup.signIn')} →
             </Link>
           </p>
 

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertTriangle, ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { WhopCheckoutEmbed } from '@whop/checkout/react'
@@ -17,17 +18,6 @@ import ProCard from './ProCard'
 // embarqué (iframe) : l'utilisateur ne quitte jamais l'application.
 
 type CheckoutPhase = 'idle' | 'creating' | 'checkout' | 'success'
-
-const FALLBACK_ERROR =
-  'Impossible de préparer le paiement. Réessayez dans un instant.'
-
-// Copies françaises des codes d'erreur structurés renvoyés par /api/checkout.
-// 'already_premium' n'apparaît pas ici : il bascule l'UI en état « membre Pro ».
-const ERROR_COPY: Record<string, string> = {
-  unauthorized: 'Votre session a expiré. Reconnectez-vous puis réessayez.',
-  not_configured: 'Le paiement n’est pas encore configuré. Réessayez plus tard.',
-  whop_error: FALLBACK_ERROR,
-}
 
 // Loader compact — anneau rose pulsant, version condensée du CinematicLoader.
 function CompactLoader({ label }: { label: string }) {
@@ -80,6 +70,9 @@ export default function PricingExperience({
   isPremium: boolean
 }) {
   const router = useRouter()
+  const t = useTranslations('pricingPage')
+  const resolveError = (code: string) =>
+    t.has(`errors.${code}`) ? t(`errors.${code}`) : t('errors.fallback')
   const [phase, setPhase] = useState<CheckoutPhase>('idle')
   // Peut basculer à true côté client si l'API répond 'already_premium'.
   const [premium, setPremium] = useState(isPremium)
@@ -116,10 +109,10 @@ export default function PricingExperience({
         setPhase('idle')
         return
       }
-      setError(ERROR_COPY[code] ?? FALLBACK_ERROR)
+      setError(resolveError(code))
       setPhase('idle')
     } catch {
-      setError(FALLBACK_ERROR)
+      setError(t('errors.fallback'))
       setPhase('idle')
     }
   }
@@ -146,7 +139,7 @@ export default function PricingExperience({
               size={16}
               className="transition-transform duration-300 group-hover:-translate-x-0.5"
             />
-            Retour au tableau de bord
+            {t('backToDashboard')}
           </Link>
         </div>
 
@@ -186,7 +179,7 @@ export default function PricingExperience({
                 transition={{ duration: 0.4 }}
                 className="mx-auto w-full max-w-xl rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl"
               >
-                <CompactLoader label="Préparation de votre paiement sécurisé…" />
+                <CompactLoader label={t('preparing')} />
               </motion.section>
             )}
 
@@ -201,10 +194,10 @@ export default function PricingExperience({
               >
                 <div className="flex flex-col gap-1.5 px-1">
                   <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">
-                    ✦ Paiement sécurisé
+                    {t('securePayment')}
                   </p>
                   <p className="text-sm text-zinc-400">
-                    Finalisez votre abonnement sans quitter Voraly.
+                    {t('finalizeSubtitle')}
                   </p>
                 </div>
 
@@ -217,7 +210,7 @@ export default function PricingExperience({
                     theme="dark"
                     skipRedirect
                     fallback={
-                      <CompactLoader label="Chargement du paiement sécurisé…" />
+                      <CompactLoader label={t('loadingPayment')} />
                     }
                     onComplete={() => setPhase('success')}
                   />
@@ -229,7 +222,7 @@ export default function PricingExperience({
                     onClick={() => setPhase('idle')}
                     className="rounded-full px-6 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200 active:scale-95"
                   >
-                    Annuler
+                    {t('cancel')}
                   </button>
                 </div>
               </motion.section>
@@ -273,11 +266,10 @@ export default function PricingExperience({
 
                 <div className="relative flex flex-col gap-3">
                   <h2 className="text-balance text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-                    Bienvenue dans Voraly Pro ✦
+                    {t('successTitle')}
                   </h2>
                   <p className="mx-auto max-w-sm text-sm leading-relaxed text-zinc-400">
-                    Votre paiement est confirmé. Vos avantages Pro sont en cours
-                    d’activation — cela prend quelques secondes.
+                    {t('successBody')}
                   </p>
                 </div>
 
@@ -290,7 +282,7 @@ export default function PricingExperience({
                   className="group relative inline-flex items-center gap-3 rounded-full border border-pink-500/40 bg-pink-500/10 px-8 py-4 text-base font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20"
                   style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
                 >
-                  Accéder à mon tableau de bord
+                  {t('goToDashboard')}
                   <ArrowRight
                     size={18}
                     className="transition-transform duration-300 group-hover:translate-x-1"
