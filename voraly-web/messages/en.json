@@ -335,7 +335,11 @@
       "connect": "Connect",
       "sourceCalendar": "Calendar",
       "sourceNotion": "Notion",
-      "emptyBody": "Connect Google Calendar or Notion to see your upcoming deliveries."
+      "emptyBody": "Connect Google Calendar or Notion to see your upcoming deliveries.",
+      "agendaSubtitle": "Today's agenda",
+      "allDay": "All day",
+      "eventCount": "{count, plural, one {# event} other {# events}}",
+      "noEventsToday": "No events today"
     },
     "aiTasks": {
       "aiBadge": "AI",

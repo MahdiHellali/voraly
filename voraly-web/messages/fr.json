@@ -335,7 +335,11 @@
       "connect": "Connecter",
       "sourceCalendar": "Calendar",
       "sourceNotion": "Notion",
-      "emptyBody": "Connectez Google Calendar ou Notion pour voir vos livraisons imminentes."
+      "emptyBody": "Connectez Google Calendar ou Notion pour voir vos livraisons imminentes.",
+      "agendaSubtitle": "Agenda du jour",
+      "allDay": "Journée",
+      "eventCount": "{count, plural, one {# événement} other {# événements}}",
+      "noEventsToday": "Aucun événement aujourd'hui"
     },
     "aiTasks": {
       "aiBadge": "IA",

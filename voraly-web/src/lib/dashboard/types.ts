@@ -20,6 +20,18 @@ export interface Deadline {
   source: 'google_calendar' | 'notion'
 }
 
+// ─── AgendaEvent ─────────────────────────────────────────────────────────────
+
+/** Événement du jour issu de Google Calendar ou Notion (mini-agenda). */
+export interface AgendaEvent {
+  id: string
+  title: string
+  start: string          // ISO 8601 (dateTime, ou date pour les all-day)
+  end: string | null
+  allDay: boolean
+  source: 'google_calendar' | 'notion'
+}
+
 // ─── AiTask ──────────────────────────────────────────────────────────────────
 
 /**
@@ -96,6 +108,9 @@ export interface DashboardData {
 
   /** Livraisons imminentes — [] si table absente ou vide. */
   deadlines: Deadline[]
+
+  /** Événements du jour (Google Calendar + Notion) — [] si rien aujourd'hui. */
+  agenda: AgendaEvent[]
 
   /** Statut des intégrations Calendar/Notion. */
   integrations: IntegrationsState

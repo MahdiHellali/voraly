@@ -64,7 +64,7 @@ export default function DashboardContent({ firstName, data, userId }: DashboardC
         >
           <RevenueChart series={data.revenueSeries!} />
           <DeadlineCard
-            deadlines={data.deadlines}
+            agenda={data.agenda}
             integrations={data.integrations}
           />
         </motion.div>
@@ -72,7 +72,7 @@ export default function DashboardContent({ firstName, data, userId }: DashboardC
         /* Pas de métriques → DeadlineCard pleine largeur, RevenueChart non monté */
         <motion.div {...blurReveal(0.12)}>
           <DeadlineCard
-            deadlines={data.deadlines}
+            agenda={data.agenda}
             integrations={data.integrations}
           />
         </motion.div>

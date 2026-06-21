@@ -1,190 +1,132 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import { CalendarClock, CalendarDays, FileText, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Deadline, IntegrationsState } from '@/lib/dashboard/types'
+import type { AgendaEvent, IntegrationsState } from '@/lib/dashboard/types'
 
 type DeadlineT = ReturnType<typeof useTranslations>
 
-type Urgency = 'red' | 'orange' | 'green'
-
-const urgencyConfig: Record<Urgency, { bg: string; dot: string; bar: string; time: string }> = {
-  red:    { bg: 'bg-rose-500/5',    dot: 'bg-rose-500',    bar: 'bg-rose-500',    time: 'text-rose-400'    },
-  orange: { bg: 'bg-orange-500/5',  dot: 'bg-orange-500',  bar: 'bg-orange-500',  time: 'text-orange-400'  },
-  green:  { bg: 'bg-emerald-500/5', dot: 'bg-emerald-400', bar: 'bg-emerald-400', time: 'text-emerald-400' },
+function SourceBadge({ source, t }: { source: AgendaEvent['source']; t: DeadlineT }) {
+  const isG = source === 'google_calendar'
+  return (
+    <span className={cn(
+      'inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-0.5 text-[8px] font-bold',
+      isG ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300' : 'border-zinc-500/30 bg-white/[0.05] text-zinc-300',
+    )}>
+      {isG ? <CalendarDays size={9} /> : <FileText size={9} />}
+      {isG ? t('sourceCalendar') : t('sourceNotion')}
+    </span>
+  )
 }
 
-function computeUrgency(dueAt: string): Urgency {
-  const msLeft = new Date(dueAt).getTime() - Date.now()
-  const hoursLeft = msLeft / (1000 * 60 * 60)
-  if (hoursLeft <= 24) return 'red'
-  if (hoursLeft <= 48) return 'orange'
-  return 'green'
-}
-
-function computeTimeLeft(dueAt: string, t: DeadlineT): string {
-  const msLeft = new Date(dueAt).getTime() - Date.now()
-  if (msLeft <= 0) return t('expired')
-  const h = Math.floor(msLeft / (1000 * 60 * 60))
-  const m = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60))
-  if (h >= 48) return t('daysHours', { d: Math.floor(h / 24), h: h % 24 })
-  return t('hoursMins', { h, m: m.toString().padStart(2, '0') })
-}
-
-function ConnectorButton({
-  label,
-  icon,
-  state,
-  href,
-  t,
-}: {
-  label: string
-  icon: React.ReactNode
-  state: 'connect' | 'soon' | 'connected'
-  href: string
-  t: DeadlineT
+function ConnectorButton({ label, icon, state, href, t }: {
+  label: string; icon: React.ReactNode; state: 'connect' | 'soon' | 'connected'; href: string; t: DeadlineT
 }) {
-  const isSoon = state === 'soon'
-  const isConnected = state === 'connected'
-
   const content = (
     <span className="flex w-full items-center gap-2.5">
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.05]">
-        {icon}
-      </span>
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.05]">{icon}</span>
       <span className="text-[12.5px] font-semibold text-zinc-200">{label}</span>
       <span className="ml-auto text-[10px] font-bold">
-        {isConnected ? (
+        {state === 'connected' ? (
           <span className="inline-flex items-center gap-1 text-emerald-400">{t('connected')}</span>
-        ) : isSoon ? (
-          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide text-zinc-500">
-            {t('soon')}
-          </span>
+        ) : state === 'soon' ? (
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide text-zinc-500">{t('soon')}</span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-violet-300">
-            {t('connect')} <ArrowRight size={12} />
-          </span>
+          <span className="inline-flex items-center gap-1 text-violet-300">{t('connect')} <ArrowRight size={12} /></span>
         )}
       </span>
     </span>
   )
-
-  const base =
-    'group flex items-center rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 backdrop-blur-xl transition-all duration-200'
-
-  if (isSoon || isConnected) {
-    return (
-      <div
-        className={cn(base, 'cursor-default', isSoon && 'opacity-70')}
-        aria-disabled={isSoon}
-      >
-        {content}
-      </div>
-    )
-  }
-
-  return (
-    <Link
-      href={href}
-      className={cn(
-        base,
-        'hover:-translate-y-0.5 hover:border-white/[0.16] hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50',
-      )}
-    >
-      {content}
-    </Link>
-  )
+  const base = 'group flex items-center rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 backdrop-blur-xl transition-all duration-200'
+  if (state === 'soon' || state === 'connected')
+    return <div className={cn(base, 'cursor-default', state === 'soon' && 'opacity-70')} aria-disabled={state === 'soon'}>{content}</div>
+  return <Link href={href} className={cn(base, 'hover:-translate-y-0.5 hover:border-white/[0.16] hover:bg-white/[0.05]')}>{content}</Link>
 }
 
 interface DeadlineCardProps {
-  deadlines?: Deadline[] | null
+  agenda?: AgendaEvent[] | null
   integrations?: Pick<IntegrationsState, 'googleCalendar' | 'notion'>
 }
 
-export default function DeadlineCard({ deadlines, integrations }: DeadlineCardProps) {
+export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps) {
   const t = useTranslations('dashboard.deadlines')
-  const hasDeadlines = !!deadlines && deadlines.length > 0
+  const locale = useLocale()
+  const events = agenda ?? []
+  const connected = integrations?.googleCalendar === 'connected' || integrations?.notion === 'connected'
+
+  const fmt = (iso: string) => new Date(iso).toLocaleTimeString(locale === 'en' ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' })
+  const allDay = events.filter((e) => e.allDay)
+  const timed = events.filter((e) => !e.allDay)
+  const startHour = new Date().getHours()
+  const hours = Array.from({ length: 24 - startHour }, (_, i) => startHour + i)
+  // Un événement déjà commencé mais en cours est rangé sur l'heure courante.
+  const hourOf = (e: AgendaEvent) => Math.max(new Date(e.start).getHours(), startHour)
 
   return (
-    <div
-      className="glass rounded-2xl p-6 flex flex-col"
-      style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
-    >
+    <div className="glass rounded-2xl p-6 flex flex-col" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="text-sm font-bold text-zinc-100">{t('title')}</div>
-          <div className="text-[11px] text-zinc-500 mt-0.5">{t('subtitle')}</div>
+          <div className="text-[11px] text-zinc-500 mt-0.5">{t('agendaSubtitle')}</div>
         </div>
-        {hasDeadlines && (
-          <span className="text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/25 px-2.5 py-1 rounded-full">
-            {t('urgentCount', { count: deadlines.filter((d) => computeUrgency(d.dueAt) === 'red').length })}
+        {connected && events.length > 0 && (
+          <span className="text-[10px] font-bold bg-violet-500/15 text-violet-300 border border-violet-500/25 px-2.5 py-1 rounded-full">
+            {t('eventCount', { count: events.length })}
           </span>
         )}
       </div>
 
-      {hasDeadlines ? (
-        /* ── Liste des deadlines ── */
-        <div className="flex flex-col gap-2">
-          {deadlines.map((d, index) => {
-            const urgency = computeUrgency(d.dueAt)
-            const timeLeft = computeTimeLeft(d.dueAt, t)
-            const cfg = urgencyConfig[urgency]
+      {connected ? (
+        <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto pr-1">
+          {/* Toute la journée */}
+          {allDay.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pb-1">
+              {allDay.map((e) => (
+                <span key={e.id} className="flex items-center gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-zinc-200">
+                  <span className="text-[9px] font-bold uppercase tracking-wide text-zinc-500">{t('allDay')}</span>
+                  <span className="font-medium truncate max-w-[140px]">{e.title}</span>
+                  <SourceBadge source={e.source} t={t} />
+                </span>
+              ))}
+            </div>
+          )}
 
+          {/* Grille des heures restantes */}
+          {hours.map((h) => {
+            const evs = timed.filter((e) => hourOf(e) === h)
             return (
-              <motion.div
-                key={d.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  duration: 0.35,
-                  delay: 0.1 + index * 0.07,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                whileHover={{ x: 2, transition: { duration: 0.15 } }}
-                className={cn('flex items-center gap-3 rounded-xl px-3 py-3', cfg.bg)}
-              >
-                {/* Dot urgence */}
-                <motion.div
-                  className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)}
-                  animate={urgency === 'red' ? { scale: [1, 1.4, 1] } : {}}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                />
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-semibold text-zinc-200 truncate">{d.title}</div>
-                  {d.client && (
-                    <div className="text-[10px] text-zinc-500 truncate mt-0.5">{d.client}</div>
+              <div key={h} className="flex gap-3 border-t border-white/[0.04] pt-2">
+                <span className="w-10 shrink-0 pt-0.5 text-[10px] font-semibold tabular-nums text-zinc-600">{String(h).padStart(2, '0')}:00</span>
+                <div className="flex flex-1 flex-col gap-1.5 min-w-0">
+                  {evs.length === 0 ? (
+                    <div className="h-3" />
+                  ) : (
+                    evs.map((e) => (
+                      <motion.div
+                        key={e.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex items-center gap-2 rounded-xl border border-violet-500/15 bg-violet-500/[0.06] px-3 py-2"
+                      >
+                        <span className="text-[10px] font-bold tabular-nums text-violet-300">{fmt(e.start)}</span>
+                        <span className="flex-1 truncate text-[12px] font-medium text-zinc-100">{e.title}</span>
+                        <SourceBadge source={e.source} t={t} />
+                      </motion.div>
+                    ))
                   )}
-                  {/* Barre de progression */}
-                  <div className="mt-1.5 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <motion.div
-                      className={cn('h-full rounded-full', cfg.bar)}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${d.progress}%` }}
-                      transition={{
-                        duration: 1.0,
-                        delay: 0.3 + index * 0.07,
-                        ease: [0.34, 1.56, 0.64, 1],
-                      }}
-                    />
-                  </div>
                 </div>
-
-                {/* Source + temps restant */}
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border border-white/10 bg-white/5 text-zinc-400 capitalize">
-                    {d.source === 'google_calendar' ? t('sourceCalendar') : t('sourceNotion')}
-                  </span>
-                  <span className={cn('text-[10px] font-bold', cfg.time)}>⏱ {timeLeft}</span>
-                </div>
-              </motion.div>
+              </div>
             )
           })}
+
+          {events.length === 0 && (
+            <p className="py-6 text-center text-[12px] text-zinc-500">{t('noEventsToday')}</p>
+          )}
         </div>
       ) : (
         /* ── Empty state — connecter Calendar / Notion ── */
@@ -194,37 +136,13 @@ export default function DeadlineCard({ deadlines, integrations }: DeadlineCardPr
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
           className="relative flex flex-1 flex-col items-center justify-center text-center py-8"
         >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-6 h-40 w-40 -translate-x-1/2 rounded-full blur-3xl"
-            style={{
-              background: 'radial-gradient(circle, rgba(99,102,241,0.18), transparent 70%)',
-            }}
-          />
-          <div
-            className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.05]"
-            style={{ boxShadow: '0 0 22px rgba(99,102,241,0.3)' }}
-          >
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.05]" style={{ boxShadow: '0 0 22px rgba(99,102,241,0.3)' }}>
             <CalendarClock className="h-5 w-5 text-indigo-300" />
           </div>
-          <p className="relative mt-4 max-w-[260px] text-[13px] leading-relaxed text-zinc-400">
-            {t('emptyBody')}
-          </p>
+          <p className="relative mt-4 max-w-[260px] text-[13px] leading-relaxed text-zinc-400">{t('emptyBody')}</p>
           <div className="relative mt-5 flex w-full max-w-[280px] flex-col gap-2">
-            <ConnectorButton
-              label="Google Calendar"
-              icon={<CalendarDays size={15} className="text-indigo-300" />}
-              state={integrations?.googleCalendar ?? 'soon'}
-              href="/dashboard/integrations/google-calendar"
-              t={t}
-            />
-            <ConnectorButton
-              label="Notion"
-              icon={<FileText size={15} className="text-zinc-300" />}
-              state={integrations?.notion ?? 'soon'}
-              href="/dashboard/integrations/notion"
-              t={t}
-            />
+            <ConnectorButton label="Google Calendar" icon={<CalendarDays size={15} className="text-indigo-300" />} state={integrations?.googleCalendar ?? 'soon'} href="/dashboard/integrations/google-calendar" t={t} />
+            <ConnectorButton label="Notion" icon={<FileText size={15} className="text-zinc-300" />} state={integrations?.notion ?? 'soon'} href="/dashboard/integrations/notion" t={t} />
           </div>
         </motion.div>
       )}

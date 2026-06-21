@@ -31,6 +31,7 @@ export default async function DashboardPage() {
         kpiItems: null,
         revenueSeries: null,
         deadlines: [],
+        agenda: [],
         integrations: { googleCalendar: 'soon' as const, notion: 'soon' as const },
         todos: null,
         roadmapGeneratedLabel: undefined,

@@ -4,6 +4,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getTranslations } from 'next-intl/server'
 import { normalizeRoadmap, normalizeCompletedSteps } from '@/lib/roadmap/types'
+import { getTodayAgenda } from '@/lib/integrations/agenda'
 import type { DashboardData, AiTask, Deadline, IntegrationsState } from './types'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -186,6 +187,12 @@ export async function getDashboardData(
     console.error('[dashboard] integration_connections unexpected error', err)
   }
 
+  // ── 6. Agenda du jour (Google Calendar + Notion) — RÉSILIENT ──────────────
+  const agenda = await getTodayAgenda(supabase, userId).catch((err) => {
+    console.error('[dashboard] agenda fetch failed', err)
+    return []
+  })
+
   return {
     connectedPlatformsCount,
     revenue,
@@ -194,6 +201,7 @@ export async function getDashboardData(
     kpiItems,
     revenueSeries,
     deadlines,
+    agenda,
     integrations,
     todos,
     roadmapGeneratedLabel,
