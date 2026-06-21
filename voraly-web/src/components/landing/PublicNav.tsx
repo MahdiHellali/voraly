@@ -15,17 +15,20 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Menu, X } from 'lucide-react'
+import LanguageSwitcher from '@/components/i18n/LanguageSwitcher'
 
 const THRESHOLD = 72 // px avant bascule pill
 
+// Les libellés sont des clés i18n résolues à l'affichage (namespace "nav").
 const NAV_LINKS = [
-  { href: '/fonctionnalites', label: 'Fonctionnalités' },
-  { href: '/pricing',         label: 'Tarifs'          },
-  { href: '/faq',             label: 'FAQ'             },
-  { href: '/a-propos',        label: 'À propos'        },
-]
+  { href: '/fonctionnalites', key: 'features' },
+  { href: '/pricing',         key: 'pricing'  },
+  { href: '/faq',             key: 'faq'      },
+  { href: '/a-propos',        key: 'about'    },
+] as const
 
 // ── Logo wordmark ────────────────────────────────────────────────
 function LogoWordmark({ compact = false }: { compact?: boolean }) {
@@ -71,6 +74,7 @@ function NavLinks({
   onNavigate?: () => void
 }) {
   const pathname = usePathname()
+  const t = useTranslations('nav')
   const [hovered, setHovered] = useState<string | null>(null)
 
   return (
@@ -78,7 +82,7 @@ function NavLinks({
       className={`flex items-center ${compact ? 'gap-0.5' : 'gap-0.5'}`}
       onMouseLeave={() => setHovered(null)}
     >
-      {NAV_LINKS.map(({ href, label }) => {
+      {NAV_LINKS.map(({ href, key }) => {
         const isActive = pathname === href || pathname.startsWith(href + '/')
         const isHovered = hovered === href
 
@@ -93,7 +97,7 @@ function NavLinks({
                 isActive || isHovered ? 'text-white' : 'text-zinc-400',
               ].join(' ')}
             >
-              {label}
+              {t(key)}
             </Link>
 
             {/* Highlight glissant */}
@@ -136,6 +140,7 @@ function VDivider() {
 
 // ── Bouton CTA compact pill ───────────────────────────────────────
 function PillCTA() {
+  const t = useTranslations('common')
   return (
     <Link
       href="/signup"
@@ -151,7 +156,7 @@ function PillCTA() {
         e.currentTarget.style.boxShadow = '0 0 18px rgba(139,92,246,0.35)'
       }}
     >
-      Commencer
+      {t('getStarted')}
       <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
     </Link>
   )
@@ -165,6 +170,8 @@ function MobileMenu({
   open: boolean
   onClose: () => void
 }) {
+  const tNav = useTranslations('nav')
+  const tCommon = useTranslations('common')
   return (
     <AnimatePresence>
       {open && (
@@ -182,16 +189,16 @@ function MobileMenu({
             boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
           }}
         >
-          <nav aria-label="Menu mobile">
+          <nav aria-label={tNav('mobileMenu')}>
             <ul className="flex flex-col gap-1">
-              {NAV_LINKS.map(({ href, label }) => (
+              {NAV_LINKS.map(({ href, key }) => (
                 <li key={href}>
                   <Link
                     href={href}
                     onClick={onClose}
                     className="block rounded-xl px-4 py-3 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white"
                   >
-                    {label}
+                    {tNav(key)}
                   </Link>
                 </li>
               ))}
@@ -202,7 +209,7 @@ function MobileMenu({
                 onClick={onClose}
                 className="block rounded-xl px-4 py-3 text-center text-sm font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-white"
               >
-                Connexion
+                {tCommon('login')}
               </Link>
               <Link
                 href="/signup"
@@ -212,8 +219,12 @@ function MobileMenu({
                   background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
                 }}
               >
-                Commencer →
+                {tCommon('getStarted')} →
               </Link>
+              {/* Sélecteur de langue — menu mobile */}
+              <div className="px-1 pt-1">
+                <LanguageSwitcher variant="inline" />
+              </div>
             </div>
           </nav>
         </motion.div>
@@ -224,6 +235,8 @@ function MobileMenu({
 
 // ── Composant principal ───────────────────────────────────────────
 export default function PublicNav() {
+  const t = useTranslations('common')
+  const tNav = useTranslations('nav')
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const ticking = useRef(false)
@@ -266,11 +279,12 @@ export default function PublicNav() {
 
             {/* CTAs droite — desktop */}
             <div className="hidden md:flex items-center gap-2">
+              <LanguageSwitcher />
               <Link
                 href="/login"
                 className="rounded-full px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white hover:bg-white/[0.05]"
               >
-                Connexion
+                {t('login')}
               </Link>
               <Link
                 href="/signup"
@@ -288,7 +302,7 @@ export default function PublicNav() {
                     '0 0 20px rgba(139,92,246,0.3)'
                 }}
               >
-                Commencer
+                {t('getStarted')}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
@@ -298,7 +312,7 @@ export default function PublicNav() {
               type="button"
               className="flex md:hidden size-9 items-center justify-center rounded-full text-zinc-300 transition-colors hover:bg-white/[0.06] hover:text-white"
               onClick={() => setMobileOpen((v) => !v)}
-              aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              aria-label={mobileOpen ? tNav('closeMenu') : tNav('openMenu')}
               aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -342,9 +356,10 @@ export default function PublicNav() {
                 <NavLinks compact />
               </div>
 
-              {/* Divider + CTA — desktop */}
+              {/* Divider + sélecteur langue + CTA — desktop */}
               <div className="hidden md:flex items-center">
                 <VDivider />
+                <LanguageSwitcher />
                 <div className="px-1">
                   <PillCTA />
                 </div>
@@ -355,7 +370,7 @@ export default function PublicNav() {
                 <button
                   type="button"
                   onClick={() => setMobileOpen((v) => !v)}
-                  aria-label={mobileOpen ? 'Fermer' : 'Menu'}
+                  aria-label={mobileOpen ? tNav('closeMenu') : tNav('openMenu')}
                   aria-expanded={mobileOpen}
                   className="flex size-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white"
                 >

@@ -1,47 +1,52 @@
+'use client'
+
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 const FOOTER_COLS = [
   {
-    title: 'Produit',
+    titleKey: 'product',
     links: [
-      { href: '/fonctionnalites', label: 'Fonctionnalités' },
-      { href: '/pricing',         label: 'Tarifs'          },
-      { href: '/fonctionnalites#integrations', label: 'Intégrations' },
-      { href: '/fonctionnalites#roadmap-ia',   label: 'Roadmap IA'   },
+      { href: '/fonctionnalites', key: 'features' },
+      { href: '/pricing', key: 'pricing' },
+      { href: '/fonctionnalites#integrations', key: 'integrations' },
+      { href: '/fonctionnalites#roadmap-ia', key: 'roadmap' },
     ],
   },
   {
-    title: 'Ressources',
+    titleKey: 'resources',
     links: [
-      { href: '/faq',      label: 'FAQ'      },
-      { href: '/a-propos', label: 'À propos' },
-      { href: '/contact',  label: 'Contact'  },
+      { href: '/faq', key: 'faq' },
+      { href: '/a-propos', key: 'about' },
+      { href: '/contact', key: 'contact' },
     ],
   },
   {
-    title: 'Légal',
+    titleKey: 'legal',
     links: [
-      { href: '/mentions-legales', label: 'Mentions légales' },
-      { href: '/confidentialite',  label: 'Confidentialité'  },
-      { href: '/cgu',              label: 'CGU'               },
+      { href: '/mentions-legales', key: 'legalNotice' },
+      { href: '/confidentialite', key: 'privacy' },
+      { href: '/cgu', key: 'terms' },
     ],
   },
   {
-    title: 'Plateformes',
+    titleKey: 'platforms',
     links: [
-      { href: 'https://www.upwork.com',     label: 'Upwork',     external: true },
-      { href: 'https://www.fiverr.com',     label: 'Fiverr',     external: true },
-      { href: 'https://www.malt.fr',        label: 'Malt',       external: true },
-      { href: 'https://www.linkedin.com',   label: 'LinkedIn',   external: true },
+      { href: 'https://www.upwork.com', label: 'Upwork', external: true },
+      { href: 'https://www.fiverr.com', label: 'Fiverr', external: true },
+      { href: 'https://www.malt.fr', label: 'Malt', external: true },
+      { href: 'https://www.linkedin.com', label: 'LinkedIn', external: true },
     ],
   },
-]
+] as const
 
 export default function PublicFooter() {
+  const t = useTranslations('footer')
+
   return (
     <footer
       className="relative border-t border-white/[0.06] bg-white/[0.02] backdrop-blur-xl"
-      aria-label="Pied de page"
+      aria-label={t('ariaFooter')}
     >
       {/* Glow line */}
       <div className="glow-line" />
@@ -52,14 +57,14 @@ export default function PublicFooter() {
           {/* Tagline colonne */}
           <div className="col-span-2 sm:col-span-3 lg:col-span-1 flex flex-col gap-4">
             <p className="text-base font-extrabold tracking-tight text-white">Voraly</p>
-            <p className="text-sm font-medium text-zinc-400">Own your career.</p>
+            <p className="text-sm font-medium text-zinc-400">{t('tagline')}</p>
             {/* Réseaux sociaux */}
             <div className="flex gap-3 mt-2">
               <a
                 href="https://x.com/voralyapp"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Voraly sur X (Twitter)"
+                aria-label={t('socialX')}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/[0.15] hover:text-white"
               >
                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -70,7 +75,7 @@ export default function PublicFooter() {
                 href="https://www.linkedin.com/company/voraly"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Voraly sur LinkedIn"
+                aria-label={t('socialLinkedIn')}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-zinc-400 transition-colors hover:border-white/[0.15] hover:text-white"
               >
                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -82,32 +87,35 @@ export default function PublicFooter() {
 
           {/* Colonnes liens */}
           {FOOTER_COLS.map((col) => (
-            <div key={col.title} className="flex flex-col gap-4">
+            <div key={col.titleKey} className="flex flex-col gap-4">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">
-                {col.title}
+                {t(`cols.${col.titleKey}`)}
               </p>
               <ul className="flex flex-col gap-2.5">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    {'external' in link && link.external ? (
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-zinc-400 transition-colors hover:text-zinc-200"
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link
-                        href={link.href}
-                        className="text-sm text-zinc-400 transition-colors hover:text-zinc-200"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
-                  </li>
-                ))}
+                {col.links.map((link) => {
+                  const label = 'label' in link ? link.label : t(`links.${link.key}`)
+                  return (
+                    <li key={label}>
+                      {'external' in link && link.external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-zinc-400 transition-colors hover:text-zinc-200"
+                        >
+                          {label}
+                        </a>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="text-sm text-zinc-400 transition-colors hover:text-zinc-200"
+                        >
+                          {label}
+                        </Link>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           ))}
@@ -115,12 +123,8 @@ export default function PublicFooter() {
 
         {/* Bas de page */}
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 sm:flex-row">
-          <p className="text-xs text-zinc-600">
-            &copy; 2026 Voraly. Tous droits réservés.
-          </p>
-          <p className="text-xs text-zinc-700">
-            Fait avec ✦ pour les freelances
-          </p>
+          <p className="text-xs text-zinc-600">{t('rights')}</p>
+          <p className="text-xs text-zinc-700">{t('madeWith')}</p>
         </div>
       </div>
     </footer>

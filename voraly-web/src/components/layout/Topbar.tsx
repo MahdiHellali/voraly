@@ -1,10 +1,12 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import SubscriptionBadge from './SubscriptionBadge'
+import LanguageSwitcher from '@/components/i18n/LanguageSwitcher'
 import {
   fetchNotificationsAction,
   markAllNotificationsReadAction,
@@ -12,17 +14,21 @@ import {
   type NotificationItem
 } from '@/app/dashboard/settings/notifications-actions'
 
-const pageTitles: Record<string, string> = {
-  '/dashboard':            "Vue d'ensemble",
-  '/dashboard/platforms':  'Plateformes',
-  '/dashboard/roadmap':    'Stratégie',
-  '/dashboard/optimize':   'Optimiser',
-  '/dashboard/settings':   'Réglages',
+const pageTitleKeys: Record<string, string> = {
+  '/dashboard':            'overview',
+  '/dashboard/platforms':  'platforms',
+  '/dashboard/roadmap':    'roadmap',
+  '/dashboard/optimize':   'optimize',
+  '/dashboard/settings':   'settings',
 }
 
 export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
   const pathname = usePathname()
-  const title = pageTitles[pathname] ?? 'Dashboard'
+  const t = useTranslations('dashboard.topbar')
+  const locale = useLocale()
+  const dateLocale = locale === 'en' ? 'en-US' : 'fr-FR'
+  const titleKey = pageTitleKeys[pathname]
+  const title = titleKey ? t(titleKey) : t('fallback')
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [showNotifications, setShowNotifications] = useState(false)
@@ -92,7 +98,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
   const unreadCount = notifications.filter(n => !n.read).length
 
   const dateStr = now
-    ? now.toLocaleDateString('fr-FR', {
+    ? now.toLocaleDateString(dateLocale, {
         weekday: 'long',
         day:     'numeric',
         month:   'long',
@@ -108,10 +114,10 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
 
-    if (diffMins < 1) return "À l'instant"
-    if (diffMins < 60) return `Il y a ${diffMins} min`
-    if (diffHours < 24) return `Il y a ${diffHours} h`
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    if (diffMins < 1) return t('justNow')
+    if (diffMins < 60) return t('minutesAgo', { count: diffMins })
+    if (diffHours < 24) return t('hoursAgo', { count: diffHours })
+    return d.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' })
   }
 
   return (
@@ -139,15 +145,16 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
 
       {/* ── Actions ── */}
       <div className="flex items-center gap-2.5 relative z-50">
+        <LanguageSwitcher />
         <SubscriptionBadge isPremium={isPremium} />
-        
+
         {/* Bell Button */}
         <motion.button
           onClick={handleTogglePopover}
           whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.07)' }}
           whileTap={{ scale: 0.88, transition: { duration: 0.08 } }}
           transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-          aria-label="Notifications"
+          aria-label={t('notifications')}
           className="relative p-2.5 rounded-xl text-zinc-400 hover:text-white transition-colors duration-150 cursor-pointer"
         >
           <Bell size={18} />
@@ -178,14 +185,14 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
               >
                 {/* Header */}
                 <div className="p-4 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.01]">
-                  <span className="text-xs font-bold text-zinc-200">Notifications</span>
+                  <span className="text-xs font-bold text-zinc-200">{t('notifications')}</span>
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllRead}
                       disabled={loading}
                       className="text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors disabled:opacity-50 cursor-pointer"
                     >
-                      Tout marquer comme lu
+                      {t('markAllRead')}
                     </button>
                   )}
                 </div>
@@ -195,7 +202,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
                   {notifications.length === 0 ? (
                     <div className="p-8 flex flex-col items-center justify-center text-center gap-2">
                       <Bell size={24} className="text-zinc-600 animate-pulse" />
-                      <div className="text-xs text-zinc-500 font-medium">Aucune notification</div>
+                      <div className="text-xs text-zinc-500 font-medium">{t('noNotifications')}</div>
                     </div>
                   ) : (
                     notifications.map(notif => (
@@ -229,7 +236,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
                           <button
                             onClick={(e) => handleDelete(notif.id, e)}
                             className="p-1 rounded text-zinc-600 hover:text-rose-400 hover:bg-white/[0.04] transition-colors cursor-pointer"
-                            title="Supprimer"
+                            title={t('delete')}
                           >
                             <Trash2 size={11} />
                           </button>

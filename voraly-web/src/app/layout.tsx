@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import HeroBackground from '@/components/landing/HeroBackground'
@@ -30,19 +32,24 @@ export const metadata: Metadata = {
 const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL
 const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+
   return (
-    <html lang="fr" className="dark">
+    <html lang={locale} className="dark">
       <body className={inter.className}>
         {/* Fond aurora global — toutes les pages */}
         <HeroBackground />
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </NextIntlClientProvider>
 
         {/* Matomo Analytics */}
         {MATOMO_URL && MATOMO_SITE_ID && (

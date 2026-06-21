@@ -1,0 +1,194 @@
+{
+  "common": {
+    "getStarted": "Commencer",
+    "getStartedFree": "Commencer gratuitement",
+    "login": "Connexion",
+    "viewPricing": "Voir les tarifs",
+    "language": "Langue"
+  },
+  "nav": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "faq": "FAQ",
+    "about": "À propos",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "mobileMenu": "Menu mobile"
+  },
+  "landing": {
+    "hero": {
+      "eyebrow": "✦ La plateforme tout-en-un des freelances",
+      "titleLead": "Pilotez toute votre activité freelance depuis",
+      "titleAccent": "un seul endroit.",
+      "subtitle": "Le tableau de bord freelance tout-en-un : Upwork, Fiverr, Malt et LinkedIn réunis, revenus optimisés par l'IA, deadlines synchronisées. Reprenez le contrôle de votre carrière.",
+      "microcopy": "Sans carte bancaire · Configuration en 2 minutes",
+      "geo": "Voraly est un tableau de bord freelance qui centralise Upwork, Fiverr, Malt et LinkedIn, génère une roadmap de croissance par IA et synchronise vos deadlines avec Google Calendar et Notion.",
+      "platformsLabel": "Vos plateformes, enfin réunies"
+    },
+    "problem": {
+      "eyebrow": "Le problème",
+      "title": "Votre activité est éclatée sur dix onglets.",
+      "body": "Des revenus dispersés sur quatre plateformes, des messages partout, des deadlines que vous suivez de tête. Vous passez plus de temps à gérer qu'à facturer.",
+      "items": {
+        "revenue": "Revenus invisibles",
+        "deadlines": "Deadlines oubliées",
+        "messages": "Messages dispersés",
+        "time": "Temps gaspillé"
+      }
+    },
+    "solution": {
+      "eyebrow": "La solution",
+      "title": "Voraly réunit tout sur un seul tableau de bord.",
+      "body": "Connectez vos comptes une fois. Voraly agrège vos revenus, vos missions et vos échéances en temps réel — et l'IA vous dit quoi faire ensuite.",
+      "items": {
+        "revenue": "Revenus centralisés",
+        "deadlines": "Deadlines synchronisées",
+        "roadmap": "Roadmap IA personnalisée",
+        "fast": "Tout en 2 minutes"
+      }
+    },
+    "features": {
+      "eyebrow": "Fonctionnalités",
+      "title": "Tout ce qu'il faut pour faire grandir",
+      "titleAccent": "votre activité.",
+      "subtitle": "Quatre piliers, un seul abonnement.",
+      "dashboard": {
+        "title": "Tableau de bord temps réel",
+        "description": "Revenus, missions en cours et performance consolidés en direct, toutes plateformes confondues.",
+        "status": "Live",
+        "tag": "temps-réel"
+      },
+      "roadmap": {
+        "title": "Roadmap IA stratégique",
+        "description": "Une feuille de route personnalisée, générée par l'IA, pour augmenter vos revenus mois après mois.",
+        "status": "IA",
+        "tag": "IA"
+      },
+      "multi": {
+        "title": "Multi-plateformes",
+        "description": "Upwork, Fiverr, Malt, LinkedIn : connectez tout, pilotez depuis un seul écran.",
+        "tag": "intégrations"
+      },
+      "deadlines": {
+        "title": "Suivi des deadlines",
+        "description": "Synchronisé avec Google Calendar et Notion. Plus jamais d'échéance oubliée.",
+        "tag": "deadlines"
+      }
+    },
+    "howItWorks": {
+      "eyebrow": "Comment ça marche",
+      "title": "Centraliser vos plateformes freelance en 3 étapes.",
+      "step1": {
+        "title": "Connectez vos plateformes",
+        "desc": "Reliez Upwork, Fiverr, Malt et LinkedIn en quelques clics, en toute sécurité."
+      },
+      "step2": {
+        "title": "Laissez l'IA analyser",
+        "desc": "Voraly croise vos données et génère votre roadmap de croissance."
+      },
+      "step3": {
+        "title": "Pilotez et encaissez",
+        "desc": "Suivez vos métriques, respectez vos deadlines, concentrez-vous sur l'essentiel."
+      }
+    },
+    "metrics": {
+      "eyebrow": "Pourquoi Voraly",
+      "title": "Pourquoi les freelances choisissent Voraly.",
+      "m1": { "value": "Tous vos revenus", "label": "centralisés en un seul endroit" },
+      "m2": { "value": "4", "label": "plateformes connectées" },
+      "m3": { "value": "Toutes plateformes", "label": "un seul écran" },
+      "m4": { "value": "2 min", "label": "pour démarrer" },
+      "callout": "Conçu pour les freelances qui veulent reprendre le contrôle de leur activité — sans jongler entre dix onglets."
+    },
+    "ai": {
+      "eyebrow": "Propulsé par l'IA",
+      "titleLead": "Roadmap IA freelance :",
+      "titleAccent": "votre stratégie, générée pour vous.",
+      "body": "L'IA de Voraly analyse vos missions, vos tarifs et vos plateformes, puis construit une roadmap concrète : quels services pousser, quels tarifs ajuster, quelles plateformes prioriser. Vos deadlines se synchronisent automatiquement avec votre calendrier.",
+      "cta": "Découvrir la roadmap IA"
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Questions fréquentes",
+      "seeAll": "Voir toutes les questions →",
+      "q1": {
+        "q": "Quelles plateformes sont compatibles ?",
+        "a": "Upwork, Fiverr, Malt et LinkedIn dès aujourd'hui, avec de nouvelles intégrations chaque mois. Vos deadlines se synchronisent avec Google Calendar et Notion."
+      },
+      "q2": {
+        "q": "Mes données sont-elles en sécurité ?",
+        "a": "Vos connexions sont chiffrées et nous ne stockons jamais vos identifiants de plateforme. Vous gardez le contrôle total et pouvez déconnecter un compte à tout moment."
+      },
+      "q3": {
+        "q": "Comment fonctionne la roadmap IA ?",
+        "a": "L'IA analyse vos revenus, vos missions et vos tarifs pour générer une feuille de route personnalisée, mise à jour au fil de votre activité."
+      },
+      "q4": {
+        "q": "Voraly est-il vraiment gratuit ?",
+        "a": "Vous démarrez gratuitement, sans carte bancaire. L'offre Pro débloque la roadmap IA avancée et les intégrations illimitées."
+      },
+      "q5": {
+        "q": "Combien de temps pour démarrer ?",
+        "a": "Environ deux minutes : créez votre compte, connectez vos plateformes, et votre tableau de bord se remplit automatiquement."
+      },
+      "q6": {
+        "q": "Puis-je annuler à tout moment ?",
+        "a": "Oui. Aucun engagement — résiliez votre abonnement Pro en un clic depuis vos réglages."
+      }
+    },
+    "trust": {
+      "oauth": "OAuth 2.0",
+      "encrypted": "Données chiffrées en transit",
+      "gdpr": "Conforme RGPD",
+      "eu": "Hébergement UE"
+    },
+    "finalCta": {
+      "titleLead": "Reprenez le contrôle de",
+      "titleAccent": "votre carrière.",
+      "body": "Rejoignez les freelances qui pilotent leur activité avec Voraly. Gratuit, sans carte bancaire."
+    }
+  },
+  "footer": {
+    "tagline": "Own your career.",
+    "cols": {
+      "product": "Produit",
+      "resources": "Ressources",
+      "legal": "Légal",
+      "platforms": "Plateformes"
+    },
+    "links": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "integrations": "Intégrations",
+      "roadmap": "Roadmap IA",
+      "faq": "FAQ",
+      "about": "À propos",
+      "contact": "Contact",
+      "legalNotice": "Mentions légales",
+      "privacy": "Confidentialité",
+      "terms": "CGU"
+    },
+    "rights": "© 2026 Voraly. Tous droits réservés.",
+    "madeWith": "Fait avec ✦ pour les freelances",
+    "socialX": "Voraly sur X (Twitter)",
+    "socialLinkedIn": "Voraly sur LinkedIn",
+    "ariaFooter": "Pied de page"
+  },
+  "dashboard": {
+    "topbar": {
+      "overview": "Vue d'ensemble",
+      "platforms": "Plateformes",
+      "roadmap": "Stratégie",
+      "optimize": "Optimiser",
+      "settings": "Réglages",
+      "fallback": "Dashboard",
+      "notifications": "Notifications",
+      "markAllRead": "Tout marquer comme lu",
+      "noNotifications": "Aucune notification",
+      "delete": "Supprimer",
+      "justNow": "À l'instant",
+      "minutesAgo": "Il y a {count} min",
+      "hoursAgo": "Il y a {count} h"
+    }
+  }
+}

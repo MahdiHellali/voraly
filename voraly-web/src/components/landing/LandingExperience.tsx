@@ -8,6 +8,7 @@
 import { useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { LayoutDashboard, Sparkles, Plug, CalendarClock, ChevronDown } from "lucide-react"
 import { LiquidButton } from "@/components/ui/liquid-glass-button"
@@ -15,79 +16,19 @@ import { BentoGrid, type BentoItem } from "@/components/ui/bento-grid"
 import PublicNav from "./PublicNav"
 import PublicFooter from "./PublicFooter"
 
-// ── Constantes de contenu ────────────────────────────────────────────────────
+// ── Structure de contenu (texte résolu via i18n à l'affichage) ────────────────
 
-const BENTO_ITEMS: BentoItem[] = [
-  {
-    title: "Tableau de bord temps réel",
-    description:
-      "Revenus, missions en cours et performance consolidés en direct, toutes plateformes confondues.",
-    icon: <LayoutDashboard size={18} className="text-violet-400" />,
-    status: "Live",
-    tags: ["temps-réel"],
-    colSpan: 2,
-    hasPersistentHover: false,
-  },
-  {
-    title: "Roadmap IA stratégique",
-    description:
-      "Une feuille de route personnalisée, générée par l'IA, pour augmenter vos revenus mois après mois.",
-    icon: <Sparkles size={18} className="text-pink-400" />,
-    status: "IA",
-    tags: ["IA"],
-    colSpan: 2,
-  },
-  {
-    title: "Multi-plateformes",
-    description:
-      "Upwork, Fiverr, Malt, LinkedIn : connectez tout, pilotez depuis un seul écran.",
-    icon: <Plug size={18} className="text-indigo-400" />,
-    tags: ["intégrations"],
-    colSpan: 1,
-  },
-  {
-    title: "Suivi des deadlines",
-    description:
-      "Synchronisé avec Google Calendar et Notion. Plus jamais d'échéance oubliée.",
-    icon: <CalendarClock size={18} className="text-violet-400" />,
-    tags: ["deadlines"],
-    colSpan: 1,
-  },
-]
+// Icônes des bento (le texte vient des messages, namespace landing.features.*)
+const BENTO_ICONS = {
+  dashboard: <LayoutDashboard size={18} className="text-violet-400" />,
+  roadmap: <Sparkles size={18} className="text-pink-400" />,
+  multi: <Plug size={18} className="text-indigo-400" />,
+  deadlines: <CalendarClock size={18} className="text-violet-400" />,
+} as const
 
-const FAQ_ITEMS = [
-  {
-    q: "Quelles plateformes sont compatibles ?",
-    a: "Upwork, Fiverr, Malt et LinkedIn dès aujourd'hui, avec de nouvelles intégrations chaque mois. Vos deadlines se synchronisent avec Google Calendar et Notion.",
-  },
-  {
-    q: "Mes données sont-elles en sécurité ?",
-    a: "Vos connexions sont chiffrées et nous ne stockons jamais vos identifiants de plateforme. Vous gardez le contrôle total et pouvez déconnecter un compte à tout moment.",
-  },
-  {
-    q: "Comment fonctionne la roadmap IA ?",
-    a: "L'IA analyse vos revenus, vos missions et vos tarifs pour générer une feuille de route personnalisée, mise à jour au fil de votre activité.",
-  },
-  {
-    q: "Voraly est-il vraiment gratuit ?",
-    a: "Vous démarrez gratuitement, sans carte bancaire. L'offre Pro débloque la roadmap IA avancée et les intégrations illimitées.",
-  },
-  {
-    q: "Combien de temps pour démarrer ?",
-    a: "Environ deux minutes : créez votre compte, connectez vos plateformes, et votre tableau de bord se remplit automatiquement.",
-  },
-  {
-    q: "Puis-je annuler à tout moment ?",
-    a: "Oui. Aucun engagement — résiliez votre abonnement Pro en un clic depuis vos réglages.",
-  },
-]
-
-const METRICS = [
-  { value: "Tous vos revenus", label: "centralisés en un seul endroit" },
-  { value: "4", label: "plateformes connectées" },
-  { value: "Toutes plateformes", label: "un seul écran" },
-  { value: "2 min", label: "pour démarrer" },
-]
+const FAQ_KEYS = ["q1", "q2", "q3", "q4", "q5", "q6"] as const
+const METRIC_KEYS = ["m1", "m2", "m3", "m4"] as const
+const TRUST_KEYS = ["oauth", "encrypted", "gdpr", "eu"] as const
 
 const PLATFORM_LOGOS = ["Upwork", "Fiverr", "Malt", "LinkedIn", "Freelancer"]
 
@@ -240,6 +181,43 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
 // ── LandingExperience ─────────────────────────────────────────────────────────
 
 export default function LandingExperience() {
+  const t = useTranslations("landing")
+  const tc = useTranslations("common")
+
+  const bentoItems: BentoItem[] = [
+    {
+      title: t("features.dashboard.title"),
+      description: t("features.dashboard.description"),
+      icon: BENTO_ICONS.dashboard,
+      status: t("features.dashboard.status"),
+      tags: [t("features.dashboard.tag")],
+      colSpan: 2,
+      hasPersistentHover: false,
+    },
+    {
+      title: t("features.roadmap.title"),
+      description: t("features.roadmap.description"),
+      icon: BENTO_ICONS.roadmap,
+      status: t("features.roadmap.status"),
+      tags: [t("features.roadmap.tag")],
+      colSpan: 2,
+    },
+    {
+      title: t("features.multi.title"),
+      description: t("features.multi.description"),
+      icon: BENTO_ICONS.multi,
+      tags: [t("features.multi.tag")],
+      colSpan: 1,
+    },
+    {
+      title: t("features.deadlines.title"),
+      description: t("features.deadlines.description"),
+      icon: BENTO_ICONS.deadlines,
+      tags: [t("features.deadlines.tag")],
+      colSpan: 1,
+    },
+  ]
+
   return (
     <>
       {/* Scroll container */}
@@ -289,7 +267,7 @@ export default function LandingExperience() {
                     backgroundSize: '200% 100%',
                   }}
                 />
-                ✦ La plateforme tout-en-un des freelances
+                {t("hero.eyebrow")}
               </motion.p>
             </motion.div>
 
@@ -302,7 +280,7 @@ export default function LandingExperience() {
               custom={1}
               className="text-balance text-4xl font-extrabold tracking-tight text-white sm:text-6xl"
             >
-              Pilotez toute votre activité freelance depuis{' '}
+              {t("hero.titleLead")}{' '}
               <motion.span
                 className="gradient-text inline-block"
                 animate={{
@@ -327,7 +305,7 @@ export default function LandingExperience() {
                   backgroundClip: 'text',
                 }}
               >
-                un seul endroit.
+                {t("hero.titleAccent")}
               </motion.span>
             </motion.h1>
 
@@ -339,9 +317,7 @@ export default function LandingExperience() {
               custom={2}
               className="max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg"
             >
-              Le tableau de bord freelance tout-en-un : Upwork, Fiverr, Malt et LinkedIn réunis,
-              revenus optimisés par l&apos;IA, deadlines synchronisées. Reprenez le contrôle de
-              votre carrière.
+              {t("hero.subtitle")}
             </motion.p>
 
             {/* CTAs */}
@@ -357,14 +333,14 @@ export default function LandingExperience() {
                   size="xl"
                   className="rounded-full px-8 text-base font-bold text-white"
                 >
-                  Commencer gratuitement
+                  {tc("getStartedFree")}
                 </LiquidButton>
               </Link>
               <Link
                 href="/pricing"
                 className="glass inline-flex items-center rounded-full px-8 py-3 text-base font-semibold text-zinc-200 transition-colors hover:bg-white/[0.06] hover:text-white"
               >
-                Voir les tarifs
+                {tc("viewPricing")}
               </Link>
             </motion.div>
 
@@ -376,7 +352,7 @@ export default function LandingExperience() {
               custom={4}
               className="text-xs text-zinc-600"
             >
-              Sans carte bancaire · Configuration en 2 minutes
+              {t("hero.microcopy")}
             </motion.p>
 
             {/* Phrase GEO — extractible par les moteurs et les IA */}
@@ -387,9 +363,7 @@ export default function LandingExperience() {
               custom={4.5}
               className="max-w-2xl text-xs leading-relaxed text-zinc-500"
             >
-              Voraly est un tableau de bord freelance qui centralise Upwork, Fiverr, Malt et
-              LinkedIn, génère une roadmap de croissance par IA et synchronise vos deadlines avec
-              Google Calendar et Notion.
+              {t("hero.geo")}
             </motion.p>
 
             {/* Logos plateformes */}
@@ -401,7 +375,7 @@ export default function LandingExperience() {
               className="mt-4 flex flex-col items-center gap-4"
             >
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
-                Vos plateformes, enfin réunies
+                {t("hero.platformsLabel")}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-6">
                 {PLATFORM_LOGOS.map((name) => {
@@ -453,19 +427,19 @@ export default function LandingExperience() {
         {/* ── FONCTIONNALITÉS ────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-6xl px-6 py-28" id="fonctionnalites">
           <SectionHeader
-            eyebrow="Fonctionnalités"
-            title="Tout ce qu'il faut pour faire grandir"
-            gradientWord="votre activité."
-            subtitle="Quatre piliers, un seul abonnement."
+            eyebrow={t("features.eyebrow")}
+            title={t("features.title")}
+            gradientWord={t("features.titleAccent")}
+            subtitle={t("features.subtitle")}
           />
-          <BentoGrid items={BENTO_ITEMS} />
+          <BentoGrid items={bentoItems} />
         </section>
 
         {/* ── COMMENT CA MARCHE ──────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-5xl px-6 py-28">
           <SectionHeader
-            eyebrow="Comment ça marche"
-            title="Centraliser vos plateformes freelance en 3 étapes."
+            eyebrow={t("howItWorks.eyebrow")}
+            title={t("howItWorks.title")}
           />
           <HowItWorksSteps />
         </section>
@@ -473,12 +447,17 @@ export default function LandingExperience() {
         {/* ── MÉTRIQUES ──────────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-5xl px-6 py-28">
           <SectionHeader
-            eyebrow="Pourquoi Voraly"
-            title="Pourquoi les freelances choisissent Voraly."
+            eyebrow={t("metrics.eyebrow")}
+            title={t("metrics.title")}
           />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {METRICS.map((m, i) => (
-              <AnimatedMetric key={m.value} value={m.value} label={m.label} delay={i * 0.5} />
+            {METRIC_KEYS.map((k, i) => (
+              <AnimatedMetric
+                key={k}
+                value={t(`metrics.${k}.value`)}
+                label={t(`metrics.${k}.label`)}
+                delay={i * 0.5}
+              />
             ))}
           </div>
           <ValueCallout />
@@ -496,23 +475,20 @@ export default function LandingExperience() {
             />
             <div className="relative flex flex-col items-center gap-8">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
-                Propulsé par l&apos;IA
+                {t("ai.eyebrow")}
               </p>
               <h2 className="max-w-2xl text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Roadmap IA freelance :{" "}
-                <span className="gradient-text">votre stratégie, générée pour vous.</span>
+                {t("ai.titleLead")}{" "}
+                <span className="gradient-text">{t("ai.titleAccent")}</span>
               </h2>
               <p className="max-w-xl text-base leading-relaxed text-zinc-400">
-                L&apos;IA de Voraly analyse vos missions, vos tarifs et vos plateformes, puis
-                construit une roadmap concrète : quels services pousser, quels tarifs ajuster,
-                quelles plateformes prioriser. Vos deadlines se synchronisent automatiquement avec
-                votre calendrier.
+                {t("ai.body")}
               </p>
               <Link
                 href="/fonctionnalites"
                 className="glass inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-violet-300 transition-colors hover:bg-white/[0.06] hover:text-white"
               >
-                Découvrir la roadmap IA
+                {t("ai.cta")}
                 <span aria-hidden>→</span>
               </Link>
             </div>
@@ -521,10 +497,10 @@ export default function LandingExperience() {
 
         {/* ── FAQ ────────────────────────────────────────────────────────── */}
         <section className="relative mx-auto max-w-3xl px-6 py-28" id="faq">
-          <SectionHeader eyebrow="FAQ" title="Questions fréquentes" />
+          <SectionHeader eyebrow={t("faq.eyebrow")} title={t("faq.title")} />
           <div className="flex flex-col gap-3">
-            {FAQ_ITEMS.map((item, i) => (
-              <FaqItem key={i} q={item.q} a={item.a} index={i} />
+            {FAQ_KEYS.map((k, i) => (
+              <FaqItem key={k} q={t(`faq.${k}.q`)} a={t(`faq.${k}.a`)} index={i} />
             ))}
           </div>
           <div className="mt-8 text-center">
@@ -532,7 +508,7 @@ export default function LandingExperience() {
               href="/faq"
               className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors"
             >
-              Voir toutes les questions →
+              {t("faq.seeAll")}
             </Link>
           </div>
         </section>
@@ -554,19 +530,18 @@ export default function LandingExperience() {
             />
             <div className="relative flex flex-col items-center gap-8">
               <h2 className="text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Reprenez le contrôle de{" "}
-                <span className="gradient-text">votre carrière.</span>
+                {t("finalCta.titleLead")}{" "}
+                <span className="gradient-text">{t("finalCta.titleAccent")}</span>
               </h2>
               <p className="max-w-lg text-base leading-relaxed text-zinc-400">
-                Rejoignez les freelances qui pilotent leur activité avec Voraly. Gratuit, sans
-                carte bancaire.
+                {t("finalCta.body")}
               </p>
               <Link href="/signup">
                 <LiquidButton
                   size="xl"
                   className="rounded-full px-10 text-base font-bold text-white"
                 >
-                  Commencer gratuitement
+                  {tc("getStartedFree")}
                 </LiquidButton>
               </Link>
             </div>
@@ -583,8 +558,10 @@ export default function LandingExperience() {
 // ── Sous-composants isolés ────────────────────────────────────────────────────
 
 function ProblemCard() {
+  const t = useTranslations("landing.problem")
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-80px" })
+  const items = ["revenue", "deadlines", "messages", "time"] as const
   return (
     <motion.div
       ref={ref}
@@ -595,32 +572,31 @@ function ProblemCard() {
       className="glass rounded-3xl p-8 flex flex-col gap-6"
     >
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">Le problème</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">{t("eyebrow")}</p>
         <h3 className="text-2xl font-extrabold text-white">
-          Votre activité est éclatée sur dix onglets.
+          {t("title")}
         </h3>
       </div>
       <p className="text-sm leading-relaxed text-zinc-400">
-        Des revenus dispersés sur quatre plateformes, des messages partout, des deadlines que vous
-        suivez de tête. Vous passez plus de temps à gérer qu&apos;à facturer.
+        {t("body")}
       </p>
       <div className="flex flex-col gap-2">
-        {["Revenus invisibles", "Deadlines oubliées", "Messages dispersés", "Temps gaspillé"].map(
-          (t) => (
-            <div key={t} className="flex items-center gap-3 text-sm text-zinc-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-zinc-700 shrink-0" />
-              {t}
-            </div>
-          )
-        )}
+        {items.map((key) => (
+          <div key={key} className="flex items-center gap-3 text-sm text-zinc-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-zinc-700 shrink-0" />
+            {t(`items.${key}`)}
+          </div>
+        ))}
       </div>
     </motion.div>
   )
 }
 
 function SolutionCard() {
+  const t = useTranslations("landing.solution")
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-80px" })
+  const items = ["revenue", "deadlines", "roadmap", "fast"] as const
   return (
     <motion.div
       ref={ref}
@@ -632,26 +608,20 @@ function SolutionCard() {
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
-          La solution
+          {t("eyebrow")}
         </p>
         <h3 className="text-2xl font-extrabold text-white">
-          Voraly réunit tout sur un seul tableau de bord.
+          {t("title")}
         </h3>
       </div>
       <p className="text-sm leading-relaxed text-zinc-400">
-        Connectez vos comptes une fois. Voraly agrège vos revenus, vos missions et vos échéances
-        en temps réel — et l&apos;IA vous dit quoi faire ensuite.
+        {t("body")}
       </p>
       <div className="flex flex-col gap-2">
-        {[
-          "Revenus centralisés",
-          "Deadlines synchronisées",
-          "Roadmap IA personnalisée",
-          "Tout en 2 minutes",
-        ].map((t) => (
-          <div key={t} className="flex items-center gap-3 text-sm text-zinc-300">
+        {items.map((key) => (
+          <div key={key} className="flex items-center gap-3 text-sm text-zinc-300">
             <span className="h-1.5 w-1.5 rounded-full bg-violet-500 shrink-0" />
-            {t}
+            {t(`items.${key}`)}
           </div>
         ))}
       </div>
@@ -659,31 +629,20 @@ function SolutionCard() {
   )
 }
 
-const STEPS = [
-  {
-    num: "01",
-    title: "Connectez vos plateformes",
-    desc: "Reliez Upwork, Fiverr, Malt et LinkedIn en quelques clics, en toute sécurité.",
-  },
-  {
-    num: "02",
-    title: "Laissez l'IA analyser",
-    desc: "Voraly croise vos données et génère votre roadmap de croissance.",
-  },
-  {
-    num: "03",
-    title: "Pilotez et encaissez",
-    desc: "Suivez vos métriques, respectez vos deadlines, concentrez-vous sur l'essentiel.",
-  },
-]
+const STEP_KEYS = [
+  { num: "01", key: "step1" },
+  { num: "02", key: "step2" },
+  { num: "03", key: "step3" },
+] as const
 
 function HowItWorksSteps() {
+  const t = useTranslations("landing.howItWorks")
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-80px" })
 
   return (
     <div ref={ref} className="grid gap-6 md:grid-cols-3">
-      {STEPS.map((step, i) => (
+      {STEP_KEYS.map((step, i) => (
         <motion.div
           key={step.num}
           variants={blurReveal}
@@ -693,30 +652,24 @@ function HowItWorksSteps() {
           className="glass rounded-2xl p-7 flex flex-col gap-4"
         >
           <span className="gradient-text text-3xl font-extrabold">{step.num}</span>
-          <h3 className="text-base font-bold text-white">{step.title}</h3>
-          <p className="text-sm leading-relaxed text-zinc-400">{step.desc}</p>
+          <h3 className="text-base font-bold text-white">{t(`${step.key}.title`)}</h3>
+          <p className="text-sm leading-relaxed text-zinc-400">{t(`${step.key}.desc`)}</p>
         </motion.div>
       ))}
     </div>
   )
 }
 
-const TRUST_BADGES = [
-  "OAuth 2.0",
-  "Données chiffrées en transit",
-  "Conforme RGPD",
-  "Hébergement UE",
-]
-
 function TrustBadges() {
+  const t = useTranslations("landing.trust")
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">
-      {TRUST_BADGES.map((badge) => (
+      {TRUST_KEYS.map((key) => (
         <span
-          key={badge}
+          key={key}
           className="glass inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-zinc-400"
         >
-          {badge}
+          {t(key)}
         </span>
       ))}
     </div>
@@ -724,6 +677,7 @@ function TrustBadges() {
 }
 
 function ValueCallout() {
+  const t = useTranslations("landing.metrics")
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-60px" })
 
@@ -737,8 +691,7 @@ function ValueCallout() {
       className="glass rounded-3xl p-8 mt-12 flex flex-col items-center gap-4 text-center"
     >
       <p className="max-w-xl text-base font-semibold leading-relaxed text-zinc-200">
-        Conçu pour les freelances qui veulent reprendre le contrôle de leur activité — sans jongler
-        entre dix onglets.
+        {t("callout")}
       </p>
     </motion.div>
   )
