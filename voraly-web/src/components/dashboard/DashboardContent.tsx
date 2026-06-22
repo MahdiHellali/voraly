@@ -1,10 +1,10 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import HeroBento    from './HeroBento'
 import KpiGrid      from './KpiGrid'
 import RevenueChart from './RevenueChart'
-import DeadlineCard from './DeadlineCard'
 import AiTaskCard   from './AiTaskCard'
 import type { DashboardData } from '@/lib/dashboard/types'
 
@@ -25,9 +25,10 @@ interface DashboardContentProps {
   firstName: string
   data: DashboardData
   userId?: string | null
+  deadlineSlot?: ReactNode
 }
 
-export default function DashboardContent({ firstName, data, userId }: DashboardContentProps) {
+export default function DashboardContent({ firstName, data, userId, deadlineSlot }: DashboardContentProps) {
   const hasMetrics = !!data.revenueSeries
 
   return (
@@ -63,18 +64,12 @@ export default function DashboardContent({ firstName, data, userId }: DashboardC
           className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5"
         >
           <RevenueChart series={data.revenueSeries!} />
-          <DeadlineCard
-            deadlines={data.deadlines}
-            integrations={data.integrations}
-          />
+          {deadlineSlot}
         </motion.div>
       ) : (
         /* Pas de métriques → DeadlineCard pleine largeur, RevenueChart non monté */
         <motion.div {...blurReveal(0.12)}>
-          <DeadlineCard
-            deadlines={data.deadlines}
-            integrations={data.integrations}
-          />
+          {deadlineSlot}
         </motion.div>
       )}
 

@@ -160,6 +160,8 @@ export async function getDashboardData(
   } catch (err) {
     console.error('[dashboard] deadlines unexpected error', err)
   }
+  // Note : les événements Google Calendar live sont fetchés à part, en streaming
+  // via <Suspense> (DeadlinesSection), pour ne pas bloquer le SSR du dashboard.
 
   // ── 5. Intégrations — RÉSILIENT ───────────────────────────────────────────
   const integrations: IntegrationsState = { googleCalendar: 'soon', notion: 'soon' }
