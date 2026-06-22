@@ -83,29 +83,106 @@ async function refreshGoogle(c: Conn, supabase: SupabaseClient, userId: string):
 }
 
 // ─── Notion ───────────────────────────────────────────────────────────────────
-// Cherche les pages partagées avec une propriété date tombant aujourd'hui.
+// 1. Requête les entrées du calendrier editorial Voraly (base de données Notion).
+// 2. Cherche aussi les pages partagées avec une propriété date (comportement original).
 async function fetchNotion(c: Conn, dayStart: Date, dayEnd: Date): Promise<AgendaEvent[]> {
   if (!c.access_token) return []
-  const res = await fetch('https://api.notion.com/v1/search', {
+  const h = {
+    Authorization: `Bearer ${c.access_token}`,
+    'Content-Type': 'application/json',
+    'Notion-Version': '2022-06-28',
+  }
+  const out: AgendaEvent[] = []
+  const seenIds = new Set<string>()
+
+  // ── 1. Calendrier editorial Voraly (base de données) ──────────────────────
+  await (async () => {
+    // Chercher les bases de données dont le titre contient "Voraly"
+    const searchRes = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: h,
+      body: JSON.stringify({
+        query: 'Voraly',
+        filter: { property: 'object', value: 'database' },
+        page_size: 5,
+      }),
+      cache: 'no-store',
+      signal: timeout(),
+    })
+    if (!searchRes.ok) return
+    const { results: dbs = [] } = (await searchRes.json()) as { results: Array<{ id: string; properties?: Record<string, unknown> }> }
+
+    await Promise.allSettled(
+      dbs.map(async (db) => {
+        // Filtrer les entrées dont "Date de publication" tombe dans la fenêtre
+        const qRes = await fetch(`https://api.notion.com/v1/databases/${db.id}/query`, {
+          method: 'POST',
+          headers: h,
+          body: JSON.stringify({
+            filter: {
+              and: [
+                {
+                  property: 'Date de publication',
+                  date: { on_or_after: dayStart.toISOString().slice(0, 10) },
+                },
+                {
+                  property: 'Date de publication',
+                  date: { on_or_before: dayEnd.toISOString().slice(0, 10) },
+                },
+              ],
+            },
+            page_size: 50,
+          }),
+          cache: 'no-store',
+          signal: timeout(),
+        })
+        if (!qRes.ok) return
+        const { results: entries = [] } = (await qRes.json()) as {
+          results: Array<{ id: string; properties?: Record<string, { type?: string; title?: Array<{ plain_text?: string }>; date?: { start?: string } }> }>
+        }
+
+        for (const entry of entries) {
+          let title = 'Sans titre', date: string | undefined
+          for (const prop of Object.values(entry.properties ?? {})) {
+            if (prop.type === 'title' && prop.title?.length)
+              title = prop.title.map((t) => t.plain_text ?? '').join('') || title
+            if (prop.type === 'date' && prop.date?.start)
+              date = prop.date.start
+          }
+          if (!date) continue
+          const id = `nt-${entry.id}`
+          if (seenIds.has(id)) continue
+          seenIds.add(id)
+          out.push({ id, title, start: date, end: null, allDay: date.length <= 10, source: 'notion' })
+        }
+      }),
+    )
+  })().catch(() => { /* calendrier Voraly indisponible, on continue */ })
+
+  // ── 2. Pages partagées avec propriété date (comportement original) ─────────
+  const pageRes = await fetch('https://api.notion.com/v1/search', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${c.access_token}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+    headers: h,
     body: JSON.stringify({ filter: { property: 'object', value: 'page' }, page_size: 50 }),
     cache: 'no-store', signal: timeout(),
   })
-  if (!res.ok) return []
-  const json = await res.json()
+  if (!pageRes.ok) return out
+  const { results: pages = [] } = (await pageRes.json()) as { results: Array<{ id: string; properties?: Record<string, { type?: string; date?: { start?: string }; title?: Array<{ plain_text?: string }> }> }> }
 
-  const out: AgendaEvent[] = []
-  for (const page of json.results ?? []) {
+  for (const page of pages) {
     let date: string | undefined, title = 'Sans titre'
-    for (const v of Object.values(page.properties ?? {}) as Array<{ type?: string; date?: { start?: string }; title?: Array<{ plain_text?: string }> }>) {
+    for (const v of Object.values(page.properties ?? {})) {
       if (v?.type === 'date' && v.date?.start) date = v.date.start
       if (v?.type === 'title' && v.title?.length) title = v.title.map((t) => t.plain_text ?? '').join('') || title
     }
     if (!date) continue
-    const t = new Date(date).getTime()
-    if (t >= dayStart.getTime() && t <= dayEnd.getTime())
-      out.push({ id: `nt-${page.id}`, title, start: date, end: null, allDay: date.length <= 10, source: 'notion' })
+    const ms = new Date(date).getTime()
+    if (ms < dayStart.getTime() || ms > dayEnd.getTime()) continue
+    const id = `nt-${page.id}`
+    if (seenIds.has(id)) continue
+    seenIds.add(id)
+    out.push({ id, title, start: date, end: null, allDay: date.length <= 10, source: 'notion' })
   }
+
   return out
 }

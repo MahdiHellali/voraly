@@ -9,6 +9,7 @@ import {
   type IntegrationProviderConfig,
 } from '@/lib/integrations/providers'
 import { getSiteOrigin } from '@/lib/oauth/providers'
+import { bootstrapNotionVoralyCalendar } from '@/lib/integrations/notion-bootstrap'
 
 // GET /api/integrations/[provider]/callback
 // Receives ?code & ?state from the provider, verifies the CSRF state, exchanges
@@ -122,6 +123,14 @@ export async function GET(
   if (dbError) {
     console.error(`[integration:${provider.id}] db upsert failed`, dbError.message)
     return back({ error: 'save_failed', platform: provider.id })
+  }
+
+  // Pour Notion : créer la page "Voraly" + calendrier editorial dans le workspace.
+  // Best-effort : échec non-bloquant, la connexion est quand même validée.
+  if (provider.id === 'notion' && tokens.access_token) {
+    bootstrapNotionVoralyCalendar(tokens.access_token).catch((err: unknown) =>
+      console.error('[notion-bootstrap] calendar setup failed (non-blocking)', err),
+    )
   }
 
   return back({ success: 'connected', platform: provider.id })
