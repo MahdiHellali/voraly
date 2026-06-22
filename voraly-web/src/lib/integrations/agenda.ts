@@ -143,17 +143,45 @@ async function fetchNotion(c: Conn, dayStart: Date, dayEnd: Date): Promise<Agend
 
         for (const entry of entries) {
           let title = 'Sans titre', date: string | undefined
-          for (const prop of Object.values(entry.properties ?? {})) {
-            if (prop.type === 'title' && prop.title?.length)
-              title = prop.title.map((t) => t.plain_text ?? '').join('') || title
-            if (prop.type === 'date' && prop.date?.start)
-              date = prop.date.start
+          let status: string | null = null, type: string | null = null, notes: string | null = null
+          for (const [, prop] of Object.entries(entry.properties ?? {})) {
+            const p = prop as {
+              type?: string
+              title?: Array<{ plain_text?: string }>
+              date?: { start?: string }
+              select?: { name?: string }
+              rich_text?: Array<{ plain_text?: string }>
+            }
+            if (p.type === 'title' && p.title?.length)
+              title = p.title.map((t) => t.plain_text ?? '').join('') || title
+            if (p.type === 'date' && p.date?.start)
+              date = p.date.start
+            if (p.type === 'select' && p.select?.name) {
+              // Statut : "Idée" | "En cours" | "Rédigé" | "Publié"
+              const v = p.select.name
+              if (['Idée', 'En cours', 'Rédigé', 'Publié'].includes(v)) status = v
+              // Type : "Blog" | "Réseau social" | "Newsletter" | "Vidéo"
+              else if (['Blog', 'Réseau social', 'Newsletter', 'Vidéo'].includes(v)) type = v
+            }
+            if (p.type === 'rich_text' && p.rich_text?.length)
+              notes = p.rich_text.map((t) => t.plain_text ?? '').join('') || null
           }
           if (!date) continue
           const id = `nt-${entry.id}`
           if (seenIds.has(id)) continue
           seenIds.add(id)
-          out.push({ id, title, start: date, end: null, allDay: date.length <= 10, source: 'notion' })
+          out.push({
+            id,
+            title,
+            start: date,
+            end: null,
+            allDay: date.length <= 10,
+            source: 'notion',
+            notionPageId: entry.id,
+            status,
+            type,
+            notes,
+          })
         }
       }),
     )

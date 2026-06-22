@@ -30,6 +30,11 @@ export interface AgendaEvent {
   end: string | null
   allDay: boolean
   source: 'google_calendar' | 'notion'
+  // Champs spécifiques aux entrées Notion (calendrier éditorial Voraly)
+  notionPageId?: string  // ID brut de la page Notion (sans préfixe "nt-")
+  status?: string | null // "Idée" | "En cours" | "Rédigé" | "Publié"
+  type?: string | null   // "Blog" | "Réseau social" | "Newsletter" | "Vidéo"
+  notes?: string | null  // contenu de la propriété Notes
 }
 
 // ─── AiTask ──────────────────────────────────────────────────────────────────

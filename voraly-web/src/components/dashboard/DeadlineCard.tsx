@@ -4,23 +4,38 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CalendarClock, CalendarDays, FileText, ArrowRight, X, Clock } from 'lucide-react'
+import { CalendarClock, CalendarDays, FileText, ArrowRight, X, Clock, StickyNote, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AgendaEvent, IntegrationsState } from '@/lib/dashboard/types'
+import { updateNotionEventStatus } from '@/app/dashboard/integrations/actions'
 
 // 1 heure = ROW_H pixels dans la grille
 const ROW_H = 72
 
 type T = ReturnType<typeof useTranslations>
 
+// ─── Couleurs par statut Notion ────────────────────────────────────────────────
+const STATUS_STYLES: Record<string, { rgb: string; bar: string; timeText: string; badgeBg: string; badgeText: string }> = {
+  'Idée':     { rgb: '113,113,122', bar: '#a1a1aa', timeText: 'text-zinc-400',    badgeBg: 'rgba(113,113,122,0.15)', badgeText: '#a1a1aa' },
+  'En cours': { rgb: '245,158,11',  bar: '#fbbf24', timeText: 'text-amber-300',   badgeBg: 'rgba(245,158,11,0.15)',  badgeText: '#fbbf24' },
+  'Rédigé':   { rgb: '59,130,246',  bar: '#60a5fa', timeText: 'text-blue-300',    badgeBg: 'rgba(59,130,246,0.15)',  badgeText: '#60a5fa' },
+  'Publié':   { rgb: '16,185,129',  bar: '#34d399', timeText: 'text-emerald-300', badgeBg: 'rgba(16,185,129,0.15)',  badgeText: '#34d399' },
+}
+const DEFAULT_STYLE = { rgb: '139,92,246', bar: '#8b5cf6', timeText: 'text-violet-300', badgeBg: 'rgba(139,92,246,0.15)', badgeText: '#8b5cf6' }
+
+function getStyle(event: AgendaEvent, overrideStatus?: string | null) {
+  const status = overrideStatus ?? event.status
+  if (event.source === 'notion' && status && STATUS_STYLES[status]) return STATUS_STYLES[status]
+  return DEFAULT_STYLE
+}
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
 function SourceBadge({ source, t }: { source: AgendaEvent['source']; t: T }) {
   const isG = source === 'google_calendar'
   return (
     <span className={cn(
       'inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-bold',
-      isG
-        ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300'
-        : 'border-zinc-500/30 bg-white/[0.05] text-zinc-300',
+      isG ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300' : 'border-zinc-500/30 bg-white/[0.05] text-zinc-300',
     )}>
       {isG ? <CalendarDays size={9} /> : <FileText size={9} />}
       {isG ? t('sourceCalendar') : t('sourceNotion')}
@@ -28,11 +43,9 @@ function SourceBadge({ source, t }: { source: AgendaEvent['source']; t: T }) {
   )
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function fmtTime(iso: string, locale: string) {
-  return new Date(iso).toLocaleTimeString(locale === 'en' ? 'en-US' : 'fr-FR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return new Date(iso).toLocaleTimeString(locale === 'en' ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
 function fmtDuration(start: string, end: string | null): string {
@@ -46,28 +59,43 @@ function fmtDuration(start: string, end: string | null): string {
   return `${h}h${m.toString().padStart(2, '0')}`
 }
 
-// Calcule la position top et la hauteur d'un evenement en pixels
-// La hauteur est proportionnelle a la duree reelle (1h = ROW_H px)
 function getMetrics(e: AgendaEvent, gridStart: number) {
   const s = new Date(e.start)
   const end = e.end ? new Date(e.end) : new Date(s.getTime() + 30 * 60_000)
   const sFrac = s.getHours() + s.getMinutes() / 60
   const eFrac = end.getHours() + end.getMinutes() / 60
-  const clampedStart = Math.max(sFrac, gridStart)
-  const top = (clampedStart - gridStart) * ROW_H
-  const height = Math.max((eFrac - sFrac) * ROW_H, ROW_H * 0.25) // min 15min
+  const top = (Math.max(sFrac, gridStart) - gridStart) * ROW_H
+  const height = Math.max((eFrac - sFrac) * ROW_H, ROW_H * 0.25)
   return { top, height }
 }
 
-// ─── Popup details evenement ──────────────────────────────────────────────────
-function EventPopup({ event, onClose, t, locale }: {
-  event: AgendaEvent; onClose: () => void; t: T; locale: string
+// ─── Popup evenement ─────────────────────────────────────────────────────────
+const STATUSES = ['Idée', 'En cours', 'Rédigé', 'Publié'] as const
+
+function EventPopup({ event, currentStatus, onStatusChange, onClose, t, locale }: {
+  event: AgendaEvent
+  currentStatus: string | null | undefined
+  onStatusChange: (newStatus: string) => Promise<void>
+  onClose: () => void
+  t: T
+  locale: string
 }) {
+  const [updating, setUpdating] = useState(false)
+  const isNotion = event.source === 'notion'
+  const style = getStyle(event, currentStatus)
+
   const s = new Date(event.start)
   const dayLabel = s.toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long',
   })
   const duration = fmtDuration(event.start, event.end)
+
+  async function handleStatus(newStatus: string) {
+    if (updating || newStatus === currentStatus || !event.notionPageId) return
+    setUpdating(true)
+    await onStatusChange(newStatus)
+    setUpdating(false)
+  }
 
   return (
     <motion.div
@@ -85,7 +113,7 @@ function EventPopup({ event, onClose, t, locale }: {
         exit={{ scale: 0.86, opacity: 0, y: 28, filter: 'blur(6px)' }}
         transition={{ type: 'spring', stiffness: 380, damping: 28 }}
         className="relative w-full max-w-sm rounded-3xl border border-white/[0.10] bg-zinc-950/96 p-6"
-        style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(139,92,246,0.12)' }}
+        style={{ boxShadow: `0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(${style.rgb},0.12)` }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Fermer */}
@@ -96,22 +124,32 @@ function EventPopup({ event, onClose, t, locale }: {
           <X size={13} />
         </button>
 
-        <SourceBadge source={event.source} t={t} />
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <SourceBadge source={event.source} t={t} />
+          {event.type && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-bold text-zinc-400">
+              <Tag size={8} />
+              {event.type}
+            </span>
+          )}
+        </div>
 
         <h3 className="mt-3 text-[18px] font-bold leading-snug text-zinc-50">{event.title}</h3>
         <p className="mt-1 text-[12px] capitalize text-zinc-500">{dayLabel}</p>
 
+        {/* Horaire */}
         {!event.allDay ? (
           <div className="mt-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <Clock size={14} className="shrink-0 text-violet-400" />
+              <Clock size={14} className="shrink-0" style={{ color: style.bar }} />
               <div className="flex flex-1 items-center justify-between">
                 <span className="text-[13px] font-semibold tabular-nums text-zinc-200">
                   {fmtTime(event.start, locale)}
                   {event.end && <> &rarr; {fmtTime(event.end, locale)}</>}
                 </span>
                 {duration && (
-                  <span className="rounded-full border border-violet-500/25 bg-violet-500/10 px-2 py-0.5 text-[10px] font-bold text-violet-300">
+                  <span className="rounded-full border border-white/[0.10] px-2 py-0.5 text-[10px] font-bold" style={{ color: style.bar }}>
                     {duration}
                   </span>
                 )}
@@ -123,12 +161,57 @@ function EventPopup({ event, onClose, t, locale }: {
             {t('allDay')}
           </div>
         )}
+
+        {/* Notes */}
+        {isNotion && event.notes && (
+          <div className="mt-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
+            <div className="flex items-start gap-2.5">
+              <StickyNote size={13} className="mt-0.5 shrink-0 text-zinc-500" />
+              <p className="text-[12px] leading-relaxed text-zinc-400">{event.notes}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Selecteur de statut (Notion uniquement) */}
+        {isNotion && event.notionPageId && (
+          <div className="mt-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">Statut</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {STATUSES.map((s) => {
+                const st = STATUS_STYLES[s]
+                const isActive = currentStatus === s
+                return (
+                  <button
+                    key={s}
+                    disabled={updating}
+                    onClick={() => handleStatus(s)}
+                    className="flex flex-col items-center gap-1 rounded-xl border px-1 py-2 text-[10px] font-semibold transition-all disabled:opacity-50"
+                    style={{
+                      borderColor: isActive ? `rgba(${st.rgb}, 0.45)` : 'rgba(255,255,255,0.06)',
+                      backgroundColor: isActive ? `rgba(${st.rgb}, 0.16)` : 'rgba(255,255,255,0.03)',
+                      color: isActive ? st.bar : '#71717a',
+                    }}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: st.bar }}
+                    />
+                    {s}
+                  </button>
+                )
+              })}
+            </div>
+            {updating && (
+              <p className="mt-2 text-center text-[10px] text-zinc-600">Mise à jour...</p>
+            )}
+          </div>
+        )}
       </motion.div>
     </motion.div>
   )
 }
 
-// ─── Bouton integration ───────────────────────────────────────────────────────
+// ─── Bouton connecteur ────────────────────────────────────────────────────────
 function ConnectorButton({ label, icon, state, href, t }: {
   label: string; icon: React.ReactNode; state: 'connect' | 'soon' | 'connected'; href: string; t: T
 }) {
@@ -163,11 +246,12 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
   const t = useTranslations('dashboard.deadlines')
   const locale = useLocale()
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null)
+  // Surcharges de statut locales (mises a jour optimistes)
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({})
 
   const events = agenda ?? []
   const connected = integrations?.googleCalendar === 'connected' || integrations?.notion === 'connected'
 
-  // Filtrage dans le fuseau du navigateur
   const now = new Date()
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const isToday = (e: AgendaEvent) =>
@@ -181,13 +265,34 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
   const hours = Array.from({ length: 24 - gridStart }, (_, i) => gridStart + i)
   const gridH = hours.length * ROW_H
 
+  function getEffectiveStatus(e: AgendaEvent): string | null | undefined {
+    return statusOverrides[e.id] ?? e.status
+  }
+
+  async function handleStatusChange(eventId: string, newStatus: string) {
+    const prevStatus = statusOverrides[eventId] ?? selectedEvent?.status
+    // Mise a jour optimiste immediate
+    setStatusOverrides((prev) => ({ ...prev, [eventId]: newStatus }))
+    const result = await updateNotionEventStatus(
+      selectedEvent?.notionPageId ?? '',
+      newStatus,
+    )
+    // Revert si echec
+    if (!result.ok) {
+      setStatusOverrides((prev) => ({
+        ...prev,
+        [eventId]: prevStatus ?? '',
+      }))
+    }
+  }
+
   return (
     <>
       <div
         className="glass rounded-2xl p-6 flex flex-col"
         style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
       >
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="flex items-start justify-between mb-5">
           <div>
             <div className="text-[15px] font-bold text-zinc-100">{t('title')}</div>
@@ -209,10 +314,7 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
                   <motion.button
                     key={e.id}
                     onClick={() => setSelectedEvent(e)}
-                    whileHover={{
-                      scale: 1.05,
-                      boxShadow: '0 6px 24px rgba(139,92,246,0.28)',
-                    }}
+                    whileHover={{ scale: 1.05, boxShadow: '0 6px 24px rgba(139,92,246,0.28)' }}
                     whileTap={{ scale: 0.96 }}
                     transition={{ type: 'spring', stiffness: 440, damping: 28 }}
                     className="flex items-center gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5 text-left cursor-pointer transition-colors hover:border-white/[0.13] hover:bg-white/[0.06]"
@@ -238,38 +340,29 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
                 ))}
               </div>
 
-              {/* Zone evenements avec positionnement absolu */}
-              <div
-                className="relative flex-1 border-l border-white/[0.05]"
-                style={{ height: gridH }}
-              >
+              {/* Zone evenements */}
+              <div className="relative flex-1 border-l border-white/[0.05]" style={{ height: gridH }}>
                 {/* Lignes heures */}
                 {hours.map((_, i) => (
-                  <div
-                    key={i}
-                    className="absolute left-0 right-0 border-t border-white/[0.04]"
-                    style={{ top: i * ROW_H }}
-                  />
+                  <div key={i} className="absolute left-0 right-0 border-t border-white/[0.04]" style={{ top: i * ROW_H }} />
                 ))}
-                {/* Lignes demi-heures */}
+                {/* Demi-heures */}
                 {hours.map((_, i) => (
-                  <div
-                    key={`hh-${i}`}
-                    className="absolute left-0 right-0 border-t border-dashed border-white/[0.02]"
-                    style={{ top: i * ROW_H + ROW_H / 2 }}
-                  />
+                  <div key={`hh-${i}`} className="absolute left-0 right-0 border-t border-dashed border-white/[0.02]" style={{ top: i * ROW_H + ROW_H / 2 }} />
                 ))}
 
-                {/* Etat vide */}
+                {/* Vide */}
                 {timed.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <p className="text-[12px] text-zinc-700 select-none">{t('noEventsToday')}</p>
                   </div>
                 )}
 
-                {/* Evenements — hauteur proportionnelle a la duree (1h = ROW_H px) */}
+                {/* Evenements — hauteur proportionnelle a la duree */}
                 {timed.map((e) => {
                   const { top, height } = getMetrics(e, gridStart)
+                  const effStatus = getEffectiveStatus(e)
+                  const style = getStyle(e, effStatus)
                   const showEndTime = height >= ROW_H * 0.4
                   const showDuration = height >= ROW_H * 0.65
 
@@ -280,21 +373,30 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
                       whileHover={{
                         scale: 1.028,
                         zIndex: 20,
-                        boxShadow: '0 10px 32px rgba(139,92,246,0.42), 0 0 0 1px rgba(139,92,246,0.32)',
+                        boxShadow: `0 10px 32px rgba(${style.rgb},0.42), 0 0 0 1px rgba(${style.rgb},0.32)`,
                       }}
                       whileTap={{ scale: 0.97 }}
                       transition={{ type: 'spring', stiffness: 440, damping: 28 }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="absolute left-2 right-2 rounded-xl border border-violet-500/20 bg-violet-500/[0.08] px-2.5 py-1.5 text-left cursor-pointer overflow-hidden transition-colors hover:border-violet-500/38 hover:bg-violet-500/[0.13]"
-                      style={{ top, height, zIndex: 1 }}
+                      className="absolute left-2 right-2 rounded-xl px-2.5 py-1.5 text-left cursor-pointer overflow-hidden border transition-colors"
+                      style={{
+                        top,
+                        height,
+                        zIndex: 1,
+                        borderColor: `rgba(${style.rgb}, 0.22)`,
+                        backgroundColor: `rgba(${style.rgb}, 0.08)`,
+                      }}
                     >
-                      {/* Bande couleur laterale gauche */}
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl bg-violet-500/60" />
+                      {/* Bande couleur laterale */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl"
+                        style={{ backgroundColor: style.bar }}
+                      />
 
                       <div className="flex items-start justify-between gap-1.5 h-full pl-1.5">
                         <div className="flex flex-col gap-0.5 min-w-0 flex-1 overflow-hidden">
-                          <span className="text-[9.5px] font-bold tabular-nums text-violet-300 leading-none">
+                          <span className={cn('text-[9.5px] font-bold tabular-nums leading-none', style.timeText)}>
                             {fmtTime(e.start, locale)}
                             {showEndTime && e.end && ` – ${fmtTime(e.end, locale)}`}
                           </span>
@@ -308,7 +410,21 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
                           )}
                         </div>
                         <div className="shrink-0 mt-0.5">
-                          <SourceBadge source={e.source} t={t} />
+                          {/* Badge statut pour les evenements Notion */}
+                          {e.source === 'notion' && effStatus ? (
+                            <span
+                              className="inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9px] font-bold"
+                              style={{
+                                borderColor: `rgba(${style.rgb}, 0.3)`,
+                                backgroundColor: `rgba(${style.rgb}, 0.12)`,
+                                color: style.bar,
+                              }}
+                            >
+                              {effStatus}
+                            </span>
+                          ) : (
+                            <SourceBadge source={e.source} t={t} />
+                          )}
                         </div>
                       </div>
                     </motion.button>
@@ -327,7 +443,7 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
             </div>
           </div>
         ) : (
-          /* ── Empty state ── */
+          /* Empty state */
           <motion.div
             initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -373,6 +489,10 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
         {selectedEvent && (
           <EventPopup
             event={selectedEvent}
+            currentStatus={getEffectiveStatus(selectedEvent)}
+            onStatusChange={async (newStatus) => {
+              await handleStatusChange(selectedEvent.id, newStatus)
+            }}
             onClose={() => setSelectedEvent(null)}
             t={t}
             locale={locale}
