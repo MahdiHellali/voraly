@@ -58,9 +58,15 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
   const connected = integrations?.googleCalendar === 'connected' || integrations?.notion === 'connected'
 
   const fmt = (iso: string) => new Date(iso).toLocaleTimeString(locale === 'en' ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' })
-  const allDay = events.filter((e) => e.allDay)
-  const timed = events.filter((e) => !e.allDay)
-  const startHour = new Date().getHours()
+  // « Aujourd'hui » résolu dans le fuseau du navigateur (le serveur renvoie une fenêtre large).
+  const now = new Date()
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const isToday = (e: AgendaEvent) => e.allDay ? e.start.slice(0, 10) === todayStr : new Date(e.start).toDateString() === now.toDateString()
+  const allDay = events.filter((e) => e.allDay && isToday(e))
+  // Événements chronométrés du jour encore à venir/en cours (heures restantes).
+  const timed = events.filter((e) => !e.allDay && isToday(e) && new Date(e.end ?? e.start) >= now)
+  const dayCount = allDay.length + timed.length
+  const startHour = now.getHours()
   const hours = Array.from({ length: 24 - startHour }, (_, i) => startHour + i)
   // Un événement déjà commencé mais en cours est rangé sur l'heure courante.
   const hourOf = (e: AgendaEvent) => Math.max(new Date(e.start).getHours(), startHour)
@@ -73,9 +79,9 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
           <div className="text-sm font-bold text-zinc-100">{t('title')}</div>
           <div className="text-[11px] text-zinc-500 mt-0.5">{t('agendaSubtitle')}</div>
         </div>
-        {connected && events.length > 0 && (
+        {connected && dayCount > 0 && (
           <span className="text-[10px] font-bold bg-violet-500/15 text-violet-300 border border-violet-500/25 px-2.5 py-1 rounded-full">
-            {t('eventCount', { count: events.length })}
+            {t('eventCount', { count: dayCount })}
           </span>
         )}
       </div>
@@ -124,7 +130,7 @@ export default function DeadlineCard({ agenda, integrations }: DeadlineCardProps
             )
           })}
 
-          {events.length === 0 && (
+          {dayCount === 0 && (
             <p className="py-6 text-center text-[12px] text-zinc-500">{t('noEventsToday')}</p>
           )}
         </div>

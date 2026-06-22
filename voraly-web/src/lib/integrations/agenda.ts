@@ -19,22 +19,21 @@ export async function getTodayAgenda(supabase: SupabaseClient, userId: string): 
     .eq('user_id', userId)
   if (!conns?.length) return []
 
-  const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
-  const dayEnd = new Date(); dayEnd.setHours(23, 59, 59, 999)
+  // Fenêtre large (±36h) : le VPS est en UTC mais l'utilisateur peut être dans un
+  // autre fuseau. Le filtrage sur « aujourd'hui » est fait côté client (DeadlineCard),
+  // qui connaît le vrai fuseau du navigateur.
+  const winMin = new Date(Date.now() - 36 * 3_600_000)
+  const winMax = new Date(Date.now() + 36 * 3_600_000)
 
   const lists = await Promise.all(
     (conns as Conn[]).map((c) =>
-      c.provider === 'google_calendar' ? fetchGoogle(c, supabase, userId, dayStart, dayEnd).catch(() => [])
-        : c.provider === 'notion' ? fetchNotion(c, dayStart, dayEnd).catch(() => [])
+      c.provider === 'google_calendar' ? fetchGoogle(c, supabase, userId, winMin, winMax).catch(() => [])
+        : c.provider === 'notion' ? fetchNotion(c, winMin, winMax).catch(() => [])
           : Promise.resolve([] as AgendaEvent[]),
     ),
   )
 
-  const now = Date.now()
-  return lists
-    .flat()
-    .filter((e) => e.allDay || new Date(e.end ?? e.start).getTime() >= now)
-    .sort((a, b) => a.start.localeCompare(b.start))
+  return lists.flat().sort((a, b) => a.start.localeCompare(b.start))
 }
 
 // ─── Google Calendar ──────────────────────────────────────────────────────────
