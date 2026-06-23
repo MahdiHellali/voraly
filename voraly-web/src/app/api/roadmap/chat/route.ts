@@ -10,8 +10,18 @@ const freeQuota = new Map<string, { count: number; windowStart: number }>()
 const FREE_QUOTA_LIMIT = 1
 const FREE_QUOTA_WINDOW_MS = 24 * 60 * 60 * 1000 // 24h
 
+let lastFreeQuotaPrune = 0
+function pruneFreeQuota(now: number): void {
+  if (now - lastFreeQuotaPrune < 60 * 60_000) return
+  lastFreeQuotaPrune = now
+  for (const [key, entry] of freeQuota) {
+    if (now - entry.windowStart > FREE_QUOTA_WINDOW_MS) freeQuota.delete(key)
+  }
+}
+
 function checkFreeQuota(userId: string): boolean {
   const now = Date.now()
+  pruneFreeQuota(now)
   const entry = freeQuota.get(userId)
   if (!entry || now - entry.windowStart > FREE_QUOTA_WINDOW_MS) {
     freeQuota.set(userId, { count: 1, windowStart: now })
@@ -138,7 +148,19 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 4. Appel n8n chatbot (marketing_strategy peut être null → mode générique).
+  // 4. Génération de la réponse.
+  // Si GEMINI_API_KEY est configurée → streaming direct token par token (Gemini).
+  // Sinon → fallback n8n (réponse complète d'un coup), comportement historique.
+  if (process.env.GEMINI_API_KEY) {
+    return streamFromGemini({
+      apiKey: process.env.GEMINI_API_KEY,
+      message: message.trim(),
+      history: boundedHistory as ChatHistoryItem[],
+      marketingStrategy,
+    })
+  }
+
+  // 4bis. Fallback n8n chatbot (marketing_strategy peut être null → mode générique).
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
@@ -174,4 +196,109 @@ export async function POST(request: NextRequest) {
     console.error('[chat] failed to call chatbot webhook', error)
     return NextResponse.json({ error: 'chatbot_unreachable' }, { status: 502 })
   }
+}
+
+const GEMINI_MODEL = 'gemini-flash-latest'
+
+type ChatHistoryItem = { role?: string; message?: string; content?: string }
+
+function buildSystemPrompt(marketingStrategy: unknown): string {
+  const strategy =
+    marketingStrategy != null ? JSON.stringify(marketingStrategy) : 'aucune (mode générique)'
+  return [
+    'Tu es le conseiller marketing exclusif de Voraly pour freelances.',
+    `Contexte stratégie: ${strategy}`,
+    '',
+    'Réponds uniquement aux questions de marketing freelance (acquisition clients, réseaux sociaux, contenu, branding).',
+    'Réponds en texte clair et concis, en français, sans markdown lourd.',
+  ].join('\n')
+}
+
+function toGeminiContents(
+  history: ChatHistoryItem[],
+  message: string,
+): { role: string; parts: { text: string }[] }[] {
+  const contents = history
+    .map((h) => {
+      const text = (h.message ?? h.content ?? '').toString().trim()
+      if (!text) return null
+      return { role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text }] }
+    })
+    .filter((c): c is { role: string; parts: { text: string }[] } => c !== null)
+  contents.push({ role: 'user', parts: [{ text: message }] })
+  return contents
+}
+
+// Streaming token par token depuis l'API Gemini, ré-émis en text/plain au client.
+function streamFromGemini(args: {
+  apiKey: string
+  message: string
+  history: ChatHistoryItem[]
+  marketingStrategy: unknown
+}): Response {
+  const { apiKey, message, history, marketingStrategy } = args
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${apiKey}`
+  const payload = {
+    systemInstruction: { parts: [{ text: buildSystemPrompt(marketingStrategy) }] },
+    contents: toGeminiContents(history, message),
+    generationConfig: { temperature: 0.8 },
+  }
+
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const encoder = new TextEncoder()
+      const decoder = new TextDecoder()
+      const abort = new AbortController()
+      const timer = setTimeout(() => abort.abort(), N8N_TIMEOUT_MS)
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          cache: 'no-store',
+          signal: abort.signal,
+        })
+        if (!res.ok || !res.body) {
+          console.error(`[chat] gemini responded with ${res.status}`)
+          controller.close()
+          return
+        }
+        const reader = res.body.getReader()
+        let buffer = ''
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() ?? ''
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed.startsWith('data:')) continue
+            const data = trimmed.slice(5).trim()
+            if (!data || data === '[DONE]') continue
+            try {
+              const parsed = JSON.parse(data)
+              const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text
+              if (typeof text === 'string' && text) controller.enqueue(encoder.encode(text))
+            } catch {
+              // ligne SSE partielle/non-JSON : ignorée
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[chat] gemini stream failed', error)
+      } finally {
+        clearTimeout(timer)
+        controller.close()
+      }
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Stream': '1',
+    },
+  })
 }

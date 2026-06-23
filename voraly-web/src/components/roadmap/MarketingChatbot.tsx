@@ -56,10 +56,13 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
     let apiData: { error?: string; reply?: string } | null = null
 
     try {
-      const history = messages.slice(1).map((msg) => ({
-        role: msg.role,
-        message: msg.content,
-      }))
+      const history = messages
+        .slice(1)
+        .slice(-20)
+        .map((msg) => ({
+          role: msg.role,
+          message: msg.content,
+        }))
 
       const res = await fetch('/api/roadmap/chat', {
         method: 'POST',
@@ -67,16 +70,48 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
         body: JSON.stringify({ message: textToSend, history }),
       })
 
-      apiData = await res.json()
-
       if (!res.ok) {
+        apiData = await res.json().catch(() => null)
         throw new Error(apiData?.error || 'Une erreur est survenue.')
       }
 
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: apiData?.reply || '' },
-      ])
+      // Réponse en streaming (Gemini direct) → on remplit un message assistant au fil de l'eau.
+      if (res.headers.get('x-stream') === '1' && res.body) {
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let acc = ''
+        // Throttle des mises à jour d'état : on rafraîchit l'UI au plus toutes les
+        // ~60 ms pour éviter un re-render par token sous AnimatePresence/framer-motion.
+        let lastFlush = 0
+        const flush = () =>
+          setMessages((prev) => {
+            const next = [...prev]
+            next[next.length - 1] = { role: 'assistant', content: acc }
+            return next
+          })
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          acc += decoder.decode(value, { stream: true })
+          const now = Date.now()
+          if (now - lastFlush >= 60) {
+            lastFlush = now
+            flush()
+          }
+        }
+        flush() // rendu final complet
+        if (!acc.trim()) {
+          setMessages((prev) => prev.slice(0, -1))
+          throw new Error('empty_response')
+        }
+        setUserMessageCount((prev) => prev + 1)
+        return
+      }
+
+      // Réponse complète (fallback n8n).
+      apiData = await res.json()
+      setMessages((prev) => [...prev, { role: 'assistant', content: apiData?.reply || '' }])
       setUserMessageCount((prev) => prev + 1)
     } catch (err: unknown) {
       console.error('[chatbot] failed to get response', err)
