@@ -73,7 +73,9 @@ export async function POST(request: NextRequest) {
 
   after(async () => {
     try {
-      const webhookJson = await callRoadmapWorkflow(userId, linkedinProfileText)
+      const webhookJson = process.env.GEMINI_API_KEY
+        ? await callGeminiRoadmap(linkedinProfileText)
+        : await callRoadmapWorkflow(userId, linkedinProfileText)
       const { steps, marketingStrategy } = await resolveRoadmap(userId, webhookJson)
       if (steps.length === 0) {
         setJobStatus(userId, 'error', 'empty_roadmap')
@@ -160,6 +162,80 @@ async function callRoadmapWorkflow(userId: string, linkedinProfileText: string):
   }
   const text = await res.text()
   return text ? JSON.parse(text) : null
+}
+
+const ROADMAP_MODEL = 'gemini-2.5-flash-lite'
+
+const ROADMAP_SYSTEM_PROMPT = `Tu es Voraly, stratège d'élite pour freelances. À partir PRÉCISÉMENT du profil et des réponses au questionnaire fournis, génère un plan de croissance personnalisé. Ne donne jamais de conseils génériques : adapte tout au profil réel.
+
+Réponds UNIQUEMENT avec un JSON valide (aucun markdown, aucun texte autour) respectant EXACTEMENT ce schéma :
+{
+  "roadmap_steps": [
+    {
+      "step_number": 1,
+      "title": "Semaine 1 : <titre court et concret>",
+      "actionable_advice": "<conseil détaillé et actionnable, 2-3 phrases, spécifique au profil>",
+      "daily_plan": [
+        { "day": "Lundi", "tasks": ["<micro-tâche>", "<micro-tâche>"] },
+        { "day": "Mardi", "tasks": ["...", "..."] },
+        { "day": "Mercredi", "tasks": ["...", "..."] },
+        { "day": "Jeudi", "tasks": ["...", "..."] },
+        { "day": "Vendredi", "tasks": ["...", "..."] }
+      ]
+    }
+  ],
+  "marketing_strategy": {
+    "organic": "<tactiques de contenu organique spécifiques au profil>",
+    "paid": "<tactiques d'acquisition payante spécifiques au profil>",
+    "shorts_scripts": [
+      { "topic": "<sujet>", "structure": "<structure>", "hook": "<accroche>", "body": "<corps>", "cta": "<appel à l'action>" }
+    ]
+  }
+}
+
+Règles strictes : exactement 5 semaines (step_number 1 à 5) ; chaque daily_plan couvre Lundi à Vendredi avec 2-3 micro-tâches par jour ; exactement 3 scripts dans shorts_scripts ; tout le contenu en français.`
+
+// Génération directe via Gemini (mode JSON), plus fiable et rapide que l'agent
+// n8n + outputParserStructured avec le modèle disponible sur le tier actuel.
+async function callGeminiRoadmap(linkedinProfileText: string): Promise<unknown> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new RoadmapError('workflow_unreachable')
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${ROADMAP_MODEL}:generateContent?key=${apiKey}`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
+  let res: Response
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: ROADMAP_SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: linkedinProfileText }] }],
+        generationConfig: { temperature: 0.6, responseMimeType: 'application/json' },
+      }),
+      cache: 'no-store',
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timer))
+  } catch (error) {
+    console.error('[roadmap] gemini request failed', error)
+    throw new RoadmapError('workflow_unreachable')
+  }
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    console.error(`[roadmap] gemini ${res.status}: ${detail.slice(0, 300)}`)
+    throw new RoadmapError('workflow_failed')
+  }
+  const data = (await res.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] } }[]
+  }
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) throw new RoadmapError('empty_roadmap')
+  try {
+    return JSON.parse(text)
+  } catch {
+    console.error('[roadmap] gemini returned non-JSON output')
+    throw new RoadmapError('empty_roadmap')
+  }
 }
 
 async function resolveRoadmap(
