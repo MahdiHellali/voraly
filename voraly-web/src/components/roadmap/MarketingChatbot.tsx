@@ -92,7 +92,9 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
           ? 'Le conseiller IA est momentanément indisponible. Réessayez dans quelques instants.'
           : errorCode === 'empty_response'
             ? "Le conseiller n'a pas pu générer de réponse. Reformulez votre question."
-            : errMsg || 'Impossible de joindre le chatbot.'
+            : errorCode === 'rate_limited'
+              ? 'Vous envoyez des messages trop vite. Patientez un instant avant de réessayer.'
+              : errMsg || 'Impossible de joindre le chatbot.'
       setError(friendlyMsg)
     } finally {
       setIsLoading(false)

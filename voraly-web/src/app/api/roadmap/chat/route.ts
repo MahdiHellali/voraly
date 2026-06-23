@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rate-limit'
 
 const N8N_TIMEOUT_MS = 30_000
 
@@ -72,6 +73,16 @@ export async function POST(request: NextRequest) {
   } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  // Anti-abus : limite de débit par user (premium inclus), en plus du quota
+  // free 24h ci-dessous. Protège le quota Gemini contre le spam de messages.
+  const rl = rateLimit(`chat:${user.id}`, 20, 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } },
+    )
   }
 
   // 2. Parse body.

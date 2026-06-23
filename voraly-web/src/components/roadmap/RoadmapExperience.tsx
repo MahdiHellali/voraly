@@ -19,6 +19,10 @@ const ERROR_COPY: Record<string, string> = {
   empty_roadmap:
     "La génération n’a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.",
   unauthorized: "Votre session a expiré. Reconnectez-vous puis réessayez.",
+  rate_limited:
+    "Vous avez généré plusieurs roadmaps coup sur coup. Patientez quelques minutes avant de relancer.",
+  generation_in_progress:
+    "Une génération est déjà en cours. Patientez qu’elle se termine avant d’en lancer une autre.",
 }
 
 export default function RoadmapExperience({

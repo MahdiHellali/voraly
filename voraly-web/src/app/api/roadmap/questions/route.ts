@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { QUESTIONS, normalizeRoadmap, type Question } from '@/lib/roadmap/types'
+import { rateLimit } from '@/lib/rate-limit'
 
 const N8N_QUESTIONS_URL =
   process.env.N8N_QUESTIONS_WEBHOOK_URL ??
@@ -20,6 +21,15 @@ export async function GET() {
   } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  // Anti-abus : limiter la fréquence (protège le quota Gemini de generate-questions).
+  const rl = rateLimit(`questions:${user.id}`, 10, 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } },
+    )
   }
 
   // Collecter toutes les données en parallèle (best-effort).
