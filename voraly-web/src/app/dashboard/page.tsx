@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from '@/lib/dashboard/data'
 import DashboardContent from '@/components/dashboard/DashboardContent'
+import DeadlinesSection from '@/components/dashboard/DeadlinesSection'
+import DeadlineCardSkeleton from '@/components/dashboard/DeadlineCardSkeleton'
 
 export const metadata: Metadata = {
   title: 'Dashboard — Voraly',
@@ -37,11 +40,21 @@ export default async function DashboardPage() {
         roadmapGeneratedLabel: undefined,
       }
 
+  const deadlineSlot = (
+    <Suspense fallback={<DeadlineCardSkeleton />}>
+      <DeadlinesSection
+        userId={user?.id ?? null}
+        integrations={data.integrations}
+      />
+    </Suspense>
+  )
+
   return (
     <DashboardContent
       firstName={firstName}
       data={data}
       userId={user?.id ?? null}
+      deadlineSlot={deadlineSlot}
     />
   )
 }

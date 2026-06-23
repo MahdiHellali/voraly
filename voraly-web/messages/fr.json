@@ -446,7 +446,9 @@
         "workflow_failed": "Le workflow a renvoyé une erreur. Réessayez dans un instant.",
         "workflow_unreachable": "Impossible de joindre le service de génération. Réessayez dans quelques instants.",
         "empty_roadmap": "La génération n'a renvoyé aucune étape. Réessayez avec des réponses plus détaillées.",
-        "unauthorized": "Votre session a expiré. Reconnectez-vous puis réessayez."
+        "unauthorized": "Votre session a expiré. Reconnectez-vous puis réessayez.",
+        "rate_limited": "Vous avez généré plusieurs roadmaps coup sur coup. Patientez quelques minutes avant de relancer.",
+        "generation_in_progress": "Une génération est déjà en cours. Patientez qu'elle se termine avant d'en lancer une autre."
       }
     },
     "questionnaire": {
@@ -499,6 +501,7 @@
         "generic": "Une erreur est survenue.",
         "unreachable": "Le conseiller IA est momentanément indisponible. Réessayez dans quelques instants.",
         "empty": "Le conseiller n'a pas pu générer de réponse. Reformulez votre question.",
+        "rateLimited": "Vous envoyez des messages trop vite. Patientez un instant avant de réessayer.",
         "cantReach": "Impossible de joindre le chatbot."
       },
       "paywallEyebrow": "✦ Voraly Pro",

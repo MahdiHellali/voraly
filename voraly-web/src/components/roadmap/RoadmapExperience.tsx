@@ -61,25 +61,57 @@ export default function RoadmapExperience({
     setError(null)
     setPhase('loading')
     try {
+      // La génération est lancée en tâche de fond : 202 = démarrée, on poll ensuite.
       const res = await fetch('/api/roadmap/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers }),
       })
-      const data = (await res.json().catch(() => null)) as
-        | { roadmap_steps?: RoadmapStep[]; marketing_strategy?: unknown; error?: string }
-        | null
 
-      if (!res.ok || !data?.roadmap_steps?.length) {
+      if (res.status !== 202) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null
         setError(data?.error ?? 'workflow_failed')
         setPhase('empty')
         return
       }
 
-      setSteps(data.roadmap_steps)
-      setMarketingStrategy(data.marketing_strategy)
-      setCompletedSeed([]) // fresh plan → clear carried-over checkpoints
-      setPhase('roadmap')
+      // Polling de l'état jusqu'à done/error (n8n borné à 90 s côté serveur).
+      const deadline = Date.now() + 150_000
+      let unknownStreak = 0
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 3_000))
+        const poll = await fetch('/api/roadmap/generate', { cache: 'no-store' })
+        const status = (await poll.json().catch(() => null)) as
+          | {
+              status?: string
+              error?: string
+              roadmap_steps?: RoadmapStep[]
+              marketing_strategy?: unknown
+            }
+          | null
+
+        if (status?.status === 'done' && status.roadmap_steps?.length) {
+          setSteps(status.roadmap_steps)
+          setMarketingStrategy(status.marketing_strategy)
+          setCompletedSeed([]) // fresh plan → clear carried-over checkpoints
+          setPhase('roadmap')
+          return
+        }
+        if (status?.status === 'error') {
+          setError(status.error ?? 'workflow_failed')
+          setPhase('empty')
+          return
+        }
+        // 'unknown' = job perdu (ex. redéploiement) : on tolère 3 essais puis on rend la main.
+        if (status?.status === 'unknown') {
+          if (++unknownStreak >= 3) break
+        } else {
+          unknownStreak = 0
+        }
+      }
+
+      setError('workflow_unreachable')
+      setPhase('empty')
     } catch {
       setError('workflow_unreachable')
       setPhase('empty')

@@ -446,7 +446,9 @@
         "workflow_failed": "The workflow returned an error. Try again in a moment.",
         "workflow_unreachable": "Couldn't reach the generation service. Try again in a few moments.",
         "empty_roadmap": "The generation returned no steps. Try again with more detailed answers.",
-        "unauthorized": "Your session has expired. Sign in again and retry."
+        "unauthorized": "Your session has expired. Sign in again and retry.",
+        "rate_limited": "You generated several roadmaps in a row. Wait a few minutes before retrying.",
+        "generation_in_progress": "A generation is already running. Wait for it to finish before starting another."
       }
     },
     "questionnaire": {
@@ -499,6 +501,7 @@
         "generic": "Something went wrong.",
         "unreachable": "The AI advisor is momentarily unavailable. Try again in a few moments.",
         "empty": "The advisor couldn't generate a response. Rephrase your question.",
+        "rateLimited": "You're sending messages too fast. Wait a moment before trying again.",
         "cantReach": "Couldn't reach the chatbot."
       },
       "paywallEyebrow": "✦ Voraly Pro",

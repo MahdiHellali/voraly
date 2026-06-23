@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -6,6 +6,8 @@ import {
   QUESTION_BRIEF_LABELS,
   type RoadmapStep,
 } from '@/lib/roadmap/types'
+import { rateLimit, acquireLock, releaseLock } from '@/lib/rate-limit'
+import { setJobStatus, getJobStatus } from '@/lib/roadmap-jobs'
 
 const N8N_WEBHOOK_URL =
   process.env.N8N_ROADMAP_WEBHOOK_URL ??
@@ -41,45 +43,129 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'missing_answers' }, { status: 400 })
   }
 
-  // 3. Enrichir le brief avec le profil existant.
+  // 2bis. Anti-abus : cooldown + verrou « 1 génération en vol par user ».
+  // Protège le quota Gemini et les slots bloquants de 90 s (double-clic, spam).
+  const limitKey = `generate:${user.id}`
+  const rl = rateLimit(limitKey, 5, 10 * 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } },
+    )
+  }
+  if (!acquireLock(limitKey)) {
+    return NextResponse.json({ error: 'generation_in_progress' }, { status: 409 })
+  }
+
+  // 3. Enrichir le brief avec le profil existant (lecture en contexte requête).
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name, linkedin_profile_text')
     .eq('id', user.id)
     .maybeSingle()
-
   const linkedinProfileText = buildBrief(profile?.linkedin_profile_text ?? null, answers)
 
-  // 4. Appel n8n.
-  let webhookJson: unknown = null
+  // 4. Génération asynchrone : on répond tout de suite (202). Le travail lourd
+  //    (n8n ~90 s + persistance) tourne dans after(), après l'envoi de la réponse,
+  //    donc plus aucun blocage HTTP de 90 s. Le front poll GET /api/roadmap/generate.
+  const userId = user.id
+  setJobStatus(userId, 'pending')
+
+  after(async () => {
+    try {
+      const webhookJson = await callRoadmapWorkflow(userId, linkedinProfileText)
+      const { steps, marketingStrategy } = await resolveRoadmap(userId, webhookJson)
+      if (steps.length === 0) {
+        setJobStatus(userId, 'error', 'empty_roadmap')
+        return
+      }
+      await persistRoadmap(userId, steps, marketingStrategy)
+      setJobStatus(userId, 'done')
+    } catch (error) {
+      const code = error instanceof RoadmapError ? error.code : 'workflow_unreachable'
+      if (!(error instanceof RoadmapError)) {
+        console.error('[roadmap] generation failed', error)
+      }
+      setJobStatus(userId, 'error', code)
+    } finally {
+      releaseLock(limitKey)
+    }
+  })
+
+  return NextResponse.json({ status: 'started' }, { status: 202 })
+}
+
+// GET /api/roadmap/generate — état de la génération asynchrone (polling front).
+export async function GET() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  const job = getJobStatus(user.id)
+  if (!job) return NextResponse.json({ status: 'unknown' })
+  if (job.status === 'pending') return NextResponse.json({ status: 'pending' })
+  if (job.status === 'error') {
+    return NextResponse.json({ status: 'error', error: job.error ?? 'workflow_failed' })
+  }
+
+  // done → renvoyer la roadmap persistée.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('ai_roadmap')
+    .eq('id', user.id)
+    .maybeSingle()
+  const stored = profile?.ai_roadmap as
+    | { roadmap_steps?: unknown; marketing_strategy?: unknown }
+    | null
+  return NextResponse.json({
+    status: 'done',
+    roadmap_steps: normalizeRoadmap(stored?.roadmap_steps ?? stored),
+    marketing_strategy: stored?.marketing_strategy ?? null,
+  })
+}
+
+// Erreur typée pour propager un code métier depuis le travail asynchrone.
+class RoadmapError extends Error {
+  code: string
+  constructor(code: string) {
+    super(code)
+    this.code = code
+  }
+}
+
+async function callRoadmapWorkflow(userId: string, linkedinProfileText: string): Promise<unknown> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
+  let res: Response
   try {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
-    const res = await fetch(N8N_WEBHOOK_URL, {
+    res = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id, linkedin_profile_text: linkedinProfileText }),
+      body: JSON.stringify({ user_id: userId, linkedin_profile_text: linkedinProfileText }),
       cache: 'no-store',
       signal: controller.signal,
     }).finally(() => clearTimeout(timer))
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '')
-      console.error(`[roadmap] n8n ${res.status}: ${detail.slice(0, 300)}`)
-      return NextResponse.json(
-        { error: res.status === 404 ? 'workflow_not_listening' : 'workflow_failed' },
-        { status: 502 },
-      )
-    }
-
-    const text = await res.text()
-    webhookJson = text ? JSON.parse(text) : null
   } catch (error) {
     console.error('[roadmap] n8n request failed', error)
-    return NextResponse.json({ error: 'workflow_unreachable' }, { status: 502 })
+    throw new RoadmapError('workflow_unreachable')
   }
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    console.error(`[roadmap] n8n ${res.status}: ${detail.slice(0, 300)}`)
+    throw new RoadmapError(res.status === 404 ? 'workflow_not_listening' : 'workflow_failed')
+  }
+  const text = await res.text()
+  return text ? JSON.parse(text) : null
+}
 
-  // 5. Extraire steps + marketing_strategy.
+async function resolveRoadmap(
+  userId: string,
+  webhookJson: unknown,
+): Promise<{ steps: RoadmapStep[]; marketingStrategy: unknown }> {
   const unwrapped = unwrapEnvelope(webhookJson)
   let steps: RoadmapStep[] = normalizeRoadmap(
     unwrapped?.roadmap_steps ?? unwrapped?.roadmap ?? webhookJson,
@@ -87,29 +173,34 @@ export async function POST(request: NextRequest) {
   let marketingStrategy: unknown = unwrapped?.marketing_strategy ?? null
 
   if (steps.length === 0) {
-    const { data: refreshed } = await supabase
+    // n8n a pu écrire directement en base et renvoyer une enveloppe vide.
+    const admin = createAdminClient()
+    const { data: refreshed } = await admin
       .from('profiles')
       .select('ai_roadmap')
-      .eq('id', user.id)
+      .eq('id', userId)
       .maybeSingle()
-    const stored = refreshed?.ai_roadmap as { roadmap_steps?: unknown; marketing_strategy?: unknown } | null
+    const stored = refreshed?.ai_roadmap as
+      | { roadmap_steps?: unknown; marketing_strategy?: unknown }
+      | null
     steps = normalizeRoadmap(stored?.roadmap_steps ?? stored)
     if (!marketingStrategy) marketingStrategy = stored?.marketing_strategy ?? null
   }
+  return { steps, marketingStrategy }
+}
 
-  if (steps.length === 0) {
-    return NextResponse.json({ error: 'empty_roadmap' }, { status: 502 })
-  }
-
+async function persistRoadmap(
+  userId: string,
+  steps: RoadmapStep[],
+  marketingStrategy: unknown,
+): Promise<void> {
   const aiRoadmapPayload = { roadmap_steps: steps, marketing_strategy: marketingStrategy }
-
-  // 6 & 7. Persist via admin client (bypass GRANT — authenticated role non configuré).
   const admin = createAdminClient()
 
   try {
-    await admin.from('roadmaps').delete().eq('user_id', user.id)
+    await admin.from('roadmaps').delete().eq('user_id', userId)
     await admin.from('roadmaps').insert({
-      user_id: user.id,
+      user_id: userId,
       roadmap_data: aiRoadmapPayload,
       is_active: true,
     })
@@ -120,13 +211,11 @@ export async function POST(request: NextRequest) {
   const { error: saveError } = await admin
     .from('profiles')
     .update({ ai_roadmap: aiRoadmapPayload, completed_steps: [], completed_daily_tasks: [] })
-    .eq('id', user.id)
+    .eq('id', userId)
 
   if (saveError) {
     console.error('[roadmap] failed to persist ai_roadmap', saveError)
   }
-
-  return NextResponse.json({ roadmap_steps: steps, marketing_strategy: marketingStrategy })
 }
 
 function unwrapEnvelope(raw: unknown): Record<string, unknown> | null {

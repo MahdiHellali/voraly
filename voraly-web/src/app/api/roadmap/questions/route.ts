@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { QUESTIONS, normalizeRoadmap, type Question } from '@/lib/roadmap/types'
+import { rateLimit } from '@/lib/rate-limit'
 
 const N8N_QUESTIONS_URL =
   process.env.N8N_QUESTIONS_WEBHOOK_URL ??
@@ -20,6 +21,15 @@ export async function GET() {
   } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  // Anti-abus : limiter la fréquence (protège le quota Gemini de generate-questions).
+  const rl = rateLimit(`questions:${user.id}`, 10, 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec) } },
+    )
   }
 
   // Collecter toutes les données en parallèle (best-effort).
@@ -76,69 +86,68 @@ export async function GET() {
         }
       : null
 
-  // Lire Google Calendar (best-effort).
-  let calendarEvents: string[] = []
+  // Lire Google Calendar + Notion en parallèle (best-effort, indépendants).
   const googleIntegration = integrations.find((i) => i.provider === 'google_calendar')
-  if (googleIntegration) {
-    try {
-      let accessToken = googleIntegration.access_token
-      const expiresAt = googleIntegration.expires_at
-        ? new Date(googleIntegration.expires_at).getTime()
-        : 0
-      if (expiresAt < Date.now() + 60_000 && googleIntegration.refresh_token) {
-        const refreshed = await refreshGoogleToken(
-          googleIntegration.refresh_token,
-          user.id,
-          supabase,
-        )
-        if (refreshed) accessToken = refreshed
-      }
-      if (accessToken) {
+  const notionIntegration = integrations.find((i) => i.provider === 'notion')
+
+  const [calendarEvents, notionPages] = await Promise.all([
+    (async (): Promise<string[]> => {
+      if (!googleIntegration) return []
+      try {
+        let accessToken = googleIntegration.access_token
+        const expiresAt = googleIntegration.expires_at
+          ? new Date(googleIntegration.expires_at).getTime()
+          : 0
+        if (expiresAt < Date.now() + 60_000 && googleIntegration.refresh_token) {
+          const refreshed = await refreshGoogleToken(
+            googleIntegration.refresh_token,
+            user.id,
+            supabase,
+          )
+          if (refreshed) accessToken = refreshed
+        }
+        if (!accessToken) return []
         const ctrl = new AbortController()
         const timer = setTimeout(() => ctrl.abort(), 8_000)
         const calRes = await fetch(
           `https://www.googleapis.com/calendar/v3/calendars/primary/events?orderBy=startTime&singleEvents=true&timeMin=${encodeURIComponent(new Date().toISOString())}&maxResults=10`,
           { headers: { Authorization: `Bearer ${accessToken}` }, cache: 'no-store', signal: ctrl.signal },
         ).finally(() => clearTimeout(timer))
-        if (calRes.ok) {
-          const calData = (await calRes.json()) as {
-            items?: { summary?: string; start?: { dateTime?: string; date?: string } }[]
-          }
-          calendarEvents = (calData.items ?? []).map(
-            (e) => `${e.summary ?? 'Événement'} (${e.start?.dateTime ?? e.start?.date ?? ''})`,
-          )
+        if (!calRes.ok) return []
+        const calData = (await calRes.json()) as {
+          items?: { summary?: string; start?: { dateTime?: string; date?: string } }[]
         }
+        return (calData.items ?? []).map(
+          (e) => `${e.summary ?? 'Événement'} (${e.start?.dateTime ?? e.start?.date ?? ''})`,
+        )
+      } catch (err) {
+        console.warn('[questions] google calendar fetch failed:', err)
+        return []
       }
-    } catch (err) {
-      console.warn('[questions] google calendar fetch failed:', err)
-    }
-  }
-
-  // Lire Notion (best-effort).
-  let notionPages: string[] = []
-  const notionIntegration = integrations.find((i) => i.provider === 'notion')
-  if (notionIntegration?.access_token) {
-    try {
-      const ctrl = new AbortController()
-      const timer = setTimeout(() => ctrl.abort(), 8_000)
-      const notionRes = await fetch('https://api.notion.com/v1/search', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${notionIntegration.access_token}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': '2022-06-28',
-        },
-        body: JSON.stringify({ filter: { value: 'page', property: 'object' }, page_size: 10 }),
-        cache: 'no-store',
-        signal: ctrl.signal,
-      }).finally(() => clearTimeout(timer))
-      if (notionRes.ok) {
+    })(),
+    (async (): Promise<string[]> => {
+      if (!notionIntegration?.access_token) return []
+      try {
+        const ctrl = new AbortController()
+        const timer = setTimeout(() => ctrl.abort(), 8_000)
+        const notionRes = await fetch('https://api.notion.com/v1/search', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${notionIntegration.access_token}`,
+            'Content-Type': 'application/json',
+            'Notion-Version': '2022-06-28',
+          },
+          body: JSON.stringify({ filter: { value: 'page', property: 'object' }, page_size: 10 }),
+          cache: 'no-store',
+          signal: ctrl.signal,
+        }).finally(() => clearTimeout(timer))
+        if (!notionRes.ok) return []
         const notionData = (await notionRes.json()) as {
           results?: {
             properties?: { title?: { title?: { plain_text?: string }[] }[] }
           }[]
         }
-        notionPages = (notionData.results ?? [])
+        return (notionData.results ?? [])
           .map((p) => {
             const titleProp = p.properties?.title
             if (Array.isArray(titleProp)) {
@@ -150,11 +159,12 @@ export async function GET() {
             return 'Page Notion'
           })
           .filter(Boolean)
+      } catch (err) {
+        console.warn('[questions] notion fetch failed:', err)
+        return []
       }
-    } catch (err) {
-      console.warn('[questions] notion fetch failed:', err)
-    }
-  }
+    })(),
+  ])
 
   // Calculer revenus cumulés + réponses en attente.
   const typedMetrics = metrics as Array<{
