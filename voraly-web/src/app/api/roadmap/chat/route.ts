@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-const GEMINI_MODEL = 'gemini-flash-latest'
+const GEMINI_MODEL = 'gemini-2.5-flash-lite'
 
 type ChatHistoryItem = { role?: string; message?: string; content?: string }
 
