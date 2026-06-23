@@ -57,6 +57,7 @@
     },
     {
       "parameters": {
+        "modelName": "models/gemini-flash-latest",
         "options": {
           "temperature": 0.7
         }
