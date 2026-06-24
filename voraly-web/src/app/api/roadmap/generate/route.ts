@@ -8,6 +8,7 @@ import {
 } from '@/lib/roadmap/types'
 import { rateLimit, acquireLock, releaseLock } from '@/lib/rate-limit'
 import { setJobStatus, getJobStatus } from '@/lib/roadmap-jobs'
+import { callGeminiJSON } from '@/lib/gemini'
 
 const N8N_WEBHOOK_URL =
   process.env.N8N_ROADMAP_WEBHOOK_URL ??
@@ -164,8 +165,6 @@ async function callRoadmapWorkflow(userId: string, linkedinProfileText: string):
   return text ? JSON.parse(text) : null
 }
 
-const ROADMAP_MODEL = 'gemini-2.5-flash-lite'
-
 const ROADMAP_SYSTEM_PROMPT = `Tu es Voraly, stratège d'élite pour freelances. À partir PRÉCISÉMENT du profil et des réponses au questionnaire fournis, génère un plan de croissance personnalisé. Ne donne jamais de conseils génériques : adapte tout au profil réel.
 
 Réponds UNIQUEMENT avec un JSON valide (aucun markdown, aucun texte autour) respectant EXACTEMENT ce schéma :
@@ -195,46 +194,13 @@ Réponds UNIQUEMENT avec un JSON valide (aucun markdown, aucun texte autour) res
 
 Règles strictes : exactement 5 semaines (step_number 1 à 5) ; chaque daily_plan couvre Lundi à Vendredi avec 2-3 micro-tâches par jour ; exactement 3 scripts dans shorts_scripts ; tout le contenu en français.`
 
-// Génération directe via Gemini (mode JSON), plus fiable et rapide que l'agent
-// n8n + outputParserStructured avec le modèle disponible sur le tier actuel.
 async function callGeminiRoadmap(linkedinProfileText: string): Promise<unknown> {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new RoadmapError('workflow_unreachable')
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${ROADMAP_MODEL}:generateContent?key=${apiKey}`
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
-  let res: Response
+  if (!process.env.GEMINI_API_KEY) throw new RoadmapError('workflow_unreachable')
   try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: ROADMAP_SYSTEM_PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: linkedinProfileText }] }],
-        generationConfig: { temperature: 0.6, responseMimeType: 'application/json' },
-      }),
-      cache: 'no-store',
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timer))
+    return await callGeminiJSON({ system: ROADMAP_SYSTEM_PROMPT, userText: linkedinProfileText })
   } catch (error) {
-    console.error('[roadmap] gemini request failed', error)
-    throw new RoadmapError('workflow_unreachable')
-  }
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '')
-    console.error(`[roadmap] gemini ${res.status}: ${detail.slice(0, 300)}`)
+    console.error('[roadmap] gemini failed', error)
     throw new RoadmapError('workflow_failed')
-  }
-  const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[]
-  }
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!text) throw new RoadmapError('empty_roadmap')
-  try {
-    return JSON.parse(text)
-  } catch {
-    console.error('[roadmap] gemini returned non-JSON output')
-    throw new RoadmapError('empty_roadmap')
   }
 }
 

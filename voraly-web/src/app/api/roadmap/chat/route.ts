@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rate-limit'
+import { streamGemini } from '@/lib/gemini'
 
 const N8N_TIMEOUT_MS = 30_000
 
@@ -153,7 +154,6 @@ export async function POST(request: NextRequest) {
   // Sinon → fallback n8n (réponse complète d'un coup), comportement historique.
   if (process.env.GEMINI_API_KEY) {
     return streamFromGemini({
-      apiKey: process.env.GEMINI_API_KEY,
       message: message.trim(),
       history: boundedHistory as ChatHistoryItem[],
       marketingStrategy,
@@ -198,8 +198,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-const GEMINI_MODEL = 'gemini-2.5-flash-lite'
-
 type ChatHistoryItem = { role?: string; message?: string; content?: string }
 
 function buildSystemPrompt(marketingStrategy: unknown): string {
@@ -229,71 +227,16 @@ function toGeminiContents(
   return contents
 }
 
-// Streaming token par token depuis l'API Gemini, ré-émis en text/plain au client.
 function streamFromGemini(args: {
-  apiKey: string
   message: string
   history: ChatHistoryItem[]
   marketingStrategy: unknown
 }): Response {
-  const { apiKey, message, history, marketingStrategy } = args
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${apiKey}`
-  const payload = {
-    systemInstruction: { parts: [{ text: buildSystemPrompt(marketingStrategy) }] },
+  const { message, history, marketingStrategy } = args
+  const stream = streamGemini({
+    system: buildSystemPrompt(marketingStrategy),
     contents: toGeminiContents(history, message),
-    generationConfig: { temperature: 0.8 },
-  }
-
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const encoder = new TextEncoder()
-      const decoder = new TextDecoder()
-      const abort = new AbortController()
-      const timer = setTimeout(() => abort.abort(), N8N_TIMEOUT_MS)
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          cache: 'no-store',
-          signal: abort.signal,
-        })
-        if (!res.ok || !res.body) {
-          console.error(`[chat] gemini responded with ${res.status}`)
-          controller.close()
-          return
-        }
-        const reader = res.body.getReader()
-        let buffer = ''
-        for (;;) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() ?? ''
-          for (const line of lines) {
-            const trimmed = line.trim()
-            if (!trimmed.startsWith('data:')) continue
-            const data = trimmed.slice(5).trim()
-            if (!data || data === '[DONE]') continue
-            try {
-              const parsed = JSON.parse(data)
-              const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text
-              if (typeof text === 'string' && text) controller.enqueue(encoder.encode(text))
-            } catch {
-              // ligne SSE partielle/non-JSON : ignorée
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[chat] gemini stream failed', error)
-      } finally {
-        clearTimeout(timer)
-        controller.close()
-      }
-    },
   })
-
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',

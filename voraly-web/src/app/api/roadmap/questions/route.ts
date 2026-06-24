@@ -2,16 +2,53 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { QUESTIONS, normalizeRoadmap, type Question } from '@/lib/roadmap/types'
 import { rateLimit } from '@/lib/rate-limit'
+import { callGeminiJSON } from '@/lib/gemini'
 
-const N8N_QUESTIONS_URL =
-  process.env.N8N_QUESTIONS_WEBHOOK_URL ??
-  (process.env.N8N_ROADMAP_WEBHOOK_URL
-    ? process.env.N8N_ROADMAP_WEBHOOK_URL.replace('generate-roadmap', 'generate-questions')
-    : process.env.NODE_ENV === 'production'
-      ? 'http://n8n:5678/webhook/generate-questions'
-      : 'http://localhost:5678/webhook/generate-questions')
+const QUESTIONS_SYSTEM_PROMPT = `You are the Voraly freelance analyst. Based on the user data provided (connected accounts, revenue, upcoming calendar events, Notion pages), design exactly 4 personalized diagnostic questions for this freelance profile.
 
-const N8N_TIMEOUT_MS = 30_000
+QUESTION LOGIC:
+- If Upwork/Fiverr is connected but revenue is low → ask about proposal conversion rate
+- If Google Calendar shows many meetings → ask about time management or delegation
+- If Notion has tasks → ask about production bottlenecks
+- If no platforms are connected → ask about their current client acquisition method
+- Always include at least one question about their target revenue goal
+- Questions must be in FRENCH
+
+Return ONLY valid JSON matching exactly this schema (no markdown, no explanation):
+{
+  "questions": [
+    {
+      "id": "niche",
+      "kind": "text",
+      "eyebrow": "Positionnement",
+      "label": "Quelle est votre niche ou spécialité principale ?",
+      "placeholder": "ex : Développeur React, Copywriter SEO…"
+    },
+    {
+      "id": "revenue_goal",
+      "kind": "select",
+      "eyebrow": "Ambition",
+      "label": "Quel est votre objectif de chiffre d'affaires mensuel ?",
+      "options": ["2k – 5k€", "5k – 10k€", "10k€ +"]
+    },
+    {
+      "id": "blocker",
+      "kind": "select",
+      "eyebrow": "Frein principal",
+      "label": "Quel est votre plus grand blocage pour trouver des clients ?",
+      "options": ["Manque de visibilité", "Tarification trop basse", "Prospection trop chronophage"]
+    },
+    {
+      "id": "offer_model",
+      "kind": "toggle",
+      "eyebrow": "Modèle de vente",
+      "label": "Avez-vous des offres packagées ou vendez-vous principalement au TJM ?",
+      "options": ["Offres au forfait", "TJM régulier"]
+    }
+  ]
+}
+
+Exactly 4 questions, all content in French, personalized based on actual user data.`
 
 // GET /api/roadmap/questions
 export async function GET() {
@@ -185,33 +222,21 @@ export async function GET() {
     previousRoadmap,
   })
 
-  // Appeler n8n generate-questions.
+  // Générer les questions via Gemini direct (avec retry), fallback statique si échec.
   try {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
-    const res = await fetch(N8N_QUESTIONS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: user.id,
-        user_data: userDataSummary,
-        previous_roadmap: previousRoadmap,
-      }),
-      cache: 'no-store',
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timer))
-
-    if (res.ok) {
-      const json = (await res.json().catch(() => null)) as { questions?: Question[] } | null
-      const questions = json?.questions
-      if (Array.isArray(questions) && questions.length >= 2) {
-        return NextResponse.json({ questions, source: 'dynamic' })
-      }
-    } else {
-      console.warn(`[questions] n8n responded with ${res.status}`)
+    const result = await callGeminiJSON({
+      system: QUESTIONS_SYSTEM_PROMPT,
+      userText: userDataSummary,
+      timeoutMs: 15_000,
+      primaryMaxAttempts: 2,
+    })
+    const json = result as { questions?: Question[] }
+    const questions = json?.questions
+    if (Array.isArray(questions) && questions.length >= 2) {
+      return NextResponse.json({ questions, source: 'dynamic' })
     }
   } catch (err) {
-    console.warn('[questions] n8n unreachable, falling back to static:', err)
+    console.warn('[questions] gemini failed, falling back to static:', err)
   }
 
   return NextResponse.json({ questions: QUESTIONS, source: 'static' })
