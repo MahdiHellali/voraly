@@ -156,21 +156,18 @@ export function streamGemini({
                 cache: 'no-store',
                 signal: timeoutCtrl.signal,
               })
-              clearTimeout(timer)
-              cancelCtrl.signal.removeEventListener('abort', onCancel)
-
               if (r.ok && r.body) {
                 res = r
                 break modelLoop
               }
-
               const detail = await r.text().catch(() => '')
               if (!isRetryable(r.status, detail)) break modelLoop
               // retryable: continue
             } catch {
+              // network/timeout/cancel: retry or next model
+            } finally {
               clearTimeout(timer)
               cancelCtrl.signal.removeEventListener('abort', onCancel)
-              // network/timeout/cancel: retry or next model
             }
           }
           // exhausted this model
