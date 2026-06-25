@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Voraly Sync Engine",
+  "version": "1.0.0",
+  "description": "Synchronisation des metriques de freelancing vers votre dashboard Voraly.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "permissions": ["alarms", "storage"],
+  "host_permissions": [
+    "https://voraly.net/*",
+    "https://*.fiverr.com/*",
+    "https://*.upwork.com/*",
+    "https://*.malt.com/*",
+    "https://*.malt.fr/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://voraly.net/*"],
+      "js": ["src/content/voraly-bridge.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.fiverr.com/*",
+        "https://*.upwork.com/*",
+        "https://*.malt.com/*",
+        "https://*.malt.fr/*"
+      ],
+      "js": ["src/content/platform-login.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

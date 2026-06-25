@@ -10,6 +10,7 @@ import {
   type IntegrationId,
 } from '@/lib/integrations/providers'
 import { disconnectPlatform, disconnectIntegration } from './actions'
+import { ExtensionConnect } from '@/components/dashboard/ExtensionConnect'
 
 export const metadata: Metadata = {
   title: 'Plateformes Connectées — Voraly',
@@ -153,6 +154,9 @@ export default async function PlatformsPage({
           {t('subtitle')}
         </p>
       </div>
+
+      {/* ── Extension Voraly (connexion via popup, sync arrière-plan) ── */}
+      <ExtensionConnect />
 
       {/* ── Status banner ── */}
       {(errorMsg || successMsg) && (
