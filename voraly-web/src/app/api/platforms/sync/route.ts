@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { authenticateBearer } from '@/lib/auth/bearer'
-import { CORS_HEADERS, corsPreflight } from '@/lib/http/cors'
+import { corsHeaders, corsPreflight } from '@/lib/http/cors'
 
 // POST /api/platforms/sync
 // Reçoit un snapshot de métriques (ou un signal d'erreur) depuis l'extension,
@@ -17,8 +17,13 @@ export const runtime = 'nodejs'
 const ALLOWED_PLATFORMS = new Set(['upwork', 'linkedin', 'fiverr', 'malt'])
 const ALLOWED_ERRORS = new Set(['session_expired'])
 
-export function OPTIONS() {
-  return corsPreflight()
+// Rate-limit serveur : 1 snapshot par plateforme toutes les ~5h. La borne 6h de
+// l'extension est cliente (non opposable) ; on l'impose ici sans table dédiée en
+// relisant `last_sync_at` déjà présent dans platform_connections.
+const MIN_SYNC_INTERVAL_MS = 5 * 60 * 60 * 1000
+
+export function OPTIONS(request: NextRequest) {
+  return corsPreflight(request)
 }
 
 interface SyncBody {
@@ -41,11 +46,12 @@ function num(value: unknown, fallback = 0, max = 1_000_000_000): number {
 }
 
 export async function POST(request: NextRequest) {
+  const cors = corsHeaders(request.headers.get('origin'))
   const auth = await authenticateBearer(request)
   if (!auth) {
     return NextResponse.json(
       { error: 'unauthorized' },
-      { status: 401, headers: CORS_HEADERS },
+      { status: 401, headers: cors },
     )
   }
   const { user, supabase } = auth
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: 'invalid_json' },
-      { status: 400, headers: CORS_HEADERS },
+      { status: 400, headers: cors },
     )
   }
 
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest) {
   if (!ALLOWED_PLATFORMS.has(platform)) {
     return NextResponse.json(
       { error: 'invalid_platform' },
-      { status: 400, headers: CORS_HEADERS },
+      { status: 400, headers: cors },
     )
   }
 
@@ -76,7 +82,7 @@ export async function POST(request: NextRequest) {
     if (!ALLOWED_ERRORS.has(errorCode)) {
       return NextResponse.json(
         { error: 'invalid_error_code' },
-        { status: 400, headers: CORS_HEADERS },
+        { status: 400, headers: cors },
       )
     }
 
@@ -90,13 +96,32 @@ export async function POST(request: NextRequest) {
       console.error('[platforms/sync] conn update (error path) failed', connErr.message)
       return NextResponse.json(
         { error: 'db_error' },
-        { status: 500, headers: CORS_HEADERS },
+        { status: 500, headers: cors },
       )
     }
 
     return NextResponse.json(
       { success: true, platform, status: 'session_expired', archivedAt: nowIso },
-      { status: 200, headers: CORS_HEADERS },
+      { status: 200, headers: cors },
+    )
+  }
+
+  // ── Rate-limit serveur (anti-abus quota / DB growth) : refuse un nouveau
+  // snapshot si le dernier date de moins de 5h. On lit la donnée déjà présente.
+  const { data: conn } = await supabase
+    .from('platform_connections')
+    .select('last_sync_at')
+    .eq('user_id', user.id)
+    .eq('platform_name', platform)
+    .maybeSingle()
+
+  if (
+    conn?.last_sync_at &&
+    Date.now() - new Date(conn.last_sync_at).getTime() < MIN_SYNC_INTERVAL_MS
+  ) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfterMs: MIN_SYNC_INTERVAL_MS },
+      { status: 429, headers: cors },
     )
   }
 
@@ -126,7 +151,7 @@ export async function POST(request: NextRequest) {
     console.error('[platforms/sync] metrics upsert failed', metricsErr.message)
     return NextResponse.json(
       { error: 'db_error' },
-      { status: 500, headers: CORS_HEADERS },
+      { status: 500, headers: cors },
     )
   }
 
@@ -144,6 +169,6 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(
     { success: true, platform, archivedAt: nowIso },
-    { status: 200, headers: CORS_HEADERS },
+    { status: 200, headers: cors },
   )
 }

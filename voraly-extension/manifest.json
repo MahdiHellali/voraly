@@ -12,14 +12,8 @@
     "service_worker": "src/background/service-worker.js",
     "type": "module"
   },
-  "permissions": ["alarms", "storage"],
-  "host_permissions": [
-    "https://voraly.net/*",
-    "https://*.fiverr.com/*",
-    "https://*.upwork.com/*",
-    "https://*.malt.com/*",
-    "https://*.malt.fr/*"
-  ],
+  "permissions": ["storage"],
+  "host_permissions": ["https://voraly.net/*"],
   "content_scripts": [
     {
       "matches": ["https://voraly.net/*"],

@@ -20,10 +20,12 @@
     { test: /(^|\.)upwork\.com$/i, platform: 'upwork' },
     { test: /(^|\.)malt\.(fr|com)$/i, platform: 'malt' },
   ]
-  const SESSION_CHECK = {
-    fiverr: 'https://www.fiverr.com/api/v1/me',
-    upwork: 'https://www.upwork.com/api/auth/v1/info.json',
-    malt: 'https://www.malt.fr/api/me',
+  // Chemins RELATIFS interrogés sur l'origine courante de la page → toujours
+  // same-origin (aucun host_permissions plateforme requis). À CALIBRER.
+  const SESSION_CHECK_PATH = {
+    fiverr: '/api/v1/me',
+    upwork: '/api/auth/v1/info.json',
+    malt: '/api/me',
   }
 
   const POLL_INTERVAL_MS = 3000
@@ -32,8 +34,10 @@
   const match = HOSTNAME_TO_PLATFORM.find((m) => m.test.test(location.hostname))
   if (!match) return
   const platform = match.platform
-  const endpoint = SESSION_CHECK[platform]
-  if (!endpoint) return
+  const path = SESSION_CHECK_PATH[platform]
+  if (!path) return
+  // Construit l'URL sur l'origine COURANTE → garanti same-origin.
+  const endpoint = location.origin + path
 
   let reported = false
   let elapsed = 0

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { authenticateBearer } from '@/lib/auth/bearer'
-import { CORS_HEADERS, corsPreflight } from '@/lib/http/cors'
+import { corsHeaders, corsPreflight } from '@/lib/http/cors'
 
 // GET /api/platforms/active
 // Renvoie les plateformes connectées de l'utilisateur authentifié (Bearer JWT).
@@ -11,16 +11,17 @@ import { CORS_HEADERS, corsPreflight } from '@/lib/http/cors'
 
 export const runtime = 'nodejs'
 
-export function OPTIONS() {
-  return corsPreflight()
+export function OPTIONS(request: NextRequest) {
+  return corsPreflight(request)
 }
 
 export async function GET(request: NextRequest) {
+  const cors = corsHeaders(request.headers.get('origin'))
   const auth = await authenticateBearer(request)
   if (!auth) {
     return NextResponse.json(
       { error: 'unauthorized' },
-      { status: 401, headers: CORS_HEADERS },
+      { status: 401, headers: cors },
     )
   }
 
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     console.error('[platforms/active] db error', error.message)
     return NextResponse.json(
       { error: 'db_error' },
-      { status: 500, headers: CORS_HEADERS },
+      { status: 500, headers: cors },
     )
   }
 
@@ -45,6 +46,6 @@ export async function GET(request: NextRequest) {
       connections: data ?? [],
       lastChecked: new Date().toISOString(),
     },
-    { status: 200, headers: CORS_HEADERS },
+    { status: 200, headers: cors },
   )
 }
