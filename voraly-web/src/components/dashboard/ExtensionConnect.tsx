@@ -45,9 +45,10 @@ export function ExtensionConnect() {
       if (!data || typeof data.type !== 'string') return
 
       if (data.type === 'VORALY_EXTENSION_READY') {
+        // NE PAS re-poster GET_CONNECTIONS ici : le bridge ré-émet READY à chaque
+        // GET_CONNECTIONS, ce qui créerait une boucle infinie READY↔GET_CONNECTIONS
+        // (crash de l'onglet). Les pings programmés ci-dessous récupèrent l'état.
         setDetected(true)
-        // Demande l'état de connexion courant au service worker.
-        window.postMessage({ type: 'VORALY_GET_CONNECTIONS' }, origin)
       }
       if (data.type === 'VORALY_CONNECTIONS') {
         // Une réponse de connexions PROUVE aussi la présence de l'extension :
