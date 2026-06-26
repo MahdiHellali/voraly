@@ -15,10 +15,12 @@ import {
   setToken,
   getConnections,
   setConnected,
+  setLastSync,
   getPendingConnections,
   setPendingConnection,
   clearPendingConnection,
 } from '../lib/storage.js'
+import { postSync } from '../lib/backend.js'
 import { log, warn, error } from '../lib/logger.js'
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -58,6 +60,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         .then(() => sendResponse({ ok: true }))
         .catch((e) => {
           error('PLATFORM_LOGGED_IN', e?.message)
+          sendResponse({ ok: false })
+        })
+      return true
+
+    // Le content script in-page envoie un snapshot de métriques (ou un signal
+    // session_expired). On le relaie au backend avec le Bearer token (Phase 3).
+    case 'SYNC_METRICS':
+      handleSyncMetrics(msg)
+        .then((result) => sendResponse(result))
+        .catch((e) => {
+          error('SYNC_METRICS', e?.message)
           sendResponse({ ok: false })
         })
       return true
@@ -122,6 +135,41 @@ async function handlePlatformLoggedIn(platform, sender) {
       // Fenêtre déjà fermée par l'utilisateur : rien à faire.
     }
   }
+}
+
+/**
+ * Relaie un snapshot de métriques (ou un signal session_expired) émis par le
+ * content script in-page vers POST /api/platforms/sync. Met à jour l'horodatage
+ * local du dernier sync quand le backend a accepté (200) ou rate-limité (429) —
+ * dans les deux cas, inutile de re-fetcher l'API plateforme avant l'intervalle.
+ */
+async function handleSyncMetrics(msg) {
+  const { platform } = msg
+  if (!SUPPORTED_PLATFORMS.includes(platform)) {
+    warn(`SYNC_METRICS : plateforme inconnue (${platform}).`)
+    return { ok: false }
+  }
+
+  const result = await postSync({
+    platform,
+    metrics: msg.metrics,
+    error: msg.error,
+  })
+
+  // 200 (archivé) ou 429 (trop tôt) → on note l'instant pour la garde client.
+  if (result.ok || result.status === 429) {
+    await setLastSync(platform)
+  }
+
+  if (result.ok) {
+    log(`[${platform}] métriques synchronisées.`)
+  } else if (result.status === 429) {
+    log(`[${platform}] sync ignoré (rate-limit serveur).`)
+  } else {
+    warn(`[${platform}] sync échoué (${result.status ?? result.reason ?? '?'}).`)
+  }
+
+  return result
 }
 
 // Nettoyage si l'utilisateur ferme la popup de connexion à la main.

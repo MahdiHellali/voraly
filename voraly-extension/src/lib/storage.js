@@ -50,6 +50,24 @@ export async function clearConnection(platform) {
   await chrome.storage.local.set({ [STORAGE_KEYS.connections]: map })
 }
 
+// ── Horodatage du dernier sync par plateforme (garde anti-spam in-page) ────────
+// Map { platform: ISOString }. Lue par le content script platform-sync.js pour
+// éviter de re-fetcher l'API plateforme à chaque navigation ; écrite ici une
+// fois le POST backend accepté.
+
+/** Renvoie la map { platform: ISOString } des derniers syncs. */
+export async function getLastSync() {
+  const v = await chrome.storage.local.get(STORAGE_KEYS.lastSync)
+  return v[STORAGE_KEYS.lastSync] ?? {}
+}
+
+/** Marque l'instant du dernier sync réussi pour une plateforme. */
+export async function setLastSync(platform) {
+  const map = await getLastSync()
+  map[platform] = new Date().toISOString()
+  await chrome.storage.local.set({ [STORAGE_KEYS.lastSync]: map })
+}
+
 // ── Fenêtres popup en attente de connexion (survit à la mort du SW) ────────────
 // Map { windowId: platform } : permet de ne fermer QUE les popups qu'on a
 // ouvertes (jamais un onglet plateforme que le freelance utilise lui-même).

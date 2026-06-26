@@ -3,6 +3,7 @@
 // synchronisation (POST /sync, GET /active) ont été retirés au profit du flow
 // popup-login sans risque de ban — voir README (Phase 3 les réintroduira).
 
+import { BACKEND_URL } from './config.js'
 import { getToken } from './storage.js'
 import { warn } from './logger.js'
 
@@ -27,4 +28,40 @@ export async function getValidToken() {
     return null
   }
   return token
+}
+
+/**
+ * POST /api/platforms/sync — pousse un snapshot de métriques (ou un signal
+ * d'erreur) au backend Voraly. Le user_id est dérivé serveur-side du Bearer
+ * token (jamais envoyé dans le body). L'allowlist plateforme + le rate-limit 5h
+ * + le clamp des valeurs sont appliqués côté serveur (defence-in-depth).
+ *
+ * @param {{ platform: string, metrics?: object, error?: string }} payload
+ * @returns {Promise<{ ok: boolean, status?: number, reason?: string }>}
+ */
+export async function postSync({ platform, metrics, error: errorCode }) {
+  const token = await getValidToken()
+  if (!token) {
+    warn('Sync ignoré : aucun token valide (ré-ouvrez voraly.net).')
+    return { ok: false, reason: 'no_token' }
+  }
+
+  const body = errorCode
+    ? { platform, error: errorCode }
+    : { platform, timestamp: new Date().toISOString(), metrics }
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/platforms/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    })
+    return { ok: res.ok, status: res.status }
+  } catch (e) {
+    warn('Sync réseau échoué', e?.message)
+    return { ok: false, reason: 'network' }
+  }
 }

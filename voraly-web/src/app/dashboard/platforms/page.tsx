@@ -11,6 +11,7 @@ import {
 } from '@/lib/integrations/providers'
 import { disconnectPlatform, disconnectIntegration } from './actions'
 import { ExtensionConnect } from '@/components/dashboard/ExtensionConnect'
+import { PlatformMetricsCard, type PlatformMetrics } from '@/components/dashboard/PlatformMetricsCard'
 
 export const metadata: Metadata = {
   title: 'Plateformes Connectées — Voraly',
@@ -92,14 +93,62 @@ export default async function PlatformsPage({
 
   // Live connection state — token columns are intentionally NOT selected.
   const supabase = await createClient()
-  const [{ data: connections }, { data: integrationConnections }] = await Promise.all([
-    supabase.from('platform_connections').select('platform_name, expires_at, updated_at'),
-    // Never select token columns — only the provider identifier is needed for UI state.
-    supabase.from('integration_connections').select('provider'),
-  ])
+  const [{ data: connections }, { data: integrationConnections }, { data: metricRows }] =
+    await Promise.all([
+      // last_sync_at / sync_status are non-sensitive (drive "synced X ago" + badge).
+      supabase
+        .from('platform_connections')
+        .select('platform_name, expires_at, updated_at, last_sync_at, sync_status'),
+      // Never select token columns — only the provider identifier is needed for UI state.
+      supabase.from('integration_connections').select('provider'),
+      // Synced KPI snapshots. Resilient: if the table is empty/absent the query
+      // returns no rows (error is swallowed) and the section renders nothing.
+      supabase
+        .from('platform_metrics')
+        .select('platform_name, raw_metrics, metric_date, updated_at')
+        .order('metric_date', { ascending: false })
+        // Borne de sécurité : la dédup ne garde que le dernier snapshot par
+        // plateforme (≤ 4). 60 couvre largement sans charrier d'historique inutile.
+        .limit(60),
+    ])
 
   const connectedSet = new Set((connections ?? []).map((c) => c.platform_name))
   const connectedIntegrationSet = new Set((integrationConnections ?? []).map((c) => c.provider))
+
+  // ── Métriques synchronisées (Phase 3) ──────────────────────────────────────
+  // Garde le snapshot le plus récent par plateforme (rows déjà triés desc).
+  const connByPlatform = new Map((connections ?? []).map((c) => [c.platform_name, c]))
+  const latestMetricByPlatform = new Map<
+    string,
+    { metrics: PlatformMetrics; updatedAt: string }
+  >()
+  for (const row of metricRows ?? []) {
+    if (latestMetricByPlatform.has(row.platform_name)) continue
+    const raw = (row.raw_metrics ?? {}) as Record<string, unknown>
+    latestMetricByPlatform.set(row.platform_name, {
+      metrics: {
+        totalEarnings: Number(raw.totalEarnings) || 0,
+        pendingBalance: Number(raw.pendingBalance) || 0,
+        activeOrders: Number(raw.activeOrders) || 0,
+        rating: Number(raw.rating) || 0,
+      },
+      updatedAt: row.updated_at,
+    })
+  }
+
+  const metricsCards = ORDER.filter((id) => latestMetricByPlatform.has(id)).map((id) => {
+    const snapshot = latestMetricByPlatform.get(id)!
+    const conn = connByPlatform.get(id)
+    const lastSyncIso = (conn?.last_sync_at as string | null) ?? snapshot.updatedAt
+    return {
+      id,
+      label: OAUTH_PROVIDERS[id].label,
+      ...PLATFORM_META[id],
+      metrics: snapshot.metrics,
+      lastSyncedText: formatRelative(lastSyncIso, t),
+      sessionExpired: conn?.sync_status === 'session_expired',
+    }
+  })
 
   const cards = ORDER.map((id) => {
     const provider = OAUTH_PROVIDERS[id]
@@ -262,6 +311,43 @@ export default async function PlatformsPage({
           </div>
         ))}
       </div>
+      {/* ── Métriques synchronisées (Phase 3) ── */}
+      {metricsCards.length > 0 && (
+        <div className="mt-2 fade-4">
+          <div className="mb-5">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-indigo-400">
+              {t('metrics.sectionTitle')}
+            </p>
+            <p className="text-[12px] leading-relaxed text-zinc-500">
+              {t('metrics.sectionSubtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {metricsCards.map((p) => (
+              <PlatformMetricsCard
+                key={p.id}
+                label={p.label}
+                icon={p.icon}
+                accent={{ color: p.color, border: p.border, glow: p.glow }}
+                metrics={p.metrics}
+                lastSyncedText={p.lastSyncedText}
+                sessionExpired={p.sessionExpired}
+                labels={{
+                  totalEarnings: t('metrics.totalEarnings'),
+                  pendingBalance: t('metrics.pendingBalance'),
+                  activeOrders: t('metrics.activeOrders'),
+                  rating: t('metrics.rating'),
+                  syncedPrefix: t('metrics.syncedPrefix'),
+                  neverSynced: t('metrics.neverSynced'),
+                  sessionExpired: t('metrics.sessionExpired'),
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Agenda & Outils section ── */}
       <div className="mt-2 fade-4">
         <div className="mb-5">
@@ -350,6 +436,19 @@ export default async function PlatformsPage({
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 type PlatformsT = Awaited<ReturnType<typeof getTranslations>>
+
+/** Formate un instant ISO en libellé relatif court (« il y a 5 min »). */
+function formatRelative(iso: string | null, t: PlatformsT): string | null {
+  if (!iso) return null
+  const ms = Date.now() - new Date(iso).getTime()
+  if (!Number.isFinite(ms) || ms < 0) return null
+  const min = Math.floor(ms / 60000)
+  if (min < 1) return t('metrics.justNow')
+  if (min < 60) return t('metrics.minutesAgo', { count: min })
+  const hours = Math.floor(min / 60)
+  if (hours < 24) return t('metrics.hoursAgo', { count: hours })
+  return t('metrics.daysAgo', { count: Math.floor(hours / 24) })
+}
 
 function StatusBadge({ state, t }: { state: string; t: PlatformsT }) {
   if (state === 'connected') {

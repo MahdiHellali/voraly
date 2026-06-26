@@ -410,6 +410,21 @@
       "success": {
         "connected": "Platform connected successfully.",
         "disconnected": "Platform disconnected."
+      },
+      "metrics": {
+        "sectionTitle": "📊 Synced metrics",
+        "sectionSubtitle": "Your performance, refreshed automatically by the Voraly extension.",
+        "totalEarnings": "Total earnings",
+        "pendingBalance": "Pending balance",
+        "activeOrders": "Active orders",
+        "rating": "Rating",
+        "syncedPrefix": "Synced",
+        "neverSynced": "Not synced yet",
+        "sessionExpired": "Session expired",
+        "justNow": "just now",
+        "minutesAgo": "{count} min ago",
+        "hoursAgo": "{count} h ago",
+        "daysAgo": "{count} d ago"
       }
     }
   },

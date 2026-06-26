@@ -27,7 +27,7 @@
         "https://*.malt.com/*",
         "https://*.malt.fr/*"
       ],
-      "js": ["src/content/platform-login.js"],
+      "js": ["src/content/platform-login.js", "src/content/platform-sync.js"],
       "run_at": "document_idle"
     }
   ]

@@ -410,6 +410,21 @@
       "success": {
         "connected": "Plateforme connectée avec succès.",
         "disconnected": "Plateforme déconnectée."
+      },
+      "metrics": {
+        "sectionTitle": "📊 Métriques synchronisées",
+        "sectionSubtitle": "Vos performances, rafraîchies automatiquement par l'extension Voraly.",
+        "totalEarnings": "Revenus totaux",
+        "pendingBalance": "Solde en attente",
+        "activeOrders": "Commandes actives",
+        "rating": "Note",
+        "syncedPrefix": "Synchronisé",
+        "neverSynced": "Pas encore synchronisé",
+        "sessionExpired": "Session expirée",
+        "justNow": "à l'instant",
+        "minutesAgo": "il y a {count} min",
+        "hoursAgo": "il y a {count} h",
+        "daysAgo": "il y a {count} j"
       }
     }
   },
