@@ -1,9 +1,10 @@
-// ─── Voraly Sync Engine · Communication backend Voraly ────────────────────────
-// Toutes les requêtes vers voraly.net portent le Bearer JWT de l'utilisateur.
+// ─── Voraly Sync Engine · Token Bearer utilisateur ───────────────────────────
+// Validité du JWT Supabase partagé par le dashboard. Les appels backend de
+// synchronisation (POST /sync, GET /active) ont été retirés au profit du flow
+// popup-login sans risque de ban — voir README (Phase 3 les réintroduira).
 
-import { BACKEND_URL } from './config.js'
 import { getToken } from './storage.js'
-import { log, warn } from './logger.js'
+import { warn } from './logger.js'
 
 /**
  * Récupère le token stocké s'il est encore valide.
@@ -26,36 +27,4 @@ export async function getValidToken() {
     return null
   }
   return token
-}
-
-/** GET /api/platforms/active → liste des plateformes connectées. */
-export async function getActivePlatforms(token) {
-  const res = await fetch(`${BACKEND_URL}/api/platforms/active`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (res.status === 401) return { unauthorized: true, active: [] }
-  if (!res.ok) throw new Error(`active HTTP ${res.status}`)
-  const data = await res.json()
-  return { active: Array.isArray(data.active) ? data.active : [] }
-}
-
-/**
- * POST /api/platforms/sync.
- * Renvoie { ok: true } si 200, { unauthorized: true } si 401,
- * sinon lève (déclenche le retry côté appelant).
- */
-export async function postSync(payload, token) {
-  const res = await fetch(`${BACKEND_URL}/api/platforms/sync`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
-  if (res.status === 401) return { unauthorized: true }
-  if (!res.ok) throw new Error(`sync HTTP ${res.status}`)
-  const result = await res.json().catch(() => ({}))
-  log(`[${payload.platform}] sync OK`, result?.archivedAt ?? '')
-  return { ok: true }
 }

@@ -1,74 +1,66 @@
 # Voraly Sync Engine — Extension Chrome (MV3)
 
-Synchronise les KPIs de freelancing (Fiverr, Upwork, Malt) vers le dashboard
-Voraly, **sans friction et sans risque de ban**.
+Connecte les plateformes de freelancing (Fiverr, Upwork, Malt) au dashboard
+Voraly via un flow de connexion **« OAuth-like »**, **sans friction et sans
+risque de ban**.
 
-## Architecture : background silent fetch (PRD §2)
+## Architecture finale (Phase 1 + 2 hardened)
 
-Cycle 100% en tâche de fond, **sans aucune ouverture de page** par l'utilisateur :
+### Phase 1 — Popup login « OAuth-like »
 
 ```
-voraly.net  ──postMessage(token)──►  content script (voraly-bridge.js)
-                                          └─► service worker stocke le token
+voraly.net  ──postMessage(VORALY_AUTH_TOKEN)──►  content script (voraly-bridge.js)
+                                                     └─► service worker stocke le JWT
 
-Alarme 6h + jitter 0-25 min (service-worker.js)
-   ├─ GET  /api/platforms/active (Bearer JWT) ──► ["fiverr","upwork"]
-   └─ pour chaque plateforme (délai 5-10 s) :
-        ├─ fetch direct credentialed → API interne plateforme (platforms.js)
-        ├─ parse JSON → 4 KPIs (parser.js)
-        └─ POST /api/platforms/sync (Bearer JWT) ──► backend Voraly
-              └─ retry 1/5/15 min via chrome.alarms si échec réseau
-   401/403/redirect-login → POST { error:"session_expired" }
+User clique « Connecter Fiverr » sur /dashboard/platforms
+   └─ le service worker ouvre une popup vers la plateforme (PLATFORM_LOGIN_URLS)
+        └─ le freelance se connecte réellement (session navigateur normale)
+             └─ content script (platform-login.js) détecte la session via un
+                fetch SAME-ORIGIN léger (/me, /info.json…) sur l'origine courante
+                  └─ état « connecté » stocké en chrome.storage.local
+                       └─ la popup se referme automatiquement
 ```
 
-### ⚠ Avertissement technique à valider AVANT publication
+### Phase 2 — Durcissement sécurité (rewrite)
 
-Un `fetch()` cross-site depuis le service worker **n'envoie pas** les cookies de
-session `SameSite=Lax/Strict` : Lax n'autorise le cookie que sur une **navigation
-top-level**, pas une sous-requête de fond. `credentials:'include'` ne gère que
-`SameSite=None`. Donc **si** Fiverr/Upwork/Malt protègent leur session en Lax/Strict
-(cas le plus courant) ou exigent un token anti-CSRF, le fetch renverra une page de
-login → `session_expired`.
+Le cycle de **fetch credentialed en tâche de fond** (alarme 6h → API interne
+plateforme → POST /sync) a été **retiré** : un `fetch()` cross-site depuis le
+service worker n'envoie pas les cookies `SameSite=Lax/Strict`, et marteler les
+APIs internes des plateformes expose à un risque de ban.
 
-Le code détecte ce cas explicitement (pas de données corrompues). **Avant de
-publier, faites le test empirique ci-dessous** : il dit en 2 min si chaque
-plateforme est exploitable par fetch background. Si non, l'alternative qui marche
-est la lecture in-page (content script) — disponible dans l'historique git.
+- ❌ **Retiré** : background credentialed fetch, alarmes, retry, endpoints
+  plateformes, parsing KPIs.
+- ✅ **Conservé** : popup login + détection de session same-origin (zéro
+  friction, zéro risque de ban).
+- ✅ **Backend durci** : rate-limit serveur 5h (`/api/platforms/sync`), CORS en
+  allowlist (`voraly.net` + `chrome-extension://*`, plus de `*`), RLS intacte.
 
-`User-Agent` / `Referer` ne sont **pas** définis : forbidden headers ignorés par
-`fetch()` (le navigateur envoie un UA réel automatiquement).
+### Phase 3 (future) — Sync des métriques sans risque de ban
 
-## Test empirique (2 min, par plateforme)
+La route `POST /api/platforms/sync` existe et est durcie, mais **n'a pas de
+caller** dans l'extension actuelle. Pour réactiver la synchronisation des KPIs
+sans le risque de ban :
 
-1. Connectez-vous normalement à la plateforme (ex. Fiverr) dans Chrome.
-2. `chrome://extensions/` → Voraly Sync Engine → **Service Worker → Inspect**.
-3. Dans la console du SW, collez :
-   ```js
-   fetch('https://www.fiverr.com/api/v1/me/earnings', {
-     credentials: 'include', headers: { Accept: 'application/json' }
-   }).then(r => { console.log('status', r.status, 'redirected', r.redirected, r.url); return r.text() })
-     .then(t => console.log(t.slice(0, 300)))
-   ```
-4. **Lecture du résultat :**
-   - JSON avec vos vraies données → ✅ fetch background OK pour cette plateforme.
-   - `status 401/403`, redirection vers `/login`, ou HTML → ❌ cookie non transmis
-     (SameSite) : le background fetch ne marchera pas, basculez sur l'in-page.
+1. Extraire les KPIs **en same-origin** (dans `platform-login.js` ou un nouveau
+   content script injecté sur la page earnings de la plateforme).
+2. Appeler le backend depuis ce contexte same-origin.
+3. À ce moment, réintroduire un parser JSON/DOM et le helper d'envoi backend
+   (disponibles dans l'historique git, commit antérieur à ce rewrite).
 
 ## Structure
 
 ```
 voraly-extension/
-├── manifest.json
-├── icons/                       (16/48/128 — placeholders violet Voraly)
+├── manifest.json                  permissions:[storage], host:[voraly.net]
+├── icons/                         (16/48/128)
 ├── src/
-│   ├── background/service-worker.js   Cycle 6h + jitter + retry (alarmes)
-│   ├── content/voraly-bridge.js       Capture token (origine stricte)
+│   ├── background/service-worker.js   Flow popup login + stockage token
+│   ├── content/voraly-bridge.js       Capture du token (origine stricte)
+│   ├── content/platform-login.js      Détection de session same-origin
 │   └── lib/
-│       ├── config.js     backend URL, endpoints plateformes, staleness 6h, backoff
-│       ├── storage.js    chrome.storage.local + staleness + file de retry
-│       ├── backend.js    /active, /sync (Bearer JWT)
-│       ├── platforms.js  fetch direct credentialed + détection session_expired
-│       ├── parser.js     JSON plateforme → 4 KPIs
+│       ├── config.js     backend URL, URLs login plateformes, clés storage
+│       ├── storage.js    chrome.storage.local (token, connexions, popups)
+│       ├── backend.js    validité du token Bearer
 │       └── logger.js     logs sans données sensibles
 ├── PRIVACY.md
 ├── build.sh / build.ps1
@@ -108,38 +100,20 @@ const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => emit(sess
 // cleanup: sub.subscription.unsubscribe()
 ```
 
-## Calibrer endpoints + parsers (reverse-engineering)
-
-Deux choses à confirmer par DevTools (uniquement si le test empirique ci-dessus
-est ✅ pour la plateforme) :
-
-1. **L'URL de l'API** dans `config.js > PLATFORM_ENDPOINTS` — DevTools → Network →
-   filtre Fetch/XHR sur la page earnings → repérez la requête qui renvoie les
-   chiffres → copiez son URL.
-2. **La forme du JSON** dans `parser.js > PARSERS[platform]` — onglet Response de
-   cette requête → ajustez les chemins (`d?.earnings?.total`, …).
-
-Tant que ce n'est pas calibré, le SW logge un avertissement et **rien n'est
-envoyé** (pas de données corrompues).
-
 ## Tests locaux
 
 1. **Backend** : pour pointer en local, mettez `BACKEND_URL = 'http://localhost:3000'`
    dans `src/lib/config.js` et ajoutez `"http://localhost:3000/*"` aux
    `host_permissions` du manifest. Lancez `npm run dev` dans `voraly-web/`.
+   **Pensez à reverter ces deux changements avant tout commit.**
 2. **Charger l'extension** : `chrome://extensions/` → activez *Mode développeur*
    → *Charger l'extension non empaquetée* → sélectionnez `voraly-extension/`.
 3. **Token** : ouvrez voraly.net (ou localhost), connectez-vous. Vérifiez dans
    `chrome://extensions/ → Service Worker → Inspect → Application → Storage` que
    `voraly_token` est présent.
-4. **Déclencher le cycle sans attendre 6h** : dans la console du Service Worker :
-   ```js
-   chrome.alarms.create('voraly-sync', { when: Date.now() + 1000 })
-   ```
-   Puis lisez les logs : `[platform] métriques : …` + `sync OK`, ou
-   `[platform] session expirée …` si le cookie n'est pas transmis.
-5. **Dashboard** : la connexion passe à `last_sync_at` récent → « Synchronisé il
-   y a X min » (ou badge `session_expired`).
+4. **Connexion plateforme** : sur `/dashboard/platforms`, cliquez « Connecter
+   Fiverr ». La popup s'ouvre, connectez-vous ; elle se referme et la plateforme
+   passe à « Connecté ».
 
 ## Build pour le Chrome Web Store
 

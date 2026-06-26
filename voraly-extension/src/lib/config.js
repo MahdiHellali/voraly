@@ -8,10 +8,6 @@ export const BACKEND_URL = 'https://voraly.net'
 // Origine STRICTE acceptée pour le postMessage du token (jamais "*").
 export const VORALY_ORIGIN = 'https://voraly.net'
 
-// Fréquence minimale entre deux syncs d'une même plateforme (anti-spam, 6h).
-// Conservé pour la Phase 2 (sync in-page) et les helpers de staleness.
-export const SYNC_STALE_MS = 6 * 60 * 60 * 1000
-
 // ── Flow de connexion « OAuth-like » (Phase 1) ────────────────────────────────
 // Pages ouvertes en popup pour que le freelance se connecte naturellement à la
 // plateforme. Si la session existe déjà, la page charge directement connectée.

@@ -2,7 +2,7 @@
 // chrome.storage.local (pas .sync) : le sync de session n'a de sens que sur
 // la machine où le freelance est connecté aux plateformes.
 
-import { STORAGE_KEYS, SYNC_STALE_MS } from './config.js'
+import { STORAGE_KEYS } from './config.js'
 
 export async function getToken() {
   const v = await chrome.storage.local.get([
@@ -27,46 +27,6 @@ export async function clearToken() {
     STORAGE_KEYS.token,
     STORAGE_KEYS.tokenExpiresAt,
   ])
-}
-
-/** Renvoie l'ISO du dernier sync réussi d'une plateforme, ou null. */
-export async function getLastSync(platform) {
-  const v = await chrome.storage.local.get(STORAGE_KEYS.lastSync)
-  const map = v[STORAGE_KEYS.lastSync] ?? {}
-  return map[platform] ?? null
-}
-
-export async function setLastSync(platform, iso) {
-  const v = await chrome.storage.local.get(STORAGE_KEYS.lastSync)
-  const map = v[STORAGE_KEYS.lastSync] ?? {}
-  map[platform] = iso
-  await chrome.storage.local.set({ [STORAGE_KEYS.lastSync]: map })
-}
-
-/** true si la plateforme n'a jamais été syncée OU si le dernier sync > 6h. */
-export async function isStale(platform) {
-  const last = await getLastSync(platform)
-  if (!last) return true
-  return Date.now() - new Date(last).getTime() > SYNC_STALE_MS
-}
-
-// ── File de retry persistée (survit à la mort du service worker) ───────────────
-
-export async function getRetryQueue() {
-  const v = await chrome.storage.local.get(STORAGE_KEYS.retryQueue)
-  return v[STORAGE_KEYS.retryQueue] ?? {}
-}
-
-export async function setRetryEntry(platform, entry) {
-  const q = await getRetryQueue()
-  q[platform] = entry
-  await chrome.storage.local.set({ [STORAGE_KEYS.retryQueue]: q })
-}
-
-export async function clearRetryEntry(platform) {
-  const q = await getRetryQueue()
-  delete q[platform]
-  await chrome.storage.local.set({ [STORAGE_KEYS.retryQueue]: q })
 }
 
 // ── État de connexion plateforme (flow popup « OAuth-like », Phase 1) ──────────
