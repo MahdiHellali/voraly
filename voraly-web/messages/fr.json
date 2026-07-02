@@ -376,6 +376,8 @@
       "subtitle": "Connectez vos comptes freelance via OAuth 2.0 pour centraliser revenus, commandes et performances dans Voraly.",
       "disconnect": "Déconnecter",
       "connect": "Connecter {label}",
+      "connectExtension": "Connecter via l'extension Voraly",
+      "extensionRequired": "Extension Voraly requise",
       "comingSoon": "Disponible prochainement",
       "configRequired": "Configuration requise",
       "toolsTitle": "Agenda & Outils",

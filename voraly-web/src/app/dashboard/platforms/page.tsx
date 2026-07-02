@@ -9,9 +9,13 @@ import {
   isIntegrationConfigured,
   type IntegrationId,
 } from '@/lib/integrations/providers'
-import { disconnectPlatform, disconnectIntegration } from './actions'
-import { ExtensionConnect } from '@/components/dashboard/ExtensionConnect'
+import { disconnectIntegration } from './actions'
+import { PlatformCards, type PlatformCardData } from '@/components/dashboard/PlatformCards'
 import { PlatformMetricsCard, type PlatformMetrics } from '@/components/dashboard/PlatformMetricsCard'
+
+// Plateformes dont la connexion passe par l'extension Voraly (popup + sync
+// arrière-plan) plutôt que par OAuth. Aligné avec voraly-extension.
+const EXTENSION_PLATFORMS = new Set<ProviderId>(['upwork', 'fiverr', 'malt'])
 
 export const metadata: Metadata = {
   title: 'Plateformes Connectées — Voraly',
@@ -150,24 +154,28 @@ export default async function PlatformsPage({
     }
   })
 
-  const cards = ORDER.map((id) => {
+  const cards: PlatformCardData[] = ORDER.map((id) => {
     const provider = OAUTH_PROVIDERS[id]
-    // "Connectable" = the provider exposes a real OAuth endpoint. Missing client
-    // credentials are handled gracefully by the connect route (?error=config).
-    const connectable = Boolean(provider.authorizeUrl && provider.tokenUrl)
-    const connected = connectedSet.has(id)
+    const isExtension = EXTENSION_PLATFORMS.has(id)
+    // "Connectable" via OAuth = the provider exposes a real OAuth endpoint. Missing
+    // client credentials are handled gracefully by the connect route (?error=config).
+    const oauthConnectable = Boolean(provider.authorizeUrl && provider.tokenUrl)
     return {
       id,
       label: provider.label,
       desc: t(`platforms.${id}.desc`),
       ...PLATFORM_META[id],
-      // 'connected' | 'disconnected' (connectable) | 'coming_soon' (no endpoint yet)
-      state: connected ? 'connected' : connectable ? 'disconnected' : 'coming_soon',
+      connected: connectedSet.has(id),
+      isExtension,
+      oauthConnectable,
+      connectLabel: t('connect', { label: provider.label }),
     }
   })
 
-  const connectableCount = cards.filter((c) => c.state !== 'coming_soon').length
-  const connectedCount = cards.filter((c) => c.state === 'connected').length
+  // Connectable = via extension OU via OAuth ; seul un provider ni l'un ni l'autre
+  // est "coming soon".
+  const connectableCount = cards.filter((c) => c.isExtension || c.oauthConnectable).length
+  const connectedCount = cards.filter((c) => c.connected).length
 
   // Build integration cards — state derived from live DB + env config.
   const integrationCards = INTEGRATION_ORDER.map((id) => {
@@ -204,9 +212,6 @@ export default async function PlatformsPage({
         </p>
       </div>
 
-      {/* ── Extension Voraly (connexion via popup, sync arrière-plan) ── */}
-      <ExtensionConnect />
-
       {/* ── Status banner ── */}
       {(errorMsg || successMsg) && (
         <div
@@ -241,76 +246,19 @@ export default async function PlatformsPage({
         ))}
       </div>
 
-      {/* ── Platform cards grid ── */}
-      <div className="grid grid-cols-1 gap-5 fade-3 md:grid-cols-2">
-        {cards.map((p) => (
-          <div
-            key={p.id}
-            className={`glass group relative overflow-hidden rounded-3xl border p-6 transition-all duration-300 ${p.border}`}
-          >
-            {/* Background glow tint */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br ${p.color} opacity-60`}
-            />
-            {/* Inner glow orb */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-              style={{ background: `radial-gradient(circle, ${p.glow} 0%, transparent 70%)`, filter: 'blur(20px)' }}
-            />
-
-            <div className="relative z-10">
-              {/* Header row */}
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="relative w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg overflow-hidden bg-zinc-900/60 border border-white/10 p-0.5">
-                    <Image
-                      src={p.icon}
-                      alt={p.label}
-                      width={24}
-                      height={24}
-                      className="object-contain select-none"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate text-base font-bold text-zinc-100">{p.label}</div>
-                  </div>
-                </div>
-                <StatusBadge state={p.state} t={t} />
-              </div>
-
-              {/* Description */}
-              <p className="mb-5 text-[12px] leading-relaxed text-zinc-400">{p.desc}</p>
-
-              {/* CTA */}
-              {p.state === 'connected' ? (
-                <form action={disconnectPlatform}>
-                  <input type="hidden" name="provider" value={p.id} />
-                  <button
-                    type="submit"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 py-2.5 text-[12px] font-semibold text-rose-300 transition-all duration-200 hover:bg-rose-500/20"
-                  >
-                    <Unplug size={13} /> {t('disconnect')}
-                  </button>
-                </form>
-              ) : p.state === 'disconnected' ? (
-                <a
-                  href={`/api/platforms/${p.id}/connect`}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 py-2.5 text-[12px] font-semibold text-indigo-300 transition-all duration-200 hover:bg-indigo-500/20 group-hover:border-indigo-400/40"
-                >
-                  <Plus size={13} /> {t('connect', { label: p.label })}
-                  <ArrowRight size={12} className="ml-auto opacity-0 transition-opacity group-hover:opacity-100" />
-                </a>
-              ) : (
-                <div className="w-full rounded-xl border border-white/[0.04] bg-white/[0.02] py-2.5 text-center text-[12px] text-zinc-500">
-                  {t('comingSoon')}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* ── Platform cards grid (extension-gated for upwork/fiverr/malt) ── */}
+      <PlatformCards
+        cards={cards}
+        labels={{
+          disconnect: t('disconnect'),
+          comingSoon: t('comingSoon'),
+          connectExtension: t('connectExtension'),
+          extensionRequired: t('extensionRequired'),
+          badgeConnected: t('badge.connected'),
+          badgeNotConnected: t('badge.notConnected'),
+          badgeSoon: t('badge.soon'),
+        }}
+      />
       {/* ── Métriques synchronisées (Phase 3) ── */}
       {metricsCards.length > 0 && (
         <div className="mt-2 fade-4">
@@ -448,28 +396,6 @@ function formatRelative(iso: string | null, t: PlatformsT): string | null {
   const hours = Math.floor(min / 60)
   if (hours < 24) return t('metrics.hoursAgo', { count: hours })
   return t('metrics.daysAgo', { count: Math.floor(hours / 24) })
-}
-
-function StatusBadge({ state, t }: { state: string; t: PlatformsT }) {
-  if (state === 'connected') {
-    return (
-      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
-        <CheckCircle2 size={10} className="shrink-0" /> {t('badge.connected')}
-      </span>
-    )
-  }
-  if (state === 'coming_soon') {
-    return (
-      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-bold text-indigo-400">
-        <Clock size={10} className="shrink-0" /> {t('badge.soon')}
-      </span>
-    )
-  }
-  return (
-    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-zinc-500">
-      {t('badge.notConnected')}
-    </span>
-  )
 }
 
 function IntegrationStatusBadge({ state, t }: { state: 'connected' | 'configured' | 'soon'; t: PlatformsT }) {
