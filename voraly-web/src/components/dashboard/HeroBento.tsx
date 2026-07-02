@@ -12,6 +12,8 @@ interface HeroBentoProps {
   revenue?: { monthTotal: number; deltaPct: number; activePlatforms: number } | null
   score?: number | null
   chips?: { revenueToday?: string; newProposals?: number; pendingReplies?: number } | null
+  /** Masque le CTA « Connecter » inline quand un empty state dédié le porte déjà. */
+  showConnectCta?: boolean
 }
 
 export default function HeroBento({
@@ -20,6 +22,7 @@ export default function HeroBento({
   revenue = null,
   score = null,
   chips = null,
+  showConnectCta = true,
 }: HeroBentoProps) {
   const t = useTranslations('dashboard.hero')
   const locale = useLocale()
@@ -120,18 +123,20 @@ export default function HeroBento({
                 <p className="text-[14px] text-zinc-400 mt-3 leading-relaxed">
                   {t('emptyIntro')}
                 </p>
-                <Link
-                  href="/dashboard/platforms"
-                  className="group inline-flex items-center gap-2 mt-4 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-[13px] font-semibold text-violet-200 transition-all duration-200 hover:bg-violet-500/15 hover:border-violet-500/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
-                  style={{ boxShadow: '0 0 24px rgba(139,92,246,0.18)' }}
-                >
-                  <Plug size={15} className="text-violet-300" />
-                  {t('connectPlatform')}
-                  <ArrowRight
-                    size={14}
-                    className="transition-transform duration-200 group-hover:translate-x-0.5"
-                  />
-                </Link>
+                {showConnectCta && (
+                  <Link
+                    href="/dashboard/platforms"
+                    className="group inline-flex items-center gap-2 mt-4 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-[13px] font-semibold text-violet-200 transition-all duration-200 hover:bg-violet-500/15 hover:border-violet-500/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
+                    style={{ boxShadow: '0 0 24px rgba(139,92,246,0.18)' }}
+                  >
+                    <Plug size={15} className="text-violet-300" />
+                    {t('connectPlatform')}
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform duration-200 group-hover:translate-x-0.5"
+                    />
+                  </Link>
+                )}
               </>
             )}
           </motion.div>

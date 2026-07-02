@@ -312,6 +312,11 @@
       "body": "Connect your platforms (Upwork, Fiverr, Malt, LinkedIn) to track revenue, orders and conversion in real time.",
       "connect": "Connect a platform"
     },
+    "emptyState": {
+      "title": "No platform connected",
+      "body": "Connect a platform to see your metrics in real time.",
+      "connect": "Connect a platform"
+    },
     "subscription": {
       "upgrade": "Upgrade to Pro",
       "renewalOn": "Renews on {date}",

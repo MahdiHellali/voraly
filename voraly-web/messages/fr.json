@@ -312,6 +312,11 @@
       "body": "Connectez vos plateformes (Upwork, Fiverr, Malt, LinkedIn) pour suivre revenus, commandes et conversion en temps réel.",
       "connect": "Connecter une plateforme"
     },
+    "emptyState": {
+      "title": "Aucune plateforme connectée",
+      "body": "Connectez une plateforme pour voir vos métriques en temps réel.",
+      "connect": "Connecter une plateforme"
+    },
     "subscription": {
       "upgrade": "Passer à Pro",
       "renewalOn": "Renouvellement le {date}",
