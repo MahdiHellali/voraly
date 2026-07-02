@@ -2,16 +2,25 @@
 // PHASE 3. Tourne EN PAGE sur fiverr / upwork / malt (jamais en arrière-plan
 // credentialed cross-site — approche rejetée, cf. décision projet). Quand le
 // freelance navigue sur sa plateforme (déjà connecté depuis la Phase 1), ce
-// script lit ses métriques via un endpoint same-origin (les cookies HttpOnly
-// circulent normalement ici) puis les transmet au service worker, qui les POST
-// au backend Voraly avec le Bearer token de l'utilisateur.
+// script lit ses métriques SAME-ORIGIN puis les transmet au service worker, qui
+// les POST au backend Voraly avec le Bearer token de l'utilisateur.
+//
+// Deux modes d'acquisition selon la plateforme (cf. reverse-engineering 2026-06) :
+//   • 'ssr'   : la plateforme rend déjà les KPIs dans un <script type=json> du
+//               DOM (hydratation SSR). On le lit directement — pas de fetch, pas
+//               d'injection main-world (le content script lit le DOM, pas le
+//               window de la page). Cas Fiverr : #perseus-initial-props sur
+//               /earnings (aucun endpoint JSON de résumé n'existe, tout est SSR).
+//   • 'fetch' : un endpoint XHR same-origin renvoie le JSON de revenus.
 //
 // Confidentialité / sécurité :
 //   • Lecture SAME-ORIGIN uniquement (aucun host_permissions plateforme requis).
 //   • On extrait 4 KPIs seulement (revenus, solde, commandes, note), jamais le
 //     payload brut côté client.
-//   • Garde client souple (6h) pour ne pas re-fetcher l'API plateforme à chaque
-//     navigation ; le serveur impose la vraie limite (5h, non contournable).
+//   • Garde client souple (6h) pour ne pas re-lire à chaque navigation ; le
+//     serveur impose la vraie limite (5h, non contournable).
+//   • Une source NON calibrée (calibrated:false) est ignorée : on préfère ne
+//     rien remonter plutôt que des zéros qui écraseraient des données réelles.
 //
 // Content script = script classique (pas de module) → tout est inliné (doit
 // rester aligné avec src/lib/config.js).
@@ -27,28 +36,15 @@
     { test: /(^|\.)malt\.(fr|com)$/i, platform: 'malt' },
   ]
 
-  // ⚠ TODO(calibrate) : ces endpoints sont des HYPOTHÈSES à vérifier via
-  // DevTools › Network sur une vraie session de chaque plateforme (chercher la
-  // requête XHR qui renvoie le JSON de revenus). Chemins RELATIFS → construits
-  // sur l'origine courante de la page → toujours same-origin.
-  const EARNINGS_PATH = {
-    fiverr: '/api/v1/me/earnings',
-    upwork: '/api/v3/freelancer/earnings',
-    malt: '/api/freelancer/insights',
-  }
-
-  // Garde client souple : ne pas re-interroger l'API plateforme si un sync a
-  // déjà eu lieu il y a moins de 6h (> la borne serveur de 5h pour rester sous
-  // le seuil et éviter un 429 systématique).
+  // Garde client souple : ne pas re-lire si un sync a déjà eu lieu il y a moins
+  // de 6h (> la borne serveur de 5h pour rester sous le seuil et éviter un 429
+  // systématique).
   const CLIENT_MIN_INTERVAL_MS = 6 * 60 * 60 * 1000
   const LAST_SYNC_KEY = 'voraly_last_sync' // = STORAGE_KEYS.lastSync
 
   const match = HOSTNAME_TO_PLATFORM.find((m) => m.test.test(location.hostname))
   if (!match) return
   const platform = match.platform
-  const path = EARNINGS_PATH[platform]
-  if (!path) return
-  const endpoint = location.origin + path
 
   /** @returns {Promise<boolean>} true si un sync récent (<6h) existe déjà. */
   async function recentlySynced() {
@@ -68,37 +64,80 @@
     return Number.isFinite(x) ? x : 0
   }
 
-  // ⚠ TODO(calibrate) : adapter ces chemins d'extraction au schéma JSON réel de
-  // chaque plateforme (à relever en DevTools). On lit défensivement plusieurs
-  // alias plausibles pour maximiser les chances sans casser si un champ manque.
-  function parseMetrics(data) {
-    if (!data || typeof data !== 'object') return null
-    const d = data
-    switch (platform) {
-      case 'fiverr':
-        return {
-          totalEarnings: n(d.totalEarnings ?? d.total_earnings ?? d.earnings?.total),
-          pendingBalance: n(d.pendingBalance ?? d.pending ?? d.earnings?.pending),
-          activeOrders: n(d.activeOrders ?? d.active_orders ?? d.orders?.active),
-          rating: n(d.rating ?? d.seller_rating ?? d.ratings?.average),
-        }
-      case 'upwork':
-        return {
-          totalEarnings: n(d.totalEarnings ?? d.total ?? d.earnings?.lifetime),
-          pendingBalance: n(d.pendingBalance ?? d.inProgress ?? d.earnings?.inProgress),
-          activeOrders: n(d.activeContracts ?? d.activeOrders ?? d.contracts?.active),
-          rating: n(d.jss ?? d.rating ?? d.successScore),
-        }
-      case 'malt':
-        return {
-          totalEarnings: n(d.totalEarnings ?? d.revenue ?? d.insights?.revenue),
-          pendingBalance: n(d.pendingBalance ?? d.pending ?? d.insights?.pending),
-          activeOrders: n(d.activeMissions ?? d.activeOrders ?? d.missions?.active),
-          rating: n(d.rating ?? d.averageRating ?? d.reviews?.average),
-        }
-      default:
-        return null
+  /** Lit un <script type="application/json"> du DOM et le parse (mode 'ssr'). */
+  function readJsonScript(selector) {
+    const el = document.querySelector(selector)
+    if (!el) return null
+    try {
+      const parsed = JSON.parse((el.textContent || '').trim())
+      // Perseus encapsule parfois en double (string-dans-string) → 2e parse.
+      return typeof parsed === 'string' ? JSON.parse(parsed) : parsed
+    } catch {
+      return null
     }
+  }
+
+  // ── Descripteurs par plateforme ────────────────────────────────────────────
+  // mode 'ssr'   : { selector } → lecture DOM, aucun fetch.
+  // mode 'fetch' : { path }     → GET same-origin sur location.origin + path.
+  // calibrated   : false ⇒ source ignorée (ni lecture ni report) tant que le
+  //                schéma réel n'a pas été vérifié sur une session connectée.
+  const SOURCES = {
+    // Fiverr — VÉRIFIÉ (2026-06-26, session réelle). Aucun endpoint JSON de
+    // résumé n'existe (/api/earnings/* → 404 sauf /transactions qui est vide) :
+    // tout est hydraté SSR dans #perseus-initial-props sur https://www.fiverr.com/earnings.
+    // activeOrders & rating ne figurent PAS sur la page financière → 0 (le
+    // dashboard commandes/profil est une autre source, hors scope ici).
+    fiverr: {
+      calibrated: true,
+      mode: 'ssr',
+      selector: '#perseus-initial-props',
+      parse: (d) => {
+        const stats = d?.overview?.counters?.data?.stats
+        if (!stats) return null // pas sur /earnings → on n'est pas sur la bonne page
+        const ee = stats.earningsAndExpenses?.sinceJoining?.earnings
+        const clearing = stats.futurePayments?.clearingPayments?.amountInCents
+        const inProgress = stats.futurePayments?.inProgressEarnings?.amountInCents
+        return {
+          totalEarnings: n(ee?.amount), // unités majeures (USD base Fiverr)
+          pendingBalance: (n(clearing) + n(inProgress)) / 100, // cents → unités
+          activeOrders: 0, // non disponible sur la page financière
+          rating: 0, // non disponible sur la page financière
+        }
+      },
+    },
+
+    // ⚠ Upwork — NON calibré (recon faite 2026-06-26, session réelle). SPA Nuxt :
+    // PAS de JSON SSR exploitable (#__NUXT_DATA__ minimal) ; les données arrivent
+    // par XHR GraphQL POST /api/graphql/v1?alias=payments-reports-current. KPIs
+    // éclatés sur plusieurs pages → DOM scraping nécessaire :
+    //   • Soldes : /nx/payments/reports/transaction-history/ (redirige vers
+    //     /nx/payments/reports/transactions/<id>) → ancres STABLES data-qa :
+    //       pendingBalance = [data-qa="pending_earnings_card"] [data-qa="amount"]
+    //       (dispo)         = [data-qa="available_balance_card"] [data-qa="amount"]
+    //   • totalEarnings (12 mois) + rating (Job Success Score) : /nx/my-stats/
+    //     → PAS d'ancre data-qa fiable (scraping texte fragile, à fiabiliser).
+    // Pré-requis avant calibrated:true : (a) merge non destructif côté backend
+    // (sinon les zéros d'une page écrasent les valeurs d'une autre), (b) parser
+    // n'émettant que les KPIs réellement lus, (c) validation sur compte non vide.
+    upwork: {
+      calibrated: false,
+      mode: 'dom',
+      selector: null,
+      parse: () => null,
+    },
+
+    // ⚠ Malt — NON calibré (recon faite 2026-06-26, session réelle). SPA Nuxt,
+    // données par XHR (pas de JSON SSR). Stats : /dashboard/freelancer/analytics/.
+    // Reste à mapper les ancres DOM des KPIs (aucune ancre stable relevée encore)
+    // et à valider sur compte non vide. Mêmes pré-requis que upwork (merge backend
+    // + parser partiel). Tant que false → ignoré (no-op).
+    malt: {
+      calibrated: false,
+      mode: 'dom',
+      selector: null,
+      parse: () => null,
+    },
   }
 
   /** Transmet un message au service worker en avalant proprement les erreurs. */
@@ -113,12 +152,11 @@
     }
   }
 
-  async function sync() {
-    if (await recentlySynced()) return
-
+  /** Acquiert le payload brut via fetch same-origin (mode 'fetch'). */
+  async function acquireViaFetch(path) {
     let res
     try {
-      res = await fetch(endpoint, {
+      res = await fetch(location.origin + path, {
         method: 'GET',
         credentials: 'same-origin', // cookies de session de la plateforme
         cache: 'no-store',
@@ -126,27 +164,43 @@
         redirect: 'manual', // une redirection = session expirée (page de login)
       })
     } catch {
-      return // CSP / réseau / endpoint à recalibrer : on réessaiera plus tard.
+      return { data: null } // CSP / réseau : on réessaiera plus tard.
     }
-
     // Session expirée → on le signale (le backend marque sync_status).
     if (res.type === 'opaqueredirect' || res.status === 401 || res.status === 403) {
-      report({ error: 'session_expired' })
-      return
+      return { data: null, sessionExpired: true }
     }
-    if (!res.ok) return
+    if (!res.ok) return { data: null }
     const ct = res.headers.get('content-type') ?? ''
-    if (!ct.includes('json')) return
-
-    let data
+    if (!ct.includes('json')) return { data: null }
     try {
-      data = await res.json()
+      return { data: await res.json() }
     } catch {
-      return
+      return { data: null }
     }
+  }
 
-    const metrics = parseMetrics(data)
-    if (!metrics) return
+  async function sync() {
+    const source = SOURCES[platform]
+    if (!source || !source.calibrated) return // source non vérifiée → no-op
+    if (await recentlySynced()) return
+
+    let data = null
+    if (source.mode === 'ssr') {
+      // Lecture DOM synchrone : pas de réseau, pas de cookies, pas de redirection.
+      data = readJsonScript(source.selector)
+    } else if (source.mode === 'fetch') {
+      const out = await acquireViaFetch(source.path)
+      if (out.sessionExpired) {
+        report({ error: 'session_expired' })
+        return
+      }
+      data = out.data
+    }
+    if (!data) return // mauvaise page (SSR absent) ou acquisition échouée → silence
+
+    const metrics = source.parse(data)
+    if (!metrics) return // schéma inattendu / KPIs absents → on ne remonte rien
     report({ metrics })
   }
 
