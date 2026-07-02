@@ -29,6 +29,12 @@
       ],
       "js": ["src/content/platform-login.js", "src/content/platform-sync.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.fiverr.com/*"],
+      "js": ["src/content/fiverr-session-probe.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
     }
   ]
 }

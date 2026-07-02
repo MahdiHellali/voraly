@@ -23,6 +23,24 @@
     : null
   const SUPPORTED = ['fiverr', 'upwork', 'malt']
 
+  // Envoi résilient : après un rechargement de l'extension, le content script de
+  // cet onglet est « orphelin » (Extension context invalidated) tant que l'onglet
+  // n'est pas rechargé. On échoue proprement au lieu de lever une exception muette,
+  // et on invite l'utilisateur à recharger la page (sinon la popup ne s'ouvre pas).
+  function sendToSW(message, callback) {
+    try {
+      chrome.runtime.sendMessage(message, (res) => {
+        if (chrome.runtime.lastError) {
+          console.warn('[Voraly] SW injoignable — rechargez la page (F5).')
+          return
+        }
+        callback?.(res)
+      })
+    } catch {
+      console.warn('[Voraly] contexte extension invalidé — rechargez la page (F5).')
+    }
+  }
+
   window.addEventListener('message', (event) => {
     // Validation STRICTE de l'origine (jamais "*") + message émis par la page.
     if (!ALLOWED_ORIGINS.includes(event.origin)) return
@@ -34,7 +52,7 @@
     switch (data.type) {
       case 'VORALY_AUTH_TOKEN': {
         if (typeof data.token !== 'string' || data.token.length < 10) return
-        chrome.runtime.sendMessage({
+        sendToSW({
           type: 'SET_TOKEN',
           token: data.token,
           expiresAt: typeof data.expiresAt === 'string' ? data.expiresAt : null,
@@ -44,7 +62,7 @@
 
       case 'VORALY_CONNECT_PLATFORM': {
         if (!SUPPORTED.includes(data.platform)) return
-        chrome.runtime.sendMessage({
+        sendToSW({
           type: 'CONNECT_PLATFORM',
           platform: data.platform,
         })
@@ -56,9 +74,7 @@
         // READY initial a été émis avant que le dashboard n'écoute, ou si le SW
         // dort et ne renvoie pas les connexions).
         if (PAGE_ORIGIN) window.postMessage({ type: 'VORALY_EXTENSION_READY' }, PAGE_ORIGIN)
-        chrome.runtime.sendMessage({ type: 'GET_CONNECTIONS' }, (res) => {
-          // Avale une éventuelle erreur de canal (SW endormi) sans throw.
-          if (chrome.runtime.lastError) return
+        sendToSW({ type: 'GET_CONNECTIONS' }, (res) => {
           if (!PAGE_ORIGIN) return
           window.postMessage(
             {

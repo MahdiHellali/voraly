@@ -100,15 +100,25 @@ async function openConnectPopup(platform) {
     warn(`CONNECT_PLATFORM : plateforme inconnue (${platform}).`)
     return false
   }
-  const win = await chrome.windows.create({
-    url,
-    type: 'popup',
-    width: 520,
-    height: 720,
-  })
+  log(`[${platform}] ouverture popup demandée (${url}).`)
+  let win
+  try {
+    win = await chrome.windows.create({
+      url,
+      type: 'popup',
+      width: 520,
+      height: 720,
+      focused: true,
+    })
+  } catch (e) {
+    error(`[${platform}] chrome.windows.create a échoué`, e?.message)
+    return false
+  }
   if (win?.id != null) {
     await setPendingConnection(win.id, platform)
     log(`[${platform}] popup de connexion ouverte (window ${win.id}).`)
+  } else {
+    warn(`[${platform}] chrome.windows.create n'a renvoyé aucun id de fenêtre.`)
   }
   return true
 }
