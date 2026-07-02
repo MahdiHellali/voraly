@@ -31,6 +31,38 @@ export async function getValidToken() {
 }
 
 /**
+ * POST /api/platforms/register — enregistre une connexion plateforme établie via
+ * le flow popup-login (pas d'OAuth). Crée la ligne platform_connections côté
+ * backend pour que le dashboard (connectedPlatformsCount) et la page Plateformes
+ * reflètent l'état réel. user_id dérivé serveur-side du Bearer token.
+ *
+ * @param {string} platform
+ * @returns {Promise<{ ok: boolean, status?: number, reason?: string }>}
+ */
+export async function postConnect(platform) {
+  const token = await getValidToken()
+  if (!token) {
+    warn('Register ignoré : aucun token valide (ré-ouvrez voraly.net).')
+    return { ok: false, reason: 'no_token' }
+  }
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/platforms/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ platform }),
+    })
+    return { ok: res.ok, status: res.status }
+  } catch (e) {
+    warn('Register réseau échoué', e?.message)
+    return { ok: false, reason: 'network' }
+  }
+}
+
+/**
  * POST /api/platforms/sync — pousse un snapshot de métriques (ou un signal
  * d'erreur) au backend Voraly. Le user_id est dérivé serveur-side du Bearer
  * token (jamais envoyé dans le body). L'allowlist plateforme + le rate-limit 5h

@@ -8,6 +8,7 @@
 // Côté dashboard, émettre (origine cible = https://voraly.net) :
 //   window.postMessage({ type: "VORALY_AUTH_TOKEN", token, expiresAt }, origin)
 //   window.postMessage({ type: "VORALY_CONNECT_PLATFORM", platform }, origin)
+//   window.postMessage({ type: "VORALY_DISCONNECT_PLATFORM", platform }, origin)
 //   window.postMessage({ type: "VORALY_GET_CONNECTIONS" }, origin)
 // et écouter la réponse :
 //   { type: "VORALY_CONNECTIONS", connections: { fiverr: {...}, ... } }
@@ -64,6 +65,15 @@
         if (!SUPPORTED.includes(data.platform)) return
         sendToSW({
           type: 'CONNECT_PLATFORM',
+          platform: data.platform,
+        })
+        return
+      }
+
+      case 'VORALY_DISCONNECT_PLATFORM': {
+        if (!SUPPORTED.includes(data.platform)) return
+        sendToSW({
+          type: 'DISCONNECT_PLATFORM',
           platform: data.platform,
         })
         return

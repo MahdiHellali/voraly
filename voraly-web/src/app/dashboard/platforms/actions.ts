@@ -37,6 +37,9 @@ export async function disconnectPlatform(formData: FormData) {
   }
 
   revalidatePath('/dashboard/platforms')
+  // Le dashboard dérive connectedPlatformsCount de cette table → l'invalider
+  // pour que l'empty state / le compteur « X/4 » reflètent la déconnexion.
+  revalidatePath('/dashboard')
   redirect(`/dashboard/platforms?success=disconnected&platform=${provider.id}`)
 }
 

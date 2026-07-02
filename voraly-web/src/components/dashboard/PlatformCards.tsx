@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Clock, Plus, ArrowRight, Unplug, Puzzle, Loader2, Check } from 'lucide-react'
 import { disconnectPlatform } from '@/app/dashboard/platforms/actions'
@@ -56,9 +57,12 @@ export function PlatformCards({
   cards: PlatformCardData[]
   labels: PlatformCardLabels
 }) {
+  const router = useRouter()
   const [extDetected, setExtDetected] = useState(false)
   const [connections, setConnections] = useState<Connections>({})
   const [pending, setPending] = useState<string | null>(null)
+  // Miroir de `pending` lisible dans le handler de message sans le mettre en dep.
+  const pendingRef = useRef<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pollStopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -89,13 +93,16 @@ export function PlatformCards({
         setExtDetected(true)
         const next: Connections = data.connections ?? {}
         setConnections(next)
-        setPending((p) => {
-          if (p && next[p]) {
-            stopPolling()
-            return null
-          }
-          return p
-        })
+        const p = pendingRef.current
+        if (p && next[p]) {
+          pendingRef.current = null
+          setPending(null)
+          stopPolling()
+          // Laisse le SW appeler POST /api/platforms/register (création de la
+          // ligne BDD) puis resynchronise les données rendues côté serveur
+          // (stat « X/4 » + empty state du dashboard au prochain rendu).
+          setTimeout(() => router.refresh(), 2200)
+        }
       }
     }
 
@@ -112,10 +119,27 @@ export function PlatformCards({
       pings.forEach(clearTimeout)
       stopPolling()
     }
+  }, [stopPolling, router])
+
+  const disconnect = useCallback((platform: string) => {
+    // Efface l'état local de l'extension : sans ça, le bridge continuerait de
+    // rapporter la plateforme comme connectée (liveConnected) → faux « Connecté »
+    // malgré la suppression de la ligne BDD par la Server Action.
+    window.postMessage({ type: 'VORALY_DISCONNECT_PLATFORM', platform }, window.location.origin)
+    setConnections((prev) => {
+      if (!prev[platform]) return prev
+      const next = { ...prev }
+      delete next[platform]
+      return next
+    })
+    if (pendingRef.current === platform) pendingRef.current = null
+    setPending((p) => (p === platform ? null : p))
+    stopPolling()
   }, [stopPolling])
 
   const connect = useCallback(
     (platform: string) => {
+      pendingRef.current = platform
       setPending(platform)
       window.postMessage({ type: 'VORALY_CONNECT_PLATFORM', platform }, window.location.origin)
       // Après la popup de login, on re-sonde l'état (le SW se met à jour à la
@@ -193,6 +217,7 @@ export function PlatformCards({
                 extDetected={extDetected}
                 labels={labels}
                 onConnect={connect}
+                onDisconnect={disconnect}
               />
             </div>
           </div>
@@ -211,6 +236,7 @@ function CardCta({
   extDetected,
   labels,
   onConnect,
+  onDisconnect,
 }: {
   card: PlatformCardData
   isExtension: boolean
@@ -219,11 +245,14 @@ function CardCta({
   extDetected: boolean
   labels: PlatformCardLabels
   onConnect: (platform: string) => void
+  onDisconnect: (platform: string) => void
 }) {
   // Connecté (BDD ou live) → bouton de déconnexion (server action).
   if (connected) {
     return (
-      <form action={disconnectPlatform}>
+      // onSubmit efface l'état local extension AVANT que la Server Action ne
+      // supprime la ligne BDD + revalide — sinon la carte resterait « Connecté ».
+      <form action={disconnectPlatform} onSubmit={() => onDisconnect(card.id)}>
         <input type="hidden" name="provider" value={card.id} />
         <button
           type="submit"

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import FloatingNav from '@/components/layout/FloatingNav'
 import Topbar from '@/components/layout/Topbar'
+import { ExtensionTokenBridge } from '@/components/dashboard/ExtensionTokenBridge'
 
 // ─── Dashboard Layout ─────────────────────────────────────────────────────────
 // Defense-in-depth: middleware is layer 1, this getUser() is layer 2.
@@ -42,6 +43,9 @@ export default async function DashboardLayout({
       </main>
 
       <FloatingNav />
+
+      {/* Émet le JWT vers l'extension (Bearer backend) — invisible. */}
+      <ExtensionTokenBridge />
     </div>
   )
 }

@@ -15,12 +15,13 @@ import {
   setToken,
   getConnections,
   setConnected,
+  clearConnection,
   setLastSync,
   getPendingConnections,
   setPendingConnection,
   clearPendingConnection,
 } from '../lib/storage.js'
-import { postSync } from '../lib/backend.js'
+import { postSync, postConnect } from '../lib/backend.js'
 import { log, warn, error } from '../lib/logger.js'
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -60,6 +61,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         .then(() => sendResponse({ ok: true }))
         .catch((e) => {
           error('PLATFORM_LOGGED_IN', e?.message)
+          sendResponse({ ok: false })
+        })
+      return true
+
+    // Le dashboard demande d'oublier une plateforme (bouton « Déconnecter »).
+    // On efface l'état local ; la ligne BDD est supprimée par la Server Action.
+    case 'DISCONNECT_PLATFORM':
+      handleDisconnectPlatform(msg.platform)
+        .then(() => sendResponse({ ok: true }))
+        .catch((e) => {
+          error('DISCONNECT_PLATFORM', e?.message)
           sendResponse({ ok: false })
         })
       return true
@@ -133,6 +145,14 @@ async function handlePlatformLoggedIn(platform, sender) {
   await setConnected(platform)
   log(`[${platform}] session détectée : marquée connectée.`)
 
+  // Persiste la connexion côté backend (platform_connections) pour que le
+  // dashboard (connectedPlatformsCount / empty state / compteur X/4) la voie.
+  // Best-effort : si aucun token valide, l'état local reste correct et la ligne
+  // BDD sera créée au prochain sync/ré-ouverture de voraly.net.
+  const res = await postConnect(platform)
+  if (res.ok) log(`[${platform}] connexion enregistrée côté backend.`)
+  else warn(`[${platform}] register backend échoué (${res.status ?? res.reason ?? '?'}).`)
+
   const windowId = sender?.tab?.windowId
   if (windowId == null) return
   const pending = await getPendingConnections()
@@ -145,6 +165,17 @@ async function handlePlatformLoggedIn(platform, sender) {
       // Fenêtre déjà fermée par l'utilisateur : rien à faire.
     }
   }
+}
+
+/**
+ * Oublie une plateforme localement (état de connexion + garde de sync). Appelé
+ * quand l'utilisateur clique « Déconnecter » sur le dashboard : sans ça, le
+ * bridge continuerait de rapporter la plateforme comme connectée (faux positif).
+ */
+async function handleDisconnectPlatform(platform) {
+  if (!SUPPORTED_PLATFORMS.includes(platform)) return
+  await clearConnection(platform)
+  log(`[${platform}] déconnexion : état local effacé.`)
 }
 
 /**
