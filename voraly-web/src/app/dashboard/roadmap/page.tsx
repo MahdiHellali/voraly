@@ -41,6 +41,11 @@ export default async function RoadmapPage() {
       initialSteps = normalizeRoadmap(profile.ai_roadmap)
     }
 
+    // Ne pas exposer la stratégie marketing aux non-Pro
+    if (!isPremium) {
+      initialMarketingStrategy = null
+    }
+
     initialCompleted = normalizeCompletedSteps(profile?.completed_steps)
   }
 

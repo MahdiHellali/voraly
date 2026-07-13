@@ -415,48 +415,45 @@ export default function RoadmapResult({
         {/* ── Stratégie Marketing ── */}
         {activeTab === 'marketing' && (
           <div className="relative space-y-8">
-            {/* Paywall overlay pour non-Premium */}
-            <AnimatePresence>
-              {!isPremium && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 rounded-3xl bg-zinc-950/85 backdrop-blur-xl p-6 text-center"
-                >
-                  <div aria-hidden className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden">
-                    <div
-                      className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/4 rounded-full"
-                      style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)', filter: 'blur(40px)' }}
-                    />
-                  </div>
-                  <div className="relative z-10 flex flex-col items-center gap-5">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">{t('chatbot.paywallEyebrow')}</p>
-                    <h3 className="text-xl font-extrabold tracking-tight text-white">Stratégie Marketing Pro</h3>
-                    <p className="max-w-xs text-sm text-zinc-400">
-                      Débloquez la stratégie marketing complète (organique + payant + scripts vidéo) avec Voraly Pro.
-                    </p>
-                    <ul className="flex flex-col gap-2 text-left">
-                      {['Roadmaps IA personnalisées', 'Stratégie marketing avancée', 'Conseiller IA illimité'].map((b) => (
-                        <li key={b} className="flex items-center gap-2 text-sm text-theme-primary">
-                          <span className="flex h-4 w-4 items-center justify-center rounded-full border border-pink-500/40 bg-pink-500/10 text-pink-400 text-[9px]">✓</span>
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      type="button"
-                      onClick={() => router.push('/pricing')}
-                      className="mt-1 inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-500/10 px-7 py-3.5 text-sm font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20"
-                      style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
-                    >
-                      Passer à Voraly Pro
-                      <ArrowRight size={16} />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            {!hasMarketing ? (
+            {!isPremium ? (
+              /* Paywall pour non-Pro — pas de données chargées */
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center justify-center gap-6 rounded-3xl border border-white/10 bg-zinc-950/90 backdrop-blur-xl p-8 md:p-12 text-center min-h-[400px]"
+              >
+                <div aria-hidden className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden">
+                  <div
+                    className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/4 rounded-full"
+                    style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)', filter: 'blur(40px)' }}
+                  />
+                </div>
+                <div className="relative z-10 flex flex-col items-center gap-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-pink-400">{t('chatbot.paywallEyebrow')}</p>
+                  <h3 className="text-xl font-extrabold tracking-tight text-white">Stratégie Marketing Pro</h3>
+                  <p className="max-w-xs text-sm text-zinc-400">
+                    Débloquez la stratégie marketing complète (organique + payant + scripts vidéo) avec Voraly Pro.
+                  </p>
+                  <ul className="flex flex-col gap-2 text-left">
+                    {['Roadmaps IA personnalisées', 'Stratégie marketing avancée', 'Conseiller IA illimité'].map((b) => (
+                      <li key={b} className="flex items-center gap-2 text-sm text-theme-primary">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full border border-pink-500/40 bg-pink-500/10 text-pink-400 text-[9px]">✓</span>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/pricing')}
+                    className="mt-1 inline-flex items-center gap-2 rounded-full border border-pink-500/40 bg-pink-500/10 px-7 py-3.5 text-sm font-semibold text-pink-100 backdrop-blur-xl transition-colors hover:bg-pink-500/20"
+                    style={{ boxShadow: '0 0 28px rgba(255,102,204,0.25)' }}
+                  >
+                    Passer à Voraly Pro
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            ) : !hasMarketing ? (
               <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/5 p-12 text-center backdrop-blur-xl">
                 <AlertCircle size={40} className="mb-4 text-zinc-500" />
                 <h3 className="mb-2 text-lg font-bold text-white">{t('marketingMissingTitle')}</h3>
