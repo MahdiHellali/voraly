@@ -125,7 +125,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
       initial={{ opacity: 0, y: -14, filter: 'blur(6px)' }}
       animate={{ opacity: 1, y: 0,   filter: 'blur(0px)' }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="mb-12 flex items-end justify-between relative"
+      className="mb-6 md:mb-12 flex items-end justify-between relative"
     >
       {/* ── Titre de page ── */}
       <div>

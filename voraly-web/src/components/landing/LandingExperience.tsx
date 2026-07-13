@@ -230,7 +230,7 @@ export default function LandingExperience() {
           className="relative flex min-h-dvh flex-col items-center justify-center px-6 text-center"
           aria-labelledby="hero-title"
         >
-          <div className="relative z-10 flex max-w-4xl flex-col items-center gap-8">
+          <div className="relative z-10 flex max-w-4xl flex-col items-center gap-4 sm:gap-6 md:gap-8">
             {/* Eyebrow — animation shimmer + flottement continu */}
             <motion.div
               initial={{ opacity: 0, y: 20, filter: 'blur(10px)', scale: 0.95 }}
@@ -278,7 +278,7 @@ export default function LandingExperience() {
               initial="hidden"
               animate="visible"
               custom={1}
-              className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl"
+              className="text-balance text-3xl sm:text-4xl md:text-6xl font-extrabold tracking-tight"
             >
               {t("hero.titleLead")}{' '}
               <motion.span
@@ -315,7 +315,7 @@ export default function LandingExperience() {
               initial="hidden"
               animate="visible"
               custom={2}
-              className="max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg"
+              className="max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed text-zinc-400"
             >
               {t("hero.subtitle")}
             </motion.p>
@@ -326,7 +326,7 @@ export default function LandingExperience() {
               initial="hidden"
               animate="visible"
               custom={3}
-              className="flex flex-wrap items-center justify-center gap-4"
+              className="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row sm:justify-center"
             >
               <Link href="/signup">
                 <LiquidButton
@@ -377,7 +377,7 @@ export default function LandingExperience() {
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
                 {t("hero.platformsLabel")}
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-6">
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                 {PLATFORM_LOGOS.map((name) => {
                   const key = name.toLowerCase()
                   const iconPath = key === 'freelancer' ? '/globe.svg' : `/platforms/${key}.png`
@@ -418,14 +418,14 @@ export default function LandingExperience() {
 
         {/* ── PROBLÈME / SOLUTION ────────────────────────────────────────── */}
         <ParallaxSection>
-          <div className="grid gap-12 md:grid-cols-2">
+          <div className="grid gap-8 sm:gap-12 md:grid-cols-2">
             <ProblemCard />
             <SolutionCard />
           </div>
         </ParallaxSection>
 
         {/* ── FONCTIONNALITÉS ────────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-6xl px-6 py-28" id="fonctionnalites">
+        <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-28" id="fonctionnalites">
           <SectionHeader
             eyebrow={t("features.eyebrow")}
             title={t("features.title")}
@@ -436,7 +436,7 @@ export default function LandingExperience() {
         </section>
 
         {/* ── COMMENT CA MARCHE ──────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-5xl px-6 py-28">
+        <section className="relative mx-auto max-w-5xl px-6 py-16 md:py-28">
           <SectionHeader
             eyebrow={t("howItWorks.eyebrow")}
             title={t("howItWorks.title")}
@@ -445,12 +445,12 @@ export default function LandingExperience() {
         </section>
 
         {/* ── MÉTRIQUES ──────────────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-5xl px-6 py-28">
+        <section className="relative mx-auto max-w-5xl px-6 py-16 md:py-28">
           <SectionHeader
             eyebrow={t("metrics.eyebrow")}
             title={t("metrics.title")}
           />
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:grid-cols-4">
             {METRIC_KEYS.map((k, i) => (
               <AnimatedMetric
                 key={k}
@@ -464,7 +464,7 @@ export default function LandingExperience() {
         </section>
 
         {/* ── SECTION IA ─────────────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-5xl px-6 py-28">
+        <section className="relative mx-auto max-w-5xl px-6 py-16 md:py-28">
           <div className="glass-hero relative overflow-hidden rounded-3xl px-8 py-14 text-center md:px-16">
             <div
               className="pointer-events-none absolute inset-0"
@@ -473,7 +473,7 @@ export default function LandingExperience() {
                   "radial-gradient(ellipse at 50% -20%, rgba(139,92,246,0.15) 0%, transparent 70%)",
               }}
             />
-            <div className="relative flex flex-col items-center gap-8">
+            <div className="relative flex flex-col items-center gap-4 sm:gap-6 md:gap-8">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
                 {t("ai.eyebrow")}
               </p>
@@ -496,7 +496,7 @@ export default function LandingExperience() {
         </section>
 
         {/* ── FAQ ────────────────────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-3xl px-6 py-28" id="faq">
+        <section className="relative mx-auto max-w-3xl px-6 py-16 md:py-28" id="faq">
           <SectionHeader eyebrow={t("faq.eyebrow")} title={t("faq.title")} />
           <div className="flex flex-col gap-3">
             {FAQ_KEYS.map((k, i) => (
@@ -519,7 +519,7 @@ export default function LandingExperience() {
         </section>
 
         {/* ── CTA FINAL ──────────────────────────────────────────────────── */}
-        <section className="relative mx-auto max-w-4xl px-6 py-28 text-center">
+        <section className="relative mx-auto max-w-4xl px-6 py-16 md:py-28 text-center">
           <div className="glass-hero relative overflow-hidden rounded-3xl px-8 py-16">
             <div
               className="pointer-events-none absolute inset-0"
@@ -528,7 +528,7 @@ export default function LandingExperience() {
                   "radial-gradient(ellipse at 50% 100%, rgba(255,102,204,0.1) 0%, transparent 60%)",
               }}
             />
-            <div className="relative flex flex-col items-center gap-8">
+            <div className="relative flex flex-col items-center gap-4 sm:gap-6 md:gap-8">
               <h2 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {t("finalCta.titleLead")}{" "}
                 <span className="gradient-text">{t("finalCta.titleAccent")}</span>
@@ -569,7 +569,7 @@ function ProblemCard() {
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       custom={0}
-      className="glass rounded-3xl p-8 flex flex-col gap-6"
+      className="glass rounded-3xl p-8 flex flex-col gap-4 sm:gap-6"
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">{t("eyebrow")}</p>
@@ -604,7 +604,7 @@ function SolutionCard() {
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       custom={1}
-      className="glass-hero rounded-3xl p-8 flex flex-col gap-6"
+      className="glass-hero rounded-3xl p-8 flex flex-col gap-4 sm:gap-6"
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
@@ -641,7 +641,7 @@ function HowItWorksSteps() {
   const inView = useInView(ref, { once: true, margin: "-80px" })
 
   return (
-    <div ref={ref} className="grid gap-6 md:grid-cols-3">
+    <div ref={ref} className="grid gap-4 sm:gap-6 md:grid-cols-3">
       {STEP_KEYS.map((step, i) => (
         <motion.div
           key={step.num}
@@ -709,7 +709,7 @@ function ParallaxSection({ children }: { children: React.ReactNode }) {
   const glowY = useTransform(scrollYProgress, [0, 1], [40, -40])
 
   return (
-    <section ref={ref} className="relative mx-auto max-w-5xl px-6 py-28">
+    <section ref={ref} className="relative mx-auto max-w-5xl px-6 py-16 md:py-28">
       {/* Glow parallaxe indépendant du contenu */}
       <motion.div
         aria-hidden

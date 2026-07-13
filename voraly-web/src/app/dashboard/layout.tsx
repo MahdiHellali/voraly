@@ -36,7 +36,7 @@ export default async function DashboardLayout({
       {/* Single centered column — header + every page share this width,
           so nothing hugs the left edge and the layout reads centered. */}
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-5xl px-6 pt-8 pb-44 sm:px-8 md:pt-12">
+        <div className="mx-auto w-full max-w-5xl px-4 pt-6 pb-44 sm:px-6 md:px-8 md:pt-12">
           <Topbar isPremium={isPremium} />
           {children}
         </div>

@@ -53,7 +53,7 @@ export default function PublicFooter() {
 
       <div className="mx-auto max-w-6xl px-6 py-16">
         {/* Colonnes */}
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {/* Tagline colonne */}
           <div className="col-span-2 sm:col-span-3 lg:col-span-1 flex flex-col gap-4">
             <p className="text-base font-extrabold tracking-tight text-white">Voraly</p>

@@ -47,12 +47,12 @@ export default function FloatingNav() {
   const t = useTranslations('dashboard.nav')
 
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+    <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
       <motion.nav
         initial={{ opacity: 0, y: 28, scale: 0.92, filter: 'blur(8px)' }}
         animate={{ opacity: 1, y: 0,  scale: 1,    filter: 'blur(0px)' }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-        className="glass-pill flex items-center gap-1 rounded-[1.75rem] p-2 pointer-events-auto"
+        className="glass-pill flex items-center gap-1 rounded-[1.75rem] p-1.5 sm:p-2 pointer-events-auto"
         aria-label="Navigation principale"
       >
         {navItems.map(({ href, icon: Icon, key }) => {
@@ -97,7 +97,7 @@ export default function FloatingNav() {
                     : 'text-theme-muted hover:text-zinc-200 hover:bg-white/[0.04]'
                 )}
               >
-                <Icon size={24} className="flex-shrink-0" />
+                <Icon size={24} className="flex-shrink-0 sm:size-6" />
                 <AnimatePresence initial={false}>
                   {isActive && (
                     <motion.span
