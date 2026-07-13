@@ -108,8 +108,10 @@ export default function HeroBento({
             <p className="hidden md:block text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2">
               {t('dashboardLabel')}
             </p>
-            <h2 className="text-xl sm:text-[28px] sm:text-[32px] font-black text-white tracking-tight leading-[1.1]">
-              {t('welcome')}
+            <h2 className="text-lg font-black text-white tracking-tight leading-[1.1]">
+              {connectedPlatformsCount > 0
+                ? t('connectedIntro_short', { count: connectedPlatformsCount })
+                : t('welcome')}
             </h2>
             {connectedPlatformsCount > 0 ? (
               <p className="hidden md:block text-[14px] text-theme-secondary mt-3 leading-relaxed">

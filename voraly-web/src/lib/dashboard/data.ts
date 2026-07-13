@@ -236,6 +236,31 @@ export async function getDashboardData(
             .reduce((sum, m) => sum + Number(m.revenue || 0), 0))],
         })),
       }
+    } else {
+      // Aucune métrique mais plateformes connectées → KPIs à 0
+      kpiItems = [
+        {
+          title: '0',
+          description: '€ de revenus ce mois',
+          icon: null as unknown as React.ReactNode,
+          colSpan: 2,
+          tags: [`${connectedPlatformsCount} plateformes`],
+        },
+        {
+          title: '0',
+          description: 'Commandes actives',
+          icon: null as unknown as React.ReactNode,
+          colSpan: 1,
+          tags: [],
+        },
+        {
+          title: '—',
+          description: 'Note moyenne',
+          icon: null as unknown as React.ReactNode,
+          colSpan: 1,
+          tags: [],
+        },
+      ]
     }
   } catch (err) {
     console.error('[dashboard] platform_metrics unexpected error', err)

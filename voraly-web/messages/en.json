@@ -297,6 +297,7 @@
       "activePlatforms": "{count, plural, one {# active platform} other {# active platforms}}",
       "dashboardLabel": "Dashboard",
       "welcome": "Welcome to Voraly",
+      "connectedIntro_short": "{count} {count, plural, one {platform} other {platforms}}",
       "connectedIntro": "<b>{count}</b> {count, plural, one {connected platform} other {connected platforms}}. Your first metrics will appear here as soon as you sync.",
       "emptyIntro": "Connect a platform to start tracking your revenue, orders and conversion in real time.",
       "connectPlatform": "Connect a platform",
