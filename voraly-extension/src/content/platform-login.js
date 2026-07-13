@@ -5,14 +5,10 @@
 // l'état « connecté ». Aucune donnée sensible ne transite : seul le nom de la
 // plateforme est envoyé.
 //
-// Deux stratégies de détection selon la plateforme :
-//   • Fiverr  → PAS d'API /me publique. On lit la session dans les globals SSR
-//     (window.__PERSEUS__initialProps.userData). Comme un content script tourne
-//     dans un monde JS isolé et ne voit pas ces globals, la lecture est faite par
-//     fiverr-session-probe.js (monde MAIN) qui nous relaie l'état par postMessage.
-//     → AUCUNE requête réseau, donc plus de spam 404 sur un endpoint inexistant.
-//   • Upwork / Malt → endpoint JSON same-origin, polling BORNÉ qui s'arrête net si
-//     l'endpoint répond 404 (inexistant) pour ne jamais marteler les logs.
+// Stratégies de détection :
+//   • Fiverr  → lecture SSR globals via MAIN-world probe (fiverr-session-probe.js)
+//   • Upwork  → DOM polling (bouton login absent = connecté) + endpoint JSON fallback
+//   • Malt    → endpoint JSON same-origin /api/me
 //
 // Content script = script classique (pas de module) → config inlinée (doit
 // rester aligné avec src/lib/config.js).
@@ -29,9 +25,9 @@
   ]
   // Canal partagé avec fiverr-session-probe.js (monde MAIN).
   const FIVERR_CHANNEL = 'voraly:fiverr-session'
-  // Endpoints JSON same-origin (Upwork/Malt uniquement — Fiverr n'en a pas).
+  // Endpoint JSON same-origin pour Malt uniquement.
+  // Upwork n'a pas d'endpoint JSON exploitable → détection DOM (plus bas).
   const SESSION_CHECK_PATH = {
-    upwork: '/freelance/api/v3/profile/me',
     malt: '/api/me',
   }
 
@@ -74,51 +70,121 @@
     return
   }
 
-  // ── Upwork / Malt : endpoint JSON same-origin, polling borné, stop si 404. ──
-  const path = SESSION_CHECK_PATH[platform]
-  if (!path) return
-  const endpoint = location.origin + path
-  let elapsed = 0
+  // ── Upwork : détection DOM (pas d'API JSON exploitable) ──
+  if (platform === 'upwork') {
+    const UPWORK_POLL_MS = 2500 // sondage un peu plus rapide que le défaut
+    let elapsed = 0
 
-  /** @returns {Promise<'yes'|'no'|'missing'>} état de session via l'endpoint. */
-  async function probeEndpoint() {
-    try {
-      const res = await fetch(endpoint, {
-        method: 'GET',
-        credentials: 'same-origin', // cookies de session de la plateforme
-        cache: 'no-store',
-        headers: { Accept: 'application/json' },
-        redirect: 'manual', // une redirection = non authentifié (login)
-      })
-      if (res.status === 404) return 'missing' // endpoint inexistant → ne pas réessayer
-      // 'manual' renvoie un type 'opaqueredirect' (status 0) si redirigé.
-      if (res.type === 'opaqueredirect') return 'no'
-      if (res.status === 401 || res.status === 403 || res.status === 0) return 'no'
-      if (!res.ok) return 'no'
-      const ct = res.headers.get('content-type') ?? ''
-      // Une réponse JSON exploitable suffit : on ne lit PAS le contenu (vie privée).
-      return ct.includes('json') ? 'yes' : 'no'
-    } catch {
-      return 'no' // CSP / réseau : on réessaiera dans la fenêtre bornée.
+    /** Vérifie si le DOM montre un utilisateur connecté (pas de bouton login visible). */
+    function isDomLoggedIn() {
+      try {
+        // Stratégie 1 : bouton "Log In" / "Sign In" visible = non connecté
+        const loginButtons = document.querySelectorAll(
+          'a[href*="login"], button[href*="login"], a[href*="sign-in"], a[href*="signin"]'
+        )
+        for (const btn of loginButtons) {
+          if (btn.offsetParent !== null) return false // bouton visible → non connecté
+        }
+
+        // Stratégie 2 : bouton/zone utilisateur avec nom ou avatar
+        const userElements = document.querySelectorAll(
+          '[data-test*="user"], [data-test*="profile"], [class*="user-menu"], [class*="user-avatar"], button[aria-label*="profile"], button[aria-label*="account"]'
+        )
+        if (userElements.length > 0) return true
+
+        // Stratégie 3 : liens de navigation post-login (ex: My Jobs, Messages)
+        const navLinks = document.querySelectorAll('a[href*="/messages"], a[href*="/my-jobs"], a[href*="/reports"], a[class*="navbar"]')
+        for (const link of navLinks) {
+          if (link.offsetParent !== null) return true
+        }
+
+        return false
+      } catch {
+        return false
+      }
     }
+
+    async function tickUpwork() {
+      if (reported) return
+      if (isDomLoggedIn()) {
+        // Vérification supplémentaire : l'endpoint JSON (même si pas JSON) existe → on tente
+        // un fetch pour confirmer que le user n'est PAS en redirection vers login.
+        try {
+          const res = await fetch(location.origin + '/freelance/api/v3/profile/me', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            redirect: 'manual',
+          })
+          if (res.type === 'opaqueredirect') return // redirection → non connecté
+          // Si status OK (200) et DOM connecté → on valide
+          if (res.ok) {
+            reportConnected()
+            return
+          }
+          // Même avec 403, si le DOM montre un user connecté (parfois Upwork protège l'API),
+          // on considère le user logged-in après quelques ticks pour être sûr.
+          if (elapsed >= UPWORK_POLL_MS * 3) {
+            reportConnected()
+            return
+          }
+        } catch {
+          // Réseau/DOM → on continue de poller
+        }
+      }
+      elapsed += UPWORK_POLL_MS
+      if (elapsed >= MAX_DURATION_MS) stop()
+    }
+
+    tickUpwork()
+    timer = setInterval(tickUpwork, UPWORK_POLL_MS)
+    return
   }
 
-  async function tick() {
-    if (reported) return
-    const state = await probeEndpoint()
-    if (state === 'yes') {
-      reportConnected()
-      return
-    }
-    if (state === 'missing') {
-      stop() // endpoint absent : inutile de marteler (anti-spam logs).
-      return
-    }
-    elapsed += POLL_INTERVAL_MS
-    if (elapsed >= MAX_DURATION_MS) stop()
-  }
+  // ── Malt : endpoint JSON same-origin, polling borné, stop si 404. ──
+  if (platform === 'malt') {
+    const path = SESSION_CHECK_PATH[platform]
+    if (!path) return
+    const endpoint = location.origin + path
+    let elapsed = 0
 
-  // Vérification immédiate (session déjà ouverte) puis polling borné.
-  tick()
-  timer = setInterval(tick, POLL_INTERVAL_MS)
+    /** @returns {Promise<'yes'|'no'|'missing'>} état de session via l'endpoint. */
+    async function probeEndpoint() {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'GET',
+          credentials: 'same-origin', // cookies de session de la plateforme
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+          redirect: 'manual', // une redirection = non authentifié (login)
+        })
+        if (res.status === 404) return 'missing'
+        if (res.type === 'opaqueredirect') return 'no'
+        if (res.status === 401 || res.status === 403 || res.status === 0) return 'no'
+        if (!res.ok) return 'no'
+        const ct = res.headers.get('content-type') ?? ''
+        return ct.includes('json') ? 'yes' : 'no'
+      } catch {
+        return 'no'
+      }
+    }
+
+    async function tickMalt() {
+      if (reported) return
+      const state = await probeEndpoint()
+      if (state === 'yes') {
+        reportConnected()
+        return
+      }
+      if (state === 'missing') {
+        stop()
+        return
+      }
+      elapsed += POLL_INTERVAL_MS
+      if (elapsed >= MAX_DURATION_MS) stop()
+    }
+
+    tickMalt()
+    timer = setInterval(tickMalt, POLL_INTERVAL_MS)
+    return
+  }
 })()
