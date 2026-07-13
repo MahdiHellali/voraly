@@ -72,7 +72,9 @@ export default function DashboardContent({ firstName, data, userId, deadlineSlot
               {...blurReveal(0.12)}
               className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5"
             >
-              <RevenueChart series={data.revenueSeries!} />
+              <div className="hidden md:block">
+                <RevenueChart series={data.revenueSeries!} />
+              </div>
               {deadlineSlot}
             </motion.div>
           ) : (
@@ -96,14 +98,16 @@ export default function DashboardContent({ firstName, data, userId, deadlineSlot
         </>
       )}
 
-      {/* ── AI TASKS ── */}
-      <motion.div {...blurReveal(0.08)}>
-        <AiTaskCard
-          tasks={data.todos}
-          generatedLabel={data.roadmapGeneratedLabel}
-          userId={userId}
-        />
-      </motion.div>
+      {/* ── AI TASKS — caché sur mobile ── */}
+      <div className="hidden md:block">
+        <motion.div {...blurReveal(0.08)}>
+          <AiTaskCard
+            tasks={data.todos}
+            generatedLabel={data.roadmapGeneratedLabel}
+            userId={userId}
+          />
+        </motion.div>
+      </div>
 
     </div>
   )

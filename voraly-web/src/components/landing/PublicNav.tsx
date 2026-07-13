@@ -250,18 +250,26 @@ export default function PublicNav() {
   const { theme, toggle } = useTheme()
 
   useEffect(() => {
+    const getScrollTop = () => {
+      // La landing page scrolle dans #main-content (overflow-y:auto),
+      // pas sur window (body a overflow:hidden)
+      const el = document.getElementById('main-content')
+      return el ? el.scrollTop : window.scrollY
+    }
     const onScroll = () => {
       if (!ticking.current) {
         requestAnimationFrame(() => {
-          setScrolled(window.scrollY >= THRESHOLD)
+          setScrolled(getScrollTop() >= THRESHOLD)
           ticking.current = false
         })
         ticking.current = true
       }
     }
     onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    const el = document.getElementById('main-content')
+    const target = el || window
+    target.addEventListener('scroll', onScroll, { passive: true })
+    return () => target.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
