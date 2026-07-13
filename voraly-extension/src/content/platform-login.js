@@ -29,9 +29,9 @@
   ]
   // Canal partagé avec fiverr-session-probe.js (monde MAIN).
   const FIVERR_CHANNEL = 'voraly:fiverr-session'
-  // Endpoints JSON same-origin (Upwork/Malt uniquement — Fiverr n'en a pas). À CALIBRER.
+  // Endpoints JSON same-origin (Upwork/Malt uniquement — Fiverr n'en a pas).
   const SESSION_CHECK_PATH = {
-    upwork: '/api/auth/v1/info.json',
+    upwork: '/freelance/api/v3/profile/me',
     malt: '/api/me',
   }
 
