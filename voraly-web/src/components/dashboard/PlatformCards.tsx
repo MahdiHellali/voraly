@@ -193,7 +193,7 @@ export function PlatformCards({
                     />
                   </div>
                   <div className="min-w-0">
-                    <div className="truncate text-base font-bold text-zinc-100">{p.label}</div>
+                    <div className="truncate text-base font-bold text-theme-primary">{p.label}</div>
                   </div>
                 </div>
                 <CardBadge
@@ -206,7 +206,7 @@ export function PlatformCards({
               </div>
 
               {/* Description */}
-              <p className="mb-5 text-[12px] leading-relaxed text-zinc-400">{p.desc}</p>
+              <p className="mb-5 text-[12px] leading-relaxed text-theme-secondary">{p.desc}</p>
 
               {/* CTA */}
               <CardCta
@@ -274,7 +274,7 @@ function CardCta({
           disabled
           title={labels.extensionRequired}
           aria-label={labels.extensionRequired}
-          className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] py-2.5 text-[12px] font-semibold text-zinc-500 opacity-60"
+          className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-theme bg-theme-glass py-2.5 text-[12px] font-semibold text-theme-muted opacity-60"
         >
           <Puzzle size={13} /> {card.connectLabel}
         </button>
@@ -309,7 +309,7 @@ function CardCta({
 
   // OAuth non disponible → bloc inerte.
   return (
-    <div className="w-full rounded-xl border border-white/[0.04] bg-white/[0.02] py-2.5 text-center text-[12px] text-zinc-500">
+    <div className="w-full rounded-xl border border-theme bg-theme-glass py-2.5 text-center text-[12px] text-theme-muted">
       {labels.comingSoon}
     </div>
   )
@@ -353,7 +353,7 @@ function CardBadge({
     )
   }
   return (
-    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-zinc-500">
+    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-theme bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-theme-muted">
       {labels.badgeNotConnected}
     </span>
   )

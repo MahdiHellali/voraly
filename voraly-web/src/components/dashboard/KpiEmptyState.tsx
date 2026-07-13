@@ -33,7 +33,7 @@ export function KpiEmptyState({ className }: { className?: string }) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.05]"
+          className="flex h-14 w-14 items-center justify-center rounded-2xl border border-theme bg-white/[0.05]"
           style={{ boxShadow: '0 0 28px rgba(139,92,246,0.35)' }}
         >
           <Wallet className="h-6 w-6 text-violet-300" />
@@ -42,12 +42,12 @@ export function KpiEmptyState({ className }: { className?: string }) {
         <h3 className="mt-5 text-[19px] font-bold tracking-tight text-white">
           {t('title')}
         </h3>
-        <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-zinc-400">
+        <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-theme-secondary">
           {t('body')}
         </p>
 
         <Link href="/dashboard/platforms" className="mt-6 inline-block">
-          <LiquidButton size="lg" className="group/liquid text-[13px] font-semibold text-zinc-100">
+          <LiquidButton size="lg" className="group/liquid text-[13px] font-semibold text-theme-primary">
             <span className="flex items-center justify-center gap-2">
               {t('connect')}
               <ArrowRight

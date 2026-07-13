@@ -54,7 +54,7 @@ export default function MarketingNav({ isAuthed = false }: MarketingNavProps) {
             <li key={l.href}>
               <Link
                 href={l.href}
-                className="rounded-full px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-theme-secondary transition-colors hover:text-white"
               >
                 {l.label}
               </Link>
@@ -76,7 +76,7 @@ export default function MarketingNav({ isAuthed = false }: MarketingNavProps) {
             <>
               <Link
                 href="/login"
-                className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium text-zinc-200 backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white"
+                className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium text-theme-primary backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white"
               >
                 Se connecter
               </Link>
@@ -97,7 +97,7 @@ export default function MarketingNav({ isAuthed = false }: MarketingNavProps) {
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={open}
-          className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 backdrop-blur-xl md:hidden"
+          className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-theme-primary backdrop-blur-xl md:hidden"
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
@@ -119,7 +119,7 @@ export default function MarketingNav({ isAuthed = false }: MarketingNavProps) {
                   <Link
                     href={l.href}
                     onClick={() => setOpen(false)}
-                    className="block rounded-2xl px-4 py-3 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/5 hover:text-white"
+                    className="block rounded-2xl px-4 py-3 text-sm font-medium text-theme-primary transition-colors hover:bg-white/5 hover:text-white"
                   >
                     {l.label}
                   </Link>
@@ -140,7 +140,7 @@ export default function MarketingNav({ isAuthed = false }: MarketingNavProps) {
                   <Link
                     href="/login"
                     onClick={() => setOpen(false)}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-medium text-zinc-200"
+                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-medium text-theme-primary"
                   >
                     Se connecter
                   </Link>

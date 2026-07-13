@@ -130,7 +130,7 @@ export default function QuestionnaireFlow({
                         'group flex items-center justify-between rounded-2xl border px-6 py-4 text-left text-base font-medium backdrop-blur-xl transition-all active:scale-[0.98]',
                         selected
                           ? 'border-pink-500/60 bg-pink-500/15 text-white'
-                          : 'border-white/10 bg-white/5 text-zinc-300 hover:border-white/20 hover:bg-white/[0.07]',
+                          : 'border-white/10 bg-white/5 text-theme-secondary hover:border-white/20 hover:bg-white/[0.07]',
                       )}
                       style={
                         selected

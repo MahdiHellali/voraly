@@ -74,6 +74,17 @@ export default function HeroBackground() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')!
 
+    // Détection du thème
+    const isLight = () => document.documentElement.classList.contains('light')
+    const getBgColor = () => isLight() ? '#f5f5f0' : '#09090b'
+    const getBlobAlpha = () => isLight() ? 0.3 : 1.0 // réduire de 70% en light
+
+    // Observer le thème au changement
+    const observer = new MutationObserver(() => {
+      // Le render loop détecte le thème à chaque frame
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
     // ── Scroll : lire depuis le scroll container (main#main-content)
     const getScrollProgress = () => {
       const el = document.getElementById('main-content')
@@ -136,7 +147,7 @@ export default function HeroBackground() {
       updateDrift()
 
       // Fond
-      ctx.fillStyle = '#09090b'
+      ctx.fillStyle = getBgColor()
       ctx.fillRect(0, 0, W, H)
 
       // ── Blobs avec ctx.filter blur (rendu flou natif canvas 2D)
@@ -163,9 +174,10 @@ export default function HeroBackground() {
         ctx.save()
         ctx.filter = `blur(${Math.round(r * 0.72)}px)`
 
+        const alpha = blob.a * getBlobAlpha()
         const grad = ctx.createRadialGradient(px, py, 0, px, py, r)
-        grad.addColorStop(0,   `hsla(${blob.h},${blob.s}%,${blob.l}%,${blob.a})`)
-        grad.addColorStop(0.5, `hsla(${blob.h},${blob.s}%,${blob.l}%,${blob.a * 0.35})`)
+        grad.addColorStop(0,   `hsla(${blob.h},${blob.s}%,${blob.l}%,${alpha})`)
+        grad.addColorStop(0.5, `hsla(${blob.h},${blob.s}%,${blob.l}%,${alpha * 0.35})`)
         grad.addColorStop(1,   `hsla(${blob.h},${blob.s}%,${blob.l}%,0)`)
 
         ctx.beginPath()
@@ -175,19 +187,27 @@ export default function HeroBackground() {
         ctx.restore()
       }
 
-      // Vignette radiale
-      const vign = ctx.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, Math.max(W, H) * 0.72)
-      vign.addColorStop(0.3, 'transparent')
-      vign.addColorStop(1,   'rgba(9,9,11,0.82)')
-      ctx.fillStyle = vign
-      ctx.fillRect(0, 0, W, H)
+      // Vignette radiale — atténuée en light
+      if (isLight()) {
+        const vign = ctx.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, Math.max(W, H) * 0.72)
+        vign.addColorStop(0.3, 'transparent')
+        vign.addColorStop(1,   'rgba(245,245,240,0.6)')
+        ctx.fillStyle = vign
+        ctx.fillRect(0, 0, W, H)
+      } else {
+        const vign = ctx.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.45, Math.max(W, H) * 0.72)
+        vign.addColorStop(0.3, 'transparent')
+        vign.addColorStop(1,   'rgba(9,9,11,0.82)')
+        ctx.fillStyle = vign
+        ctx.fillRect(0, 0, W, H)
 
-      // Gradient bas
-      const bot = ctx.createLinearGradient(0, H * 0.6, 0, H)
-      bot.addColorStop(0, 'transparent')
-      bot.addColorStop(1, 'rgba(9,9,11,0.97)')
-      ctx.fillStyle = bot
-      ctx.fillRect(0, 0, W, H)
+        // Gradient bas (dark only)
+        const bot = ctx.createLinearGradient(0, H * 0.6, 0, H)
+        bot.addColorStop(0, 'transparent')
+        bot.addColorStop(1, 'rgba(9,9,11,0.97)')
+        ctx.fillStyle = bot
+        ctx.fillRect(0, 0, W, H)
+      }
 
       // Grain animé
       ctx.save()

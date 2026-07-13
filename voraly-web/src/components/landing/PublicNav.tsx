@@ -17,8 +17,9 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Menu, X } from 'lucide-react'
+import { ArrowRight, Menu, X, Sun, Moon } from 'lucide-react'
 import LanguageSwitcher from '@/components/i18n/LanguageSwitcher'
+import { useTheme } from '@/components/theme/ThemeProvider'
 
 const THRESHOLD = 72 // px avant bascule pill
 
@@ -57,7 +58,7 @@ function LogoWordmark({ compact = false }: { compact?: boolean }) {
         />
       </motion.div>
       {!compact && (
-        <span className="text-base font-extrabold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
+        <span className="text-base font-extrabold tracking-tight group-hover:text-zinc-200 transition-colors">
           Voraly
         </span>
       )}
@@ -144,7 +145,7 @@ function PillCTA() {
   return (
     <Link
       href="/signup"
-      className="group inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold text-white transition-all duration-200"
+      className="group inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200"
       style={{
         background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
         boxShadow: '0 0 18px rgba(139,92,246,0.35)',
@@ -180,14 +181,7 @@ function MobileMenu({
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-x-4 top-20 z-50 rounded-2xl p-4 md:hidden"
-          style={{
-            background: 'rgba(10,10,14,0.95)',
-            backdropFilter: 'blur(36px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(36px) saturate(180%)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-          }}
+          className="absolute inset-x-4 top-20 z-50 rounded-2xl p-4 md:hidden mobile-menu-bg"
         >
           <nav aria-label={tNav('mobileMenu')}>
             <ul className="flex flex-col gap-1">
@@ -196,7 +190,7 @@ function MobileMenu({
                   <Link
                     href={href}
                     onClick={onClose}
-                    className="block rounded-xl px-4 py-3 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white"
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-theme-secondary transition-colors hover:bg-white/[0.05] hover:text-white"
                   >
                     {tNav(key)}
                   </Link>
@@ -214,7 +208,7 @@ function MobileMenu({
               <Link
                 href="/signup"
                 onClick={onClose}
-                className="block rounded-xl px-4 py-3 text-center text-sm font-semibold text-white"
+                className="block rounded-xl px-4 py-3 text-center text-sm font-semibold"
                 style={{
                   background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
                 }}
@@ -222,8 +216,15 @@ function MobileMenu({
                 {tCommon('getStarted')} →
               </Link>
               {/* Sélecteur de langue — menu mobile */}
-              <div className="px-1 pt-1">
+              <div className="flex items-center gap-2 px-1 pt-1">
                 <LanguageSwitcher variant="inline" />
+                <button
+                  onClick={toggle}
+                  aria-label={theme === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'}
+                  className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/[0.05] hover:text-white"
+                >
+                  {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
               </div>
             </div>
           </nav>
@@ -240,6 +241,7 @@ export default function PublicNav() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const ticking = useRef(false)
+  const { theme, toggle } = useTheme()
 
   useEffect(() => {
     const onScroll = () => {
@@ -280,6 +282,13 @@ export default function PublicNav() {
             {/* CTAs droite — desktop */}
             <div className="hidden md:flex items-center gap-2">
               <LanguageSwitcher />
+              <button
+                onClick={toggle}
+                aria-label={theme === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'}
+                className="rounded-full p-2 text-zinc-400 transition-colors hover:text-white hover:bg-white/[0.05]"
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
               <Link
                 href="/login"
                 className="rounded-full px-4 py-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white hover:bg-white/[0.05]"
@@ -288,7 +297,7 @@ export default function PublicNav() {
               </Link>
               <Link
                 href="/signup"
-                className="group inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold text-white transition-all duration-200"
+                className="group inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200"
                 style={{
                   background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
                   boxShadow: '0 0 20px rgba(139,92,246,0.3)',
@@ -310,7 +319,7 @@ export default function PublicNav() {
             {/* Hamburger — mobile */}
             <button
               type="button"
-              className="flex md:hidden size-9 items-center justify-center rounded-full text-zinc-300 transition-colors hover:bg-white/[0.06] hover:text-white"
+              className="flex md:hidden size-9 items-center justify-center rounded-full text-theme-secondary transition-colors hover:bg-white/[0.06] hover:text-white"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label={mobileOpen ? tNav('closeMenu') : tNav('openMenu')}
               aria-expanded={mobileOpen}
@@ -360,6 +369,13 @@ export default function PublicNav() {
               <div className="hidden md:flex items-center">
                 <VDivider />
                 <LanguageSwitcher />
+                <button
+                  onClick={toggle}
+                  aria-label={theme === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'}
+                  className="rounded-full p-1.5 text-zinc-400 transition-colors hover:text-white hover:bg-white/[0.05]"
+                >
+                  {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                </button>
                 <div className="px-1">
                   <PillCTA />
                 </div>

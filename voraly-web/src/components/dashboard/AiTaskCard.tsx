@@ -133,7 +133,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
             <Sparkles className="h-6 w-6 text-white" />
           </motion.div>
 
-          <p className="relative mt-5 max-w-xs text-[14px] leading-relaxed text-zinc-300">
+          <p className="relative mt-5 max-w-xs text-[14px] leading-relaxed text-theme-secondary">
             {t('emptyBody')}
           </p>
 
@@ -175,7 +175,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
             {t('aiBadge')}
           </motion.div>
           <div>
-            <div className="text-sm font-bold text-zinc-100">
+            <div className="text-sm font-bold text-theme-primary">
               {t('title')}{titleSuffix}
             </div>
             <div className="text-[11px] text-zinc-500 mt-0.5">
@@ -194,7 +194,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
               style={{ background: 'linear-gradient(to right, #6366f1, #8b5cf6)' }}
             />
           </div>
-          <span className="text-[11px] font-bold text-zinc-300">
+          <span className="text-[11px] font-bold text-theme-secondary">
             {completed}/{total}
           </span>
         </div>
@@ -292,7 +292,7 @@ export default function AiTaskCard({ tasks, generatedLabel, userId }: AiTaskCard
 
       {/* ── Bouton voir la roadmap complète ── */}
       <Link href="/dashboard/roadmap" className="block">
-        <LiquidButton size="lg" className="group/liquid w-full text-[13px] font-semibold text-zinc-100">
+        <LiquidButton size="lg" className="group/liquid w-full text-[13px] font-semibold text-theme-primary">
           <span className="flex items-center justify-center gap-2">
             <Sparkles size={14} className="text-indigo-400" />
             {t('viewFullRoadmap')}

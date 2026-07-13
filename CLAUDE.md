@@ -61,10 +61,26 @@ Workflow standard : **design → code → scalabilité → sécurité → déplo
 - Contexte code : `graphify query "…"` (depuis `Saas/`).
 - Agents : orchestrateur, designer, coder, scalability-chief, security-chief (`.claude/agents/`).
 
+## WORKFLOW DEVELOPPEMENT (NOUVEAU)
+1. **User donne une feature en français** → Hermes rédige un PRD (template: `.claude/prd-template.md`)
+2. **User valide le PRD** → Hermes le transmet à l'Orchestrateur
+3. **Orchestrateur** découpe en tâches et route séquentiellement :
+   - Designer (maquette DA liquid-glass)
+   - Coder (implémentation via Claude Code CLI + typecheck/lint + push GitHub)
+   - Scalability Chief (verdict SCALABLE/RISQUE)
+   - Security Chief (verdict GO/NO-GO)
+4. **Hermes** vérifie les 3 critères (`.`)
+5. **Déploiement VPS** automatique après GO Hermes
+
+> **Règle d'or** : Pas de déploiement sans les 3 critères validés par Hermes.
+
 ## POINTEURS
 - @docs/REFERENCE.md — source de vérité (stack, sécurité, déploiement, env).
 - @docs/OBJECTIVES.md — objectifs chiffrés M+6 / M+12.
 - @docs/STRATEGY.md — vision, workflow agents, principes.
 - `.claude/memory/*` — DECISIONS, LEARNINGS, BLOCKERS, JOURNAL, EVALS, EXPERIMENTS.
-- `.claude/agents/*` — fiches des 4 agents.
+- `.claude/agents/*` — fiches des 5 agents (orchestrateur, designer, coder, scalability-chief, security-chief).
 - `.claude/rules/global.md` — règles transverses.
+- `.claude/rules/deploy-check.md` — check 3 critères avant déploiement.
+- `.claude/prd-template.md` — template PRD pour cadrer les features.
+- `docs/n8n-workflows/` — workflows n8n.

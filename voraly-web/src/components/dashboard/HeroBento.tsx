@@ -46,7 +46,7 @@ export default function HeroBento({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.04 }}
-        className="text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.18em] mb-5"
+        className="text-[10px] font-semibold text-theme-muted uppercase tracking-[0.18em] mb-5"
       >
         {t('greeting', { name: firstName })}
       </motion.p>
@@ -60,7 +60,7 @@ export default function HeroBento({
               initial={{ opacity: 0, filter: 'blur(4px)', y: 6 }}
               animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-              className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2"
+              className="text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2"
             >
               {t('revenueThisMonth')}
             </motion.p>
@@ -74,7 +74,7 @@ export default function HeroBento({
               <span className="text-[58px] font-black text-white tracking-tight leading-none tabular-nums">
                 {revenue.monthTotal.toLocaleString(numberLocale)}
               </span>
-              <span className="text-[26px] font-bold text-zinc-400">€</span>
+              <span className="text-[26px] font-bold text-theme-secondary">€</span>
             </motion.div>
 
             <motion.div
@@ -90,9 +90,9 @@ export default function HeroBento({
                 {revenue.deltaPct >= 0 ? '+' : ''}
                 {revenue.deltaPct}%
               </span>
-              <span className="text-[13px] text-zinc-400">{t('vsLastMonth')}</span>
+              <span className="text-[13px] text-theme-secondary">{t('vsLastMonth')}</span>
               <span className="text-zinc-800 select-none">·</span>
-              <span className="text-[13px] text-zinc-400">
+              <span className="text-[13px] text-theme-secondary">
                 {t('activePlatforms', { count: revenue.activePlatforms })}
               </span>
             </motion.div>
@@ -105,14 +105,14 @@ export default function HeroBento({
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             className="max-w-md"
           >
-            <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2">
+            <p className="text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2">
               {t('dashboardLabel')}
             </p>
             <h2 className="text-[28px] sm:text-[32px] font-black text-white tracking-tight leading-[1.1]">
               {t('welcome')}
             </h2>
             {connectedPlatformsCount > 0 ? (
-              <p className="text-[14px] text-zinc-400 mt-3 leading-relaxed">
+              <p className="text-[14px] text-theme-secondary mt-3 leading-relaxed">
                 {t.rich('connectedIntro', {
                   count: connectedPlatformsCount,
                   b: (chunks) => <span className="font-bold text-violet-300">{chunks}</span>,
@@ -120,7 +120,7 @@ export default function HeroBento({
               </p>
             ) : (
               <>
-                <p className="text-[14px] text-zinc-400 mt-3 leading-relaxed">
+                <p className="text-[14px] text-theme-secondary mt-3 leading-relaxed">
                   {t('emptyIntro')}
                 </p>
                 {showConnectCta && (
@@ -189,7 +189,7 @@ export default function HeroBento({
                 <span className="text-[25px] font-black text-white leading-none tracking-tight">
                   {score}
                 </span>
-                <span className="text-[9px] text-zinc-400 font-semibold mt-0.5 uppercase tracking-wider">
+                <span className="text-[9px] text-theme-secondary font-semibold mt-0.5 uppercase tracking-wider">
                   {t('score')}
                 </span>
               </div>
@@ -235,7 +235,7 @@ export default function HeroBento({
                   whileTap={{ scale: 0.96, transition: { duration: 0.1 } }}
                   className="glass rounded-2xl px-5 py-4 min-w-[148px] cursor-default"
                 >
-                  <div className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider mb-1.5">
+                  <div className="text-[10px] text-theme-secondary font-semibold uppercase tracking-wider mb-1.5">
                     {chip.label}
                   </div>
                   <div className={`text-[22px] font-bold tracking-tight ${chip.accent}`}>

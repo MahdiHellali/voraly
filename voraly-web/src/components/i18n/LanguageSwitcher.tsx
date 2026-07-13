@@ -123,7 +123,7 @@ export default function LanguageSwitcher({
                   role="menuitemradio"
                   aria-checked={active}
                   onClick={() => selectLocale(code)}
-                  className="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] hover:text-white"
+                  className="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-theme-secondary transition-colors hover:bg-white/[0.06] hover:text-white"
                 >
                   {LOCALE_LABELS[code]}
                   {active && <Check className="size-4 text-violet-400" />}

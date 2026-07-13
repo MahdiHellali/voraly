@@ -84,7 +84,7 @@ export function PlatformMetricsCard({
             <div className="relative flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-zinc-900/60 p-0.5">
               <Image src={icon} alt={label} width={24} height={24} className="select-none object-contain" />
             </div>
-            <div className="truncate text-base font-bold text-zinc-100">{label}</div>
+            <div className="truncate text-base font-bold text-theme-primary">{label}</div>
           </div>
 
           {sessionExpired ? (
@@ -92,7 +92,7 @@ export function PlatformMetricsCard({
               <AlertTriangle size={10} className="shrink-0" /> {labels.sessionExpired}
             </span>
           ) : (
-            <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium text-zinc-400">
+            <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-theme bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium text-theme-secondary">
               <RefreshCw size={10} className="shrink-0" />
               {lastSyncedText ? `${labels.syncedPrefix} ${lastSyncedText}` : labels.neverSynced}
             </span>
@@ -106,13 +106,13 @@ export function PlatformMetricsCard({
             return (
               <div
                 key={k.key}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3.5"
+                className="rounded-2xl border border-theme bg-theme-glass p-3.5"
               >
-                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-theme-muted">
                   <KIcon size={11} className="shrink-0 text-indigo-400" />
                   <span className="truncate">{k.label}</span>
                 </div>
-                <div className="text-lg font-bold tracking-tight text-zinc-100">{k.value}</div>
+                <div className="text-lg font-bold tracking-tight text-theme-primary">{k.value}</div>
               </div>
             )
           })}

@@ -58,7 +58,7 @@ export default function ProCard({
           {benefits.map((benefit) => (
             <li
               key={benefit}
-              className="flex items-start gap-3 text-sm text-zinc-200"
+              className="flex items-start gap-3 text-sm text-theme-primary"
             >
               <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-pink-500/40 bg-pink-500/10">
                 <Check size={12} className="text-pink-400" />

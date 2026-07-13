@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import ThemeProvider from '@/components/theme/ThemeProvider'
 import HeroBackground from '@/components/landing/HeroBackground'
 
 const inter = Inter({
@@ -41,15 +42,17 @@ export default async function RootLayout({
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className="dark">
+    <html lang={locale} suppressHydrationWarning>
       <body className={inter.className}>
         {/* Fond aurora global — toutes les pages */}
         <HeroBackground />
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-        </NextIntlClientProvider>
+        <ThemeProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
 
         {/* Matomo Analytics */}
         {MATOMO_URL && MATOMO_SITE_ID && (

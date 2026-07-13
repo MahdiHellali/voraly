@@ -41,7 +41,7 @@ export function EmptyState() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-br from-violet-500/15 to-indigo-500/10"
+          className="flex h-16 w-16 items-center justify-center rounded-2xl border border-theme bg-gradient-to-br from-violet-500/15 to-indigo-500/10"
           style={{ boxShadow: '0 0 32px rgba(139,92,246,0.35)' }}
         >
           <Puzzle className="h-7 w-7 text-violet-300" />
@@ -50,12 +50,12 @@ export function EmptyState() {
         <h3 className="mt-6 text-[21px] font-bold tracking-tight text-white">
           {t('title')}
         </h3>
-        <p className="mt-2.5 text-[14px] leading-relaxed text-zinc-400">
+        <p className="mt-2.5 text-[14px] leading-relaxed text-theme-secondary">
           {t('body')}
         </p>
 
         <Link href="/dashboard/platforms" className="mt-7 inline-block">
-          <LiquidButton size="lg" className="group/liquid text-[13px] font-semibold text-zinc-100">
+          <LiquidButton size="lg" className="group/liquid text-[13px] font-semibold text-theme-primary">
             <span className="flex items-center justify-center gap-2">
               {t('connect')}
               <ArrowRight

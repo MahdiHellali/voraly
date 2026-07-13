@@ -74,11 +74,11 @@ export default function FloatingNav() {
                   inline label (i.e. not active). Fades up above the dock. */}
               {!isActive && (
                 <span
-                  className="pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-xl border border-pink-500/20 bg-zinc-900/90 px-3 py-1.5 text-xs font-semibold text-zinc-100 opacity-0 backdrop-blur-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
+                  className="pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-xl border border-theme bg-zinc-900/90 px-3 py-1.5 text-xs font-semibold text-theme-primary opacity-0 backdrop-blur-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"
                   style={{ boxShadow: '0 0 20px rgba(255,102,204,0.18)' }}
                 >
                   {label}
-                  <span className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-pink-500/20 bg-zinc-900/90" />
+                  <span className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-b border-r border-theme bg-zinc-900/90" />
                 </span>
               )}
               <motion.div
@@ -94,7 +94,7 @@ export default function FloatingNav() {
                   'transition-colors duration-200',
                   isActive
                     ? 'bg-white/[0.11] text-white'
-                    : 'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]'
+                    : 'text-theme-muted hover:text-zinc-200 hover:bg-white/[0.04]'
                 )}
               >
                 <Icon size={24} className="flex-shrink-0" />

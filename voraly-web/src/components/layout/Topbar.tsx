@@ -129,7 +129,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
     >
       {/* ── Titre de page ── */}
       <div>
-        <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.16em] mb-2">
+        <p className="text-[10px] font-semibold text-theme-muted uppercase tracking-[0.16em] mb-2">
           {dateCapitalized}
         </p>
         <motion.h1
@@ -155,7 +155,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
           whileTap={{ scale: 0.88, transition: { duration: 0.08 } }}
           transition={{ type: 'spring', stiffness: 400, damping: 22 }}
           aria-label={t('notifications')}
-          className="relative p-2.5 rounded-xl text-zinc-400 hover:text-white transition-colors duration-150 cursor-pointer"
+          className="relative p-2.5 rounded-xl text-theme-secondary hover:text-white transition-colors duration-150 cursor-pointer"
         >
           <Bell size={18} />
           {unreadCount > 0 && (
@@ -181,11 +181,11 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute right-0 top-14 w-80 z-50 glass rounded-3xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                className="absolute right-0 top-14 w-80 z-50 glass rounded-3xl border border-theme shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden"
               >
                 {/* Header */}
-                <div className="p-4 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.01]">
-                  <span className="text-xs font-bold text-zinc-200">{t('notifications')}</span>
+                <div className="p-4 border-b border-theme flex items-center justify-between bg-white/[0.01]">
+                  <span className="text-xs font-bold text-theme-primary">{t('notifications')}</span>
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllRead}
@@ -201,14 +201,14 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
                 <div className="max-h-[300px] overflow-y-auto divide-y divide-white/[0.04]">
                   {notifications.length === 0 ? (
                     <div className="p-8 flex flex-col items-center justify-center text-center gap-2">
-                      <Bell size={24} className="text-zinc-600 animate-pulse" />
-                      <div className="text-xs text-zinc-500 font-medium">{t('noNotifications')}</div>
+                      <Bell size={24} className="text-theme-dim animate-pulse" />
+                      <div className="text-xs text-theme-muted font-medium">{t('noNotifications')}</div>
                     </div>
                   ) : (
                     notifications.map(notif => (
                       <div
                         key={notif.id}
-                        className={`p-4 flex gap-3 transition-colors relative group hover:bg-white/[0.02] ${
+                        className={`p-4 flex gap-3 transition-colors relative group hover:bg-theme-glass ${
                           !notif.read ? 'bg-indigo-500/[0.02]' : ''
                         }`}
                       >
@@ -219,14 +219,14 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
 
                         <div className="flex-1 min-w-0 pl-1.5">
                           <div className="flex items-start justify-between gap-2">
-                            <span className="text-[11.5px] font-bold text-zinc-200 truncate leading-snug">
+                            <span className="text-[11.5px] font-bold text-theme-primary truncate leading-snug">
                               {notif.title}
                             </span>
-                            <span className="text-[9px] text-zinc-500 flex-shrink-0 pt-0.5">
+                            <span className="text-[9px] text-theme-muted flex-shrink-0 pt-0.5">
                               {formatDate(notif.created_at)}
                             </span>
                           </div>
-                          <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed break-words">
+                          <p className="text-[11px] text-theme-secondary mt-1 leading-relaxed break-words">
                             {notif.content}
                           </p>
                         </div>
@@ -235,7 +235,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
                         <div className="flex flex-col gap-2 items-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={(e) => handleDelete(notif.id, e)}
-                            className="p-1 rounded text-zinc-600 hover:text-rose-400 hover:bg-white/[0.04] transition-colors cursor-pointer"
+                            className="p-1 rounded text-theme-dim hover:text-rose-400 hover:bg-white/[0.04] transition-colors cursor-pointer"
                             title={t('delete')}
                           >
                             <Trash2 size={11} />

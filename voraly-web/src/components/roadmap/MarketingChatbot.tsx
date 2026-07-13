@@ -157,7 +157,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
               </p>
               <ul className="flex flex-col gap-2 text-left">
                 {proBenefits.map((b) => (
-                  <li key={b} className="flex items-center gap-2 text-sm text-zinc-200">
+                  <li key={b} className="flex items-center gap-2 text-sm text-theme-primary">
                     <span className="flex h-4 w-4 items-center justify-center rounded-full border border-pink-500/40 bg-pink-500/10 text-pink-400 text-[9px]">✓</span>
                     {b}
                   </li>
@@ -193,7 +193,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
                 className={cn(
                   'flex items-start gap-3 max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed',
                   isAi
-                    ? 'mr-auto border border-white/5 bg-white/[0.03] text-zinc-100'
+                    ? 'mr-auto border border-white/5 bg-white/[0.03] text-theme-primary'
                     : 'ml-auto border border-pink-500/20 bg-pink-500/10 text-pink-50',
                 )}
               >
@@ -214,7 +214,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
         </AnimatePresence>
 
         {isLoading && (
-          <div className="flex items-start gap-3 mr-auto border border-white/5 bg-white/[0.03] text-zinc-100 rounded-2xl p-4 text-sm max-w-[85%]">
+          <div className="flex items-start gap-3 mr-auto border border-white/5 bg-white/[0.03] text-theme-primary rounded-2xl p-4 text-sm max-w-[85%]">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs border border-pink-500/40 bg-pink-500/10 text-pink-300">
               <Sparkles size={12} />
             </div>
@@ -256,7 +256,7 @@ export default function MarketingChatbot({ isPremium }: { isPremium: boolean }) 
               key={prompt}
               type="button"
               onClick={() => handleSend(prompt)}
-              className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-zinc-300 backdrop-blur-xl transition-all hover:border-pink-500/30 hover:bg-pink-500/5 hover:text-white"
+              className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-theme-secondary backdrop-blur-xl transition-all hover:border-pink-500/30 hover:bg-pink-500/5 hover:text-white"
             >
               {prompt}
             </button>

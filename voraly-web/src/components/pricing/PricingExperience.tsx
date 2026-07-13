@@ -57,7 +57,7 @@ function CompactLoader({ label }: { label: string }) {
           style={{ boxShadow: '0 0 14px rgba(255,102,204,0.8)' }}
         />
       </div>
-      <p className="text-sm font-medium tracking-wide text-zinc-300">{label}</p>
+      <p className="text-sm font-medium tracking-wide text-theme-secondary">{label}</p>
     </div>
   )
 }

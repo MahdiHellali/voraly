@@ -55,7 +55,7 @@ function WeekCalendar({ step }: { step: RoadmapStep }) {
 
   if (plan.length === 0) {
     return (
-      <div className="mt-4 rounded-2xl border border-white/5 bg-white/[0.02] p-5 text-sm leading-relaxed text-zinc-300 whitespace-pre-line">
+      <div className="mt-4 rounded-2xl border border-white/5 bg-white/[0.02] p-5 text-sm leading-relaxed text-theme-secondary whitespace-pre-line">
         {step.actionable_advice}
       </div>
     )
@@ -88,7 +88,7 @@ function WeekCalendar({ step }: { step: RoadmapStep }) {
             {/* Tâches du jour */}
             <div className="flex flex-1 flex-col gap-1.5">
               {day.tasks.map((task, ti) => (
-                <div key={ti} className="flex items-start gap-2 text-[13px] leading-snug text-zinc-200">
+                <div key={ti} className="flex items-start gap-2 text-[13px] leading-snug text-theme-primary">
                   <ChevronRight size={11} className={cn('mt-[3px] shrink-0', cfg.accent)} />
                   <span>{task}</span>
                 </div>
@@ -225,7 +225,7 @@ function WeekCard({
                   <WeekCalendar step={step} />
                 </>
               ) : (
-                <div className="mt-5 border-t border-white/5 pt-5 text-[14px] leading-relaxed text-zinc-300">
+                <div className="mt-5 border-t border-white/5 pt-5 text-[14px] leading-relaxed text-theme-secondary">
                   {step.actionable_advice}
                 </div>
               )}
@@ -242,7 +242,7 @@ function WeekCard({
               'inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold backdrop-blur-xl transition-all active:scale-[0.97]',
               isDone
                 ? 'border-pink-500/50 bg-pink-500/20 text-pink-100'
-                : 'border-white/10 bg-white/5 text-zinc-300 hover:border-pink-500/40 hover:text-white',
+                : 'border-white/10 bg-white/5 text-theme-secondary hover:border-pink-500/40 hover:text-white',
             )}
           >
             {isDone ? (
@@ -360,7 +360,7 @@ export default function RoadmapResult({
         <button
           type="button"
           onClick={onRestart}
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-300 backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-theme-secondary backdrop-blur-xl transition-colors hover:border-white/20 hover:text-white"
         >
           <RotateCcw size={14} />
           {t('newDiagnostic')}
@@ -434,7 +434,7 @@ export default function RoadmapResult({
                     </span>
                     <h3 className="text-lg font-bold text-white">{t('organic')}</h3>
                   </div>
-                  <div className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
+                  <div className="whitespace-pre-line text-sm leading-relaxed text-theme-secondary">
                     {strategy?.organic}
                   </div>
                 </motion.div>
@@ -450,7 +450,7 @@ export default function RoadmapResult({
                     </span>
                     <h3 className="text-lg font-bold text-white">{t('paid')}</h3>
                   </div>
-                  <div className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">
+                  <div className="whitespace-pre-line text-sm leading-relaxed text-theme-secondary">
                     {strategy?.paid}
                   </div>
                 </motion.div>
@@ -482,12 +482,12 @@ export default function RoadmapResult({
                                 </h4>
                               </div>
                               <div className="text-xs text-zinc-400">
-                                <span className="font-semibold text-zinc-300">{t('structure')}</span> {script.structure}
+                                <span className="font-semibold text-theme-secondary">{t('structure')}</span> {script.structure}
                               </div>
                               <button
                                 type="button"
                                 onClick={() => toggleScript(idx)}
-                                className="inline-flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-2 text-xs font-semibold text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-white"
+                                className="inline-flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-4 py-2 text-xs font-semibold text-theme-secondary transition-colors hover:bg-white/[0.05] hover:text-white"
                               >
                                 <span>{isExpanded ? t('hideScript') : t('showScript')}</span>
                                 {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -510,7 +510,7 @@ export default function RoadmapResult({
                                       <span className="mb-1 inline-flex rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold text-indigo-300">
                                         {t('bodyLabel')}
                                       </span>
-                                      <p className="whitespace-pre-line text-xs leading-relaxed text-zinc-300">{script.body}</p>
+                                      <p className="whitespace-pre-line text-xs leading-relaxed text-theme-secondary">{script.body}</p>
                                     </div>
                                     <div>
                                       <span className="mb-1 inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">

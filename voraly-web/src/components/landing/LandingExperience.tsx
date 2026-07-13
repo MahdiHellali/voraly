@@ -80,7 +80,7 @@ function SectionHeader({
         initial="hidden"
         animate={inView ? "visible" : "hidden"}
         custom={1}
-        className="max-w-2xl text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl"
+        className="max-w-2xl text-balance text-3xl font-extrabold tracking-tight sm:text-4xl"
       >
         {title}
         {gradientWord && (
@@ -152,7 +152,7 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
         className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
         aria-expanded={open}
       >
-        <span className="text-sm font-semibold text-white">{q}</span>
+        <span className="text-sm font-semibold">{q}</span>
         <ChevronDown
           size={18}
           className={[
@@ -278,7 +278,7 @@ export default function LandingExperience() {
               initial="hidden"
               animate="visible"
               custom={1}
-              className="text-balance text-4xl font-extrabold tracking-tight text-white sm:text-6xl"
+              className="text-balance text-4xl font-extrabold tracking-tight sm:text-6xl"
             >
               {t("hero.titleLead")}{' '}
               <motion.span
@@ -331,14 +331,14 @@ export default function LandingExperience() {
               <Link href="/signup">
                 <LiquidButton
                   size="xl"
-                  className="rounded-full px-8 text-base font-bold text-white"
+                  className="rounded-full px-8 text-base font-bold"
                 >
                   {tc("getStartedFree")}
                 </LiquidButton>
               </Link>
               <Link
                 href="/pricing"
-                className="glass inline-flex items-center rounded-full px-8 py-3 text-base font-semibold text-zinc-200 transition-colors hover:bg-white/[0.06] hover:text-white"
+                className="glass inline-flex items-center rounded-full px-8 py-3 text-base font-semibold text-theme-primary transition-colors hover:bg-white/[0.06] hover:text-white"
               >
                 {tc("viewPricing")}
               </Link>
@@ -477,7 +477,7 @@ export default function LandingExperience() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
                 {t("ai.eyebrow")}
               </p>
-              <h2 className="max-w-2xl text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              <h2 className="max-w-2xl text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {t("ai.titleLead")}{" "}
                 <span className="gradient-text">{t("ai.titleAccent")}</span>
               </h2>
@@ -529,7 +529,7 @@ export default function LandingExperience() {
               }}
             />
             <div className="relative flex flex-col items-center gap-8">
-              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {t("finalCta.titleLead")}{" "}
                 <span className="gradient-text">{t("finalCta.titleAccent")}</span>
               </h2>
@@ -539,7 +539,7 @@ export default function LandingExperience() {
               <Link href="/signup">
                 <LiquidButton
                   size="xl"
-                  className="rounded-full px-10 text-base font-bold text-white"
+                  className="rounded-full px-10 text-base font-bold"
                 >
                   {tc("getStartedFree")}
                 </LiquidButton>
@@ -573,7 +573,7 @@ function ProblemCard() {
     >
       <div className="flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-500">{t("eyebrow")}</p>
-        <h3 className="text-2xl font-extrabold text-white">
+        <h3 className="text-2xl font-extrabold">
           {t("title")}
         </h3>
       </div>
@@ -610,7 +610,7 @@ function SolutionCard() {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400">
           {t("eyebrow")}
         </p>
-        <h3 className="text-2xl font-extrabold text-white">
+        <h3 className="text-2xl font-extrabold">
           {t("title")}
         </h3>
       </div>
@@ -619,7 +619,7 @@ function SolutionCard() {
       </p>
       <div className="flex flex-col gap-2">
         {items.map((key) => (
-          <div key={key} className="flex items-center gap-3 text-sm text-zinc-300">
+          <div key={key} className="flex items-center gap-3 text-sm text-theme-secondary">
             <span className="h-1.5 w-1.5 rounded-full bg-violet-500 shrink-0" />
             {t(`items.${key}`)}
           </div>
@@ -652,7 +652,7 @@ function HowItWorksSteps() {
           className="glass rounded-2xl p-7 flex flex-col gap-4"
         >
           <span className="gradient-text text-3xl font-extrabold">{step.num}</span>
-          <h3 className="text-base font-bold text-white">{t(`${step.key}.title`)}</h3>
+          <h3 className="text-base font-bold">{t(`${step.key}.title`)}</h3>
           <p className="text-sm leading-relaxed text-zinc-400">{t(`${step.key}.desc`)}</p>
         </motion.div>
       ))}
@@ -690,7 +690,7 @@ function ValueCallout() {
       custom={0}
       className="glass rounded-3xl p-8 mt-12 flex flex-col items-center gap-4 text-center"
     >
-      <p className="max-w-xl text-base font-semibold leading-relaxed text-zinc-200">
+      <p className="max-w-xl text-base font-semibold leading-relaxed text-theme-primary">
         {t("callout")}
       </p>
     </motion.div>

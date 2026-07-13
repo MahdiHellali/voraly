@@ -42,3 +42,5 @@ extension/supabase-config.js
 
 # VPS credentials — NEVER commit
 ssh.txt
+.hermes/
+voraly-web/claude_prompt.txt

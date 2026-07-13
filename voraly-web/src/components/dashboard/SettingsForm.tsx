@@ -291,24 +291,24 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
   return (
     <div className="flex flex-col gap-4">
       {/* ── Section PROFIL ── */}
-      <div className="glass rounded-3xl overflow-hidden border border-white/[0.06] transition-all duration-300">
+      <div className="glass rounded-3xl overflow-hidden border border-theme transition-all duration-300">
         <button
           onClick={() => toggleSection('profile')}
-          className="w-full p-5 flex items-center justify-between text-left group hover:bg-white/[0.02]"
+          className="w-full p-5 flex items-center justify-between text-left group hover:bg-theme-glass"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-theme flex items-center justify-center flex-shrink-0">
               <UserIcon size={16} className="text-indigo-400" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-zinc-200">{t('profile.title')}</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">{t('profile.subtitle')}</div>
+              <div className="text-sm font-semibold text-theme-primary">{t('profile.title')}</div>
+              <div className="text-[11px] text-theme-muted mt-0.5">{t('profile.subtitle')}</div>
             </div>
           </div>
           <ChevronDown
             size={16}
-            className={`text-zinc-500 transition-transform duration-300 ${
-              activeSection === 'profile' ? 'rotate-180 text-zinc-300' : 'group-hover:text-zinc-400'
+            className={`text-theme-muted transition-transform duration-300 ${
+              activeSection === 'profile' ? 'rotate-180 text-theme-secondary' : 'group-hover:text-theme-secondary'
             }`}
           />
         </button>
@@ -321,7 +321,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="border-t border-white/[0.06] p-6 bg-white/[0.01]">
+              <div className="border-t border-theme p-6 bg-white/[0.01]">
                 <form action={profileFormAction} className="flex flex-col gap-4 max-w-md">
                   {/* Avatar upload */}
                   <div className="flex flex-col items-center gap-3 mb-2">
@@ -352,7 +352,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       onChange={handleAvatarUpload}
                       disabled={avatarUploading}
                     />
-                    <p className="text-[10px] text-zinc-500">{t('profile.avatarHint', { action: localAvatarUrl ? t('profile.changeAction') : t('profile.addAction') })}</p>
+                    <p className="text-[10px] text-theme-muted">{t('profile.avatarHint', { action: localAvatarUrl ? t('profile.changeAction') : t('profile.addAction') })}</p>
                     {avatarError && (
                       <p className="text-[11px] text-rose-400 text-center">{avatarError}</p>
                     )}
@@ -360,7 +360,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
 
                   {/* Full Name */}
                   <div className="flex flex-col gap-1.5">
-                    <label htmlFor="fullName" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    <label htmlFor="fullName" className="text-[11px] font-semibold text-theme-secondary uppercase tracking-wider">
                       {t('profile.fullName')}
                     </label>
                     <input
@@ -369,20 +369,20 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       type="text"
                       defaultValue={fullName}
                       required
-                      className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                      className="w-full rounded-xl px-4 py-3 text-sm text-theme-primary placeholder-zinc-600 bg-white/[0.04] border border-theme focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                     />
                   </div>
 
                   {/* Email (Readonly) */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[11px] font-semibold text-theme-muted uppercase tracking-wider">
                       {t('profile.emailReadonly')}
                     </label>
                     <input
                       type="email"
                       value={email}
                       disabled
-                      className="w-full rounded-xl px-4 py-3 text-sm text-zinc-500 bg-white/[0.01] border border-white/[0.03] cursor-not-allowed"
+                      className="w-full rounded-xl px-4 py-3 text-sm text-theme-muted bg-white/[0.01] border border-theme cursor-not-allowed"
                     />
                   </div>
 
@@ -416,24 +416,24 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
       </div>
 
       {/* ── Section NOTIFICATIONS ── */}
-      <div className="glass rounded-3xl overflow-hidden border border-white/[0.06] transition-all duration-300">
+      <div className="glass rounded-3xl overflow-hidden border border-theme transition-all duration-300">
         <button
           onClick={() => toggleSection('notifications')}
-          className="w-full p-5 flex items-center justify-between text-left group hover:bg-white/[0.02]"
+          className="w-full p-5 flex items-center justify-between text-left group hover:bg-theme-glass"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-theme flex items-center justify-center flex-shrink-0">
               <Bell size={16} className="text-violet-400" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-zinc-200">{t('notifications.title')}</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">{t('notifications.subtitle')}</div>
+              <div className="text-sm font-semibold text-theme-primary">{t('notifications.title')}</div>
+              <div className="text-[11px] text-theme-muted mt-0.5">{t('notifications.subtitle')}</div>
             </div>
           </div>
           <ChevronDown
             size={16}
-            className={`text-zinc-500 transition-transform duration-300 ${
-              activeSection === 'notifications' ? 'rotate-180 text-zinc-300' : 'group-hover:text-zinc-400'
+            className={`text-theme-muted transition-transform duration-300 ${
+              activeSection === 'notifications' ? 'rotate-180 text-theme-secondary' : 'group-hover:text-theme-secondary'
             }`}
           />
         </button>
@@ -446,11 +446,11 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="border-t border-white/[0.06] p-6 bg-white/[0.01]">
+              <div className="border-t border-theme p-6 bg-white/[0.01]">
                 <form action={notifFormAction} className="flex flex-col gap-5 max-w-md">
                   {/* Preferences Checkboxes */}
                   <div className="flex flex-col gap-3">
-                    <label className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+                    <label className="text-[11px] font-semibold text-theme-muted uppercase tracking-wider mb-1">
                       {t('notifications.emailPrefs')}
                     </label>
 
@@ -464,10 +464,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         className="mt-1 h-4 w-4 rounded border-white/[0.1] bg-white/[0.05] text-violet-500 focus:ring-violet-500/50"
                       />
                       <div>
-                        <div className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
+                        <div className="text-xs font-semibold text-theme-primary group-hover:text-white transition-colors">
                           {t('notifications.deadlines.title')}
                         </div>
-                        <div className="text-[10px] text-zinc-500">
+                        <div className="text-[10px] text-theme-muted">
                           {t('notifications.deadlines.desc')}
                         </div>
                       </div>
@@ -483,10 +483,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         className="mt-1 h-4 w-4 rounded border-white/[0.1] bg-white/[0.05] text-violet-500 focus:ring-violet-500/50"
                       />
                       <div>
-                        <div className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
+                        <div className="text-xs font-semibold text-theme-primary group-hover:text-white transition-colors">
                           {t('notifications.offers.title')}
                         </div>
-                        <div className="text-[10px] text-zinc-500">
+                        <div className="text-[10px] text-theme-muted">
                           {t('notifications.offers.desc')}
                         </div>
                       </div>
@@ -502,10 +502,10 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         className="mt-1 h-4 w-4 rounded border-white/[0.1] bg-white/[0.05] text-violet-500 focus:ring-violet-500/50"
                       />
                       <div>
-                        <div className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors">
+                        <div className="text-xs font-semibold text-theme-primary group-hover:text-white transition-colors">
                           {t('notifications.sync.title')}
                         </div>
-                        <div className="text-[10px] text-zinc-500">
+                        <div className="text-[10px] text-theme-muted">
                           {t('notifications.sync.desc')}
                         </div>
                       </div>
@@ -542,24 +542,24 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
       </div>
 
       {/* ── Section SECURITE ── */}
-      <div className="glass rounded-3xl overflow-hidden border border-white/[0.06] transition-all duration-300">
+      <div className="glass rounded-3xl overflow-hidden border border-theme transition-all duration-300">
         <button
           onClick={() => toggleSection('security')}
-          className="w-full p-5 flex items-center justify-between text-left group hover:bg-white/[0.02]"
+          className="w-full p-5 flex items-center justify-between text-left group hover:bg-theme-glass"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-theme flex items-center justify-center flex-shrink-0">
               <Shield size={16} className="text-emerald-400" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-zinc-200">{t('security.title')}</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">{t('security.subtitle')}</div>
+              <div className="text-sm font-semibold text-theme-primary">{t('security.title')}</div>
+              <div className="text-[11px] text-theme-muted mt-0.5">{t('security.subtitle')}</div>
             </div>
           </div>
           <ChevronDown
             size={16}
-            className={`text-zinc-500 transition-transform duration-300 ${
-              activeSection === 'security' ? 'rotate-180 text-zinc-300' : 'group-hover:text-zinc-400'
+            className={`text-theme-muted transition-transform duration-300 ${
+              activeSection === 'security' ? 'rotate-180 text-theme-secondary' : 'group-hover:text-theme-secondary'
             }`}
           />
         </button>
@@ -572,16 +572,16 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="border-t border-white/[0.06] p-6 bg-white/[0.01] flex flex-col gap-6">
+              <div className="border-t border-theme p-6 bg-white/[0.01] flex flex-col gap-6">
                 
                 {/* 1. Changer le mot de passe */}
                 <form action={pwdFormAction} className="flex flex-col gap-4 max-w-md">
-                  <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
+                  <div className="text-[11px] font-bold text-theme-muted uppercase tracking-[0.12em]">
                     {t('security.changePassword')}
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label htmlFor="password" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    <label htmlFor="password" className="text-[11px] font-semibold text-theme-secondary uppercase tracking-wider">
                       {t('security.newPassword')}
                     </label>
                     <input
@@ -590,12 +590,12 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       type="password"
                       required
                       placeholder={t('security.minChars')}
-                      className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                      className="w-full rounded-xl px-4 py-3 text-sm text-theme-primary placeholder-zinc-600 bg-white/[0.04] border border-theme focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label htmlFor="confirmPassword" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    <label htmlFor="confirmPassword" className="text-[11px] font-semibold text-theme-secondary uppercase tracking-wider">
                       {t('security.confirmPassword')}
                     </label>
                     <input
@@ -604,7 +604,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                       type="password"
                       required
                       placeholder={t('security.reenter')}
-                      className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                      className="w-full rounded-xl px-4 py-3 text-sm text-theme-primary placeholder-zinc-600 bg-white/[0.04] border border-theme focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                     />
                   </div>
 
@@ -632,15 +632,15 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                   </button>
                 </form>
 
-                <hr className="border-white/[0.06]" />
+                <hr className="border-theme" />
 
                 {/* 2. Double Authentification (2FA) */}
                 <div className="max-w-md flex flex-col gap-4">
                   <div>
-                    <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
+                    <div className="text-[11px] font-bold text-theme-muted uppercase tracking-[0.12em]">
                       {t('security.mfaTitle')}
                     </div>
-                    <p className="text-[11.5px] text-zinc-500 mt-1 leading-relaxed">
+                    <p className="text-[11.5px] text-theme-muted mt-1 leading-relaxed">
                       {t('security.mfaDesc')}
                     </p>
                   </div>
@@ -678,14 +678,14 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                     <button
                       onClick={handleStartMfaSetup}
                       disabled={mfaLoading}
-                      className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
+                      className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-theme bg-theme-glass px-6 py-2.5 text-xs font-semibold text-theme-secondary hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
                     >
                       {mfaLoading ? <Loader2 size={13} className="animate-spin" /> : null}
                       {t('security.mfaSetup')}
                     </button>
                   ) : (
-                    <div className="flex flex-col gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                      <div className="text-xs font-bold text-zinc-200 flex items-center gap-2">
+                    <div className="flex flex-col gap-4 p-5 rounded-2xl bg-theme-glass border border-theme">
+                      <div className="text-xs font-bold text-theme-primary flex items-center gap-2">
                         <QrCode size={16} className="text-indigo-400" />
                         {t('security.scanQr')}
                       </div>
@@ -702,13 +702,13 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
 
                       {mfaSecret && (
                         <div className="text-center">
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">{t('security.secretKey')}</p>
+                          <p className="text-[10px] text-theme-muted uppercase tracking-wider font-semibold">{t('security.secretKey')}</p>
                           <code className="text-xs text-indigo-300 font-mono select-all mt-1 block tracking-widest">{mfaSecret}</code>
                         </div>
                       )}
 
                       <div className="flex flex-col gap-1.5 mt-2">
-                        <label htmlFor="totpCode" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                        <label htmlFor="totpCode" className="text-[11px] font-semibold text-theme-secondary uppercase tracking-wider">
                           {t('security.validationCode')}
                         </label>
                         <input
@@ -718,7 +718,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                           placeholder="000000"
                           value={mfaCode}
                           onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
-                          className="w-full text-center tracking-[0.3em] font-mono rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                          className="w-full text-center tracking-[0.3em] font-mono rounded-xl px-4 py-3 text-sm text-theme-primary placeholder-zinc-600 bg-white/[0.04] border border-theme focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                         />
                       </div>
 
@@ -733,7 +733,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         </button>
                         <button
                           onClick={handleCancelMfaSetup}
-                          className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer"
+                          className="rounded-xl border border-theme bg-theme-glass px-5 py-2 text-xs font-semibold text-theme-secondary hover:text-zinc-200 transition-all duration-200 cursor-pointer"
                         >
                           {t('security.cancel')}
                         </button>
@@ -742,15 +742,15 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                   )}
                 </div>
 
-                <hr className="border-white/[0.06]" />
+                <hr className="border-theme" />
 
                 {/* 3. Disconnect other sessions */}
                 <div className="max-w-md flex flex-col gap-3">
                   <div>
-                    <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.12em]">
+                    <div className="text-[11px] font-bold text-theme-muted uppercase tracking-[0.12em]">
                       {t('security.sessions')}
                     </div>
-                    <p className="text-[11.5px] text-zinc-500 mt-1 leading-relaxed">
+                    <p className="text-[11.5px] text-theme-muted mt-1 leading-relaxed">
                       {t('security.sessionsDesc')}
                     </p>
                   </div>
@@ -772,7 +772,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                   <button
                     onClick={handleDisconnectOthers}
                     disabled={isDisconnectPending}
-                    className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
+                    className="self-start inline-flex items-center justify-center gap-2 rounded-xl border border-theme bg-theme-glass px-6 py-2.5 text-xs font-semibold text-theme-secondary hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer disabled:opacity-50"
                   >
                     {isDisconnectPending ? <Loader2 size={13} className="animate-spin" /> : null}
                     {t('security.disconnectOthers')}
@@ -790,21 +790,21 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
         <div className="glass rounded-3xl overflow-hidden border border-amber-500/15 transition-all duration-300">
           <button
             onClick={() => toggleSection('founder')}
-            className="w-full p-5 flex items-center justify-between text-left group hover:bg-white/[0.02]"
+            className="w-full p-5 flex items-center justify-between text-left group hover:bg-theme-glass"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-theme flex items-center justify-center flex-shrink-0">
                 <Crown size={16} className="text-amber-400" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-zinc-200">{t('founder.title')}</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">{t('founder.subtitle')}</div>
+                <div className="text-sm font-semibold text-theme-primary">{t('founder.title')}</div>
+                <div className="text-[11px] text-theme-muted mt-0.5">{t('founder.subtitle')}</div>
               </div>
             </div>
             <ChevronDown
               size={16}
-              className={`text-zinc-500 transition-transform duration-300 ${
-                activeSection === 'founder' ? 'rotate-180 text-zinc-300' : 'group-hover:text-zinc-400'
+              className={`text-theme-muted transition-transform duration-300 ${
+                activeSection === 'founder' ? 'rotate-180 text-theme-secondary' : 'group-hover:text-theme-secondary'
               }`}
             />
           </button>
@@ -817,11 +817,11 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                <div className="border-t border-white/[0.06] p-6 bg-white/[0.01]">
+                <div className="border-t border-theme p-6 bg-white/[0.01]">
                   <form action={founderFormAction} className="flex flex-col gap-4 max-w-md">
                     {/* Title */}
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor="broadcastTitle" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                      <label htmlFor="broadcastTitle" className="text-[11px] font-semibold text-theme-secondary uppercase tracking-wider">
                         {t('founder.notifTitle')}
                       </label>
                       <input
@@ -830,13 +830,13 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         type="text"
                         required
                         placeholder={t('founder.notifTitlePlaceholder')}
-                        className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                        className="w-full rounded-xl px-4 py-3 text-sm text-theme-primary placeholder-zinc-600 bg-white/[0.04] border border-theme focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                       />
                     </div>
 
                     {/* Content */}
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor="broadcastContent" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                      <label htmlFor="broadcastContent" className="text-[11px] font-semibold text-theme-secondary uppercase tracking-wider">
                         {t('founder.message')}
                       </label>
                       <textarea
@@ -845,7 +845,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
                         required
                         rows={3}
                         placeholder={t('founder.messagePlaceholder')}
-                        className="w-full rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 bg-white/[0.04] border border-white/[0.08] focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
+                        className="w-full rounded-xl px-4 py-3 text-sm text-theme-primary placeholder-zinc-600 bg-white/[0.04] border border-theme focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/25 transition-all duration-200"
                       />
                     </div>
 
@@ -882,12 +882,12 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
       {/* ── Section LANGUE ── */}
       <div className="glass rounded-3xl p-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-theme flex items-center justify-center flex-shrink-0">
             <Languages size={16} className="text-violet-400" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-zinc-200">{t('language.title')}</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">{t('language.subtitle')}</div>
+            <div className="text-sm font-semibold text-theme-primary">{t('language.title')}</div>
+            <div className="text-[11px] text-theme-muted mt-0.5">{t('language.subtitle')}</div>
           </div>
         </div>
         <div className="w-44 flex-shrink-0">
@@ -901,23 +901,23 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
         className="glass rounded-3xl p-5 flex items-center justify-between text-left group hover:border-white/20 transition-all duration-300"
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-theme flex items-center justify-center flex-shrink-0">
             <CreditCard size={16} className="text-pink-400" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-zinc-200">{t('subscription.title')}</div>
-            <div className="text-[11px] text-zinc-500 mt-0.5">
+            <div className="text-sm font-semibold text-theme-primary">{t('subscription.title')}</div>
+            <div className="text-[11px] text-theme-muted mt-0.5">
               {isPremium ? t('subscription.proActive') : t('subscription.freeManage')}
             </div>
           </div>
         </div>
-        <ChevronRight size={15} className="text-zinc-600 flex-shrink-0 group-hover:text-zinc-400 transition-colors" />
+        <ChevronRight size={15} className="text-theme-dim flex-shrink-0 group-hover:text-theme-secondary transition-colors" />
       </Link>
 
       {/* ── Zone Sensible ── */}
       <div className="glass rounded-3xl p-6 border border-rose-500/15 mt-4 transition-all duration-300">
         <div className="text-[11px] font-bold text-rose-400 uppercase tracking-[0.12em] mb-2">{t('danger.title')}</div>
-        <p className="text-[11.5px] text-zinc-500 leading-relaxed mb-4">
+        <p className="text-[11.5px] text-theme-muted leading-relaxed mb-4">
           {t('danger.body')}
         </p>
 
@@ -951,7 +951,7 @@ export default function SettingsForm({ user, isPremium, avatarUrl }: SettingsFor
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-2 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-all duration-200 cursor-pointer"
+                className="rounded-xl border border-theme bg-theme-glass px-5 py-2 text-xs font-semibold text-theme-secondary hover:text-zinc-200 transition-all duration-200 cursor-pointer"
               >
                 {t('danger.cancel')}
               </button>

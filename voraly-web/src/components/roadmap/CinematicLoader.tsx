@@ -85,7 +85,7 @@ export default function CinematicLoader({ messages }: { messages?: string[] }) {
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-sm font-medium tracking-wide text-zinc-300"
+            className="text-sm font-medium tracking-wide text-theme-secondary"
           >
             {list[step]}
           </motion.p>

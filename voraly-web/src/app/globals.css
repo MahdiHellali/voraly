@@ -6,15 +6,70 @@
 
 @import "tailwindcss";
 
-/* ── Tokens ── */
+/* ── Tokens (dark = défaut) ── */
 :root {
   --accent-primary:    #8b5cf6;
   --accent-secondary:  #6366f1;
   --accent-glow:       rgba(139, 92, 246, 0.4);
   --accent-border:     rgba(139, 92, 246, 0.2);
-  --text-main:         #ffffff;
-  --text-muted:        #a1a1aa;
-  --text-darker:       #71717a;
+
+  /* Dark theme (défaut) */
+  --bg-page:           #09090b;
+  --bg-glass:          rgba(255, 255, 255, 0.03);
+  --bg-glass-hover:    rgba(255, 255, 255, 0.048);
+  --bg-glass-sidebar:  rgba(9, 9, 11, 0.52);
+  --bg-glass-topbar:   rgba(9, 9, 11, 0.42);
+  --bg-glass-pill:     rgba(12, 12, 15, 0.88);
+  --bg-glass-hero:     rgba(99, 102, 241, 0.04);
+  --bg-mobile-menu:    rgba(10, 10, 14, 0.95);
+
+  --text-primary:      #ffffff;
+  --text-secondary:    #a1a1aa;
+  --text-muted:        #71717a;
+  --text-dim:          #52525b;
+
+  --border-glass:      rgba(255, 255, 255, 0.08);
+  --border-glass-hover: rgba(255, 255, 255, 0.13);
+  --border-glass-accent: rgba(139, 92, 246, 0.18);
+
+  --shadow-glass:      0 4px 30px rgba(0, 0, 0, 0.18);
+  --shadow-glass-hover: 0 8px 36px rgba(0, 0, 0, 0.26);
+  --shadow-pill:       0 12px 40px rgba(0, 0, 0, 0.55);
+
+  --separator:         rgba(255, 255, 255, 0.07);
+
+  --glass-blur:        blur(24px) saturate(160%);
+  --glass-blur-intense: blur(36px) saturate(180%);
+}
+
+/* ── Light theme ── */
+.light {
+  --bg-page:           #fafafa;
+  --bg-glass:          rgba(255, 255, 255, 0.7);
+  --bg-glass-hover:    rgba(255, 255, 255, 0.85);
+  --bg-glass-sidebar:  rgba(255, 255, 255, 0.82);
+  --bg-glass-topbar:   rgba(255, 255, 255, 0.72);
+  --bg-glass-pill:     rgba(255, 255, 255, 0.88);
+  --bg-glass-hero:     rgba(99, 102, 241, 0.04);
+  --bg-mobile-menu:    rgba(255, 255, 255, 0.95);
+
+  --text-primary:      #18181b;
+  --text-secondary:    #52525b;
+  --text-muted:        #71717a;
+  --text-dim:          #a1a1aa;
+
+  --border-glass:      rgba(0, 0, 0, 0.08);
+  --border-glass-hover: rgba(0, 0, 0, 0.13);
+  --border-glass-accent: rgba(139, 92, 246, 0.2);
+
+  --shadow-glass:      0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-glass-hover: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-pill:       0 4px 20px rgba(0, 0, 0, 0.1);
+
+  --separator:         rgba(0, 0, 0, 0.07);
+
+  --glass-blur:        blur(24px) saturate(160%);
+  --glass-blur-intense: blur(36px) saturate(180%);
 }
 
 /* NOTE: do NOT add an unlayered universal margin/padding reset here.
@@ -24,12 +79,12 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ════════════════════════════════════════════════════════════════
-   HTML / Body — deep-abyss base layer
-   Le fond est géré par HeroBackground (CSS pur, -z-10 fixed).
+   HTML / Body — base layer
    ════════════════════════════════════════════════════ */
 html {
   height: 100%;
-  background-color: #09090b;
+  background-color: var(--bg-page);
+  transition: background-color 0.3s ease;
 }
 
 body {
@@ -38,9 +93,10 @@ body {
   min-height: 100vh;
   height: 100%;
   overflow: hidden;
-  color: var(--text-main);
+  color: var(--text-primary);
   position: relative;
-  background: transparent; /* canvas HeroBackground (fixed -z-10) doit être visible */
+  background: transparent;
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 /* ── Scrollbar ── */
@@ -50,55 +106,51 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.55); }
 
 /* ════════════════════════════════════════════════════════════════
-   GLASS — Apple Liquid Glass
-   background: rgba(255,255,255,0.03)
-   backdrop-filter: blur(24px)
-   border: 1px solid rgba(255,255,255,0.08)
-   box-shadow: 0 4px 30px rgba(0,0,0,0.1)
+   GLASS — Apple Liquid Glass (theme-aware)
    ════════════════════════════════════════════════════════════════ */
 .glass {
-  background:      rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:      var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-glass);
   box-shadow:
-    0 4px 30px rgba(0, 0, 0, 0.18),
+    var(--shadow-glass),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
 .glass:hover {
-  background:   rgba(255, 255, 255, 0.048);
-  border-color: rgba(255, 255, 255, 0.13);
+  background:   var(--bg-glass-hover);
+  border-color: var(--border-glass-hover);
   box-shadow:
-    0 8px 36px rgba(0, 0, 0, 0.26),
+    var(--shadow-glass-hover),
     0 0 0 1px rgba(139, 92, 246, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 /* Sidebar — slightly more opaque for legibility */
 .glass-sidebar {
-  background:      rgba(9, 9, 11, 0.52);
-  backdrop-filter: blur(28px) saturate(150%);
-  -webkit-backdrop-filter: blur(28px) saturate(150%);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  background:      var(--bg-glass-sidebar);
+  backdrop-filter: var(--glass-blur-intense);
+  -webkit-backdrop-filter: var(--glass-blur-intense);
+  border-right: 1px solid var(--border-glass);
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.18);
 }
 
 /* Topbar */
 .glass-topbar {
-  background:      rgba(9, 9, 11, 0.42);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background:      var(--bg-glass-topbar);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-glass);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.16);
 }
 
 /* Hero bento — accent tinted */
 .glass-hero {
-  background:      rgba(99, 102, 241, 0.04);
-  backdrop-filter: blur(28px) saturate(170%);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
-  border: 1px solid rgba(139, 92, 246, 0.18);
+  background:      var(--bg-glass-hero);
+  backdrop-filter: var(--glass-blur-intense);
+  -webkit-backdrop-filter: var(--glass-blur-intense);
+  border: 1px solid var(--border-glass-accent);
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -110,6 +162,39 @@ body {
     0 12px 50px rgba(0, 0, 0, 0.32),
     0 0 50px rgba(139, 92, 246, 0.07),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Floating Nav Pill */
+.glass-pill {
+  background:      var(--bg-glass-pill);
+  backdrop-filter: var(--glass-blur-intense);
+  -webkit-backdrop-filter: var(--glass-blur-intense);
+  border: 1px solid var(--border-glass);
+  box-shadow:
+    var(--shadow-pill),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* ── Mobile Menu Background ── */
+.mobile-menu-bg {
+  background:      var(--bg-mobile-menu);
+  backdrop-filter: var(--glass-blur-intense);
+  -webkit-backdrop-filter: var(--glass-blur-intense);
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Light mode specific overrides ── */
+.light .glass-sidebar {
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.06);
+}
+
+.light .glass-pill {
+  box-shadow:
+    var(--shadow-pill),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* ── Decorative FX ── */
@@ -143,18 +228,52 @@ body {
 .score-ring-fill { transition: stroke-dashoffset 1.6s cubic-bezier(0.34,1.56,0.64,1); }
 .kpi-bar-fill    { height: 100%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1); }
 
+/* ── Theme-aware text utilities ── */
+.text-theme-secondary { color: var(--text-secondary); }
+.text-theme-muted { color: var(--text-muted); }
+.text-theme-dim { color: var(--text-dim); }
+.text-theme-accent { color: var(--accent-primary); }
+.border-theme { border-color: var(--border-glass); }
+.bg-theme-glass { background: var(--bg-glass); }
+
 /* ════════════════════════════════════════════════════════════════
-   FLOATING NAV PILL — ExpandableTabs glass style
-   Deep frosted pill, high-contrast separation from content
+   RESPONSIVE — Mobile helpers
    ════════════════════════════════════════════════════════════════ */
-.glass-pill {
-  background:      rgba(12, 12, 15, 0.88);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.55),
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+
+/* Hide on mobile / show on desktop */
+.hide-mobile { display: none; }
+@media (min-width: 768px) {
+  .hide-mobile { display: revert; }
+}
+
+/* Show on mobile / hide on desktop */
+.show-mobile { display: revert; }
+@media (min-width: 768px) {
+  .show-mobile { display: none; }
+}
+
+/* Bottom nav padding for mobile */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ANIMATIONS — Mobile-first micro-interactions
+   ════════════════════════════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Scale tap feedback */
+.tap-scale:active {
+  transform: scale(0.96);
+  transition: transform 0.1s;
 }

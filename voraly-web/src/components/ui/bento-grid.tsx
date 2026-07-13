@@ -34,11 +34,11 @@ export function BentoGrid({ items, className }: BentoGridProps) {
           key={index}
           className={cn(
             'group relative overflow-hidden rounded-2xl p-5 transition-all duration-300',
-            'border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl',
-            'hover:-translate-y-0.5 hover:border-white/[0.14] will-change-transform',
+            'border border-theme bg-theme-glass backdrop-blur-xl',
+            'hover:-translate-y-0.5 hover:border-theme will-change-transform',
             'shadow-[0_4px_30px_rgba(0,0,0,0.18)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.28)]',
             item.colSpan === 2 ? 'md:col-span-2' : 'col-span-1',
-            item.hasPersistentHover && '-translate-y-0.5 border-white/[0.14]',
+            item.hasPersistentHover && '-translate-y-0.5 border-theme',
           )}
         >
           {/* dot-pattern reveal */}
@@ -53,14 +53,14 @@ export function BentoGrid({ items, className }: BentoGridProps) {
 
           <div className="relative flex flex-col space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.05] transition-colors duration-300 group-hover:bg-violet-500/15">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-theme bg-white/[0.05] transition-colors duration-300 group-hover:bg-violet-500/15">
                 {item.icon}
               </div>
               {item.status && (
                 <span
                   className={cn(
                     'rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide backdrop-blur-sm',
-                    'bg-white/[0.06] text-zinc-400',
+                    'bg-white/[0.06] text-theme-secondary',
                     'transition-colors duration-300 group-hover:bg-violet-500/10 group-hover:text-violet-200',
                   )}
                 >
@@ -75,17 +75,17 @@ export function BentoGrid({ items, className }: BentoGridProps) {
                   {item.title}
                 </h3>
                 {item.meta && (
-                  <span className="text-sm font-semibold text-zinc-300">{item.meta}</span>
+                  <span className="text-sm font-semibold text-theme-secondary">{item.meta}</span>
                 )}
               </div>
-              <p className="text-[13px] font-normal leading-relaxed text-zinc-400">
+              <p className="text-[13px] font-normal leading-relaxed text-theme-secondary">
                 {item.description}
               </p>
             </div>
 
             {(item.tags?.length || item.cta) && (
               <div className="mt-1 flex items-center justify-between">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-theme-muted">
                   {item.tags?.map((tag, i) => (
                     <span
                       key={i}

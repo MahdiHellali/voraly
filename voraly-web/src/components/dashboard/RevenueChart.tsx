@@ -65,8 +65,8 @@ export default function RevenueChart({ series }: RevenueChartProps) {
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <div className="text-sm font-bold text-zinc-100">{t('title')}</div>
-          <div className="text-[11px] text-zinc-500 mt-0.5">
+          <div className="text-sm font-bold text-theme-primary">{t('title')}</div>
+          <div className="text-[11px] text-theme-muted mt-0.5">
             {t('allPlatforms')} · {period}
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function RevenueChart({ series }: RevenueChartProps) {
               className={`text-[11px] font-bold px-3 py-1 rounded-lg transition-all duration-200 ${
                 period === p
                   ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                  : 'text-theme-muted hover:text-zinc-300 hover:bg-white/5'
               }`}
             >
               {p}
@@ -203,7 +203,7 @@ export default function RevenueChart({ series }: RevenueChartProps) {
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: s.color }}
             />
-            <span className="text-[11px] text-zinc-400 capitalize">{s.platform}</span>
+            <span className="text-[11px] text-theme-secondary capitalize">{s.platform}</span>
           </div>
         ))}
       </div>

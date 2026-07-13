@@ -95,7 +95,7 @@ export default function Sidebar({ user }: SidebarProps) {
       aria-label="Navigation principale"
     >
       {/* ── Logo header ── */}
-      <div className={cn('flex items-center gap-3 py-5 border-b border-white/[0.06] overflow-hidden', isCollapsed ? 'justify-center px-2' : 'px-4')}>
+      <div className={cn('flex items-center gap-3 py-5 border-b border-theme overflow-hidden', isCollapsed ? 'justify-center px-2' : 'px-4')}>
         <Link href="/dashboard" className="flex items-center gap-3">
           <motion.div
             whileHover={{ scale: 1.08, rotate: -4 }}
@@ -154,12 +154,12 @@ export default function Sidebar({ user }: SidebarProps) {
                       'text-indigo-300 border-indigo-500/30',
                       'shadow-[0_2px_16px_rgba(99,102,241,0.18)]',
                     ].join(' ')
-                  : 'border-transparent text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100'
+                  : 'border-transparent text-theme-secondary hover:bg-white/[0.05] hover:text-zinc-100'
               )}
             >
               <Icon
                 size={16}
-                className={cn('flex-shrink-0', isActive ? 'text-indigo-300' : 'text-zinc-500')}
+                className={cn('flex-shrink-0', isActive ? 'text-indigo-300' : 'text-theme-muted')}
               />
               <span
                 className="truncate whitespace-nowrap transition-all duration-300 overflow-hidden"
@@ -187,7 +187,7 @@ export default function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* ── User profile ── */}
-      <div className="p-2 border-t border-white/[0.06] overflow-hidden">
+      <div className="p-2 border-t border-theme overflow-hidden">
         <div
           className={cn(
             'flex items-center gap-3 p-2 rounded-xl overflow-hidden',
@@ -213,8 +213,8 @@ export default function Sidebar({ user }: SidebarProps) {
             className="min-w-0 transition-all duration-300 overflow-hidden flex-1"
             style={{ maxWidth: isCollapsed ? '0px' : '120px', opacity: isCollapsed ? 0 : 1 }}
           >
-            <div className="text-xs font-semibold text-zinc-200 truncate">{displayName}</div>
-            <div className="text-[10px] text-zinc-500 truncate">{user.email}</div>
+            <div className="text-xs font-semibold text-theme-primary truncate">{displayName}</div>
+            <div className="text-[10px] text-theme-muted truncate">{user.email}</div>
           </div>
 
           {/* Logout icon (expanded) */}
@@ -228,7 +228,7 @@ export default function Sidebar({ user }: SidebarProps) {
                       aria-label="Déconnexion"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.88 }}
-                      className="p-1.5 rounded-lg text-zinc-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
+                      className="p-1.5 rounded-lg text-theme-dim hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
                     >
                       <LogOut size={13} />
                     </motion.button>
@@ -251,7 +251,7 @@ export default function Sidebar({ user }: SidebarProps) {
                     aria-label="Déconnexion"
                     whileHover={{ scale: 1.07 }}
                     whileTap={{ scale: 0.88 }}
-                    className="w-full flex items-center justify-center py-2 rounded-xl text-zinc-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
+                    className="w-full flex items-center justify-center py-2 rounded-xl text-theme-dim hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
                   >
                     <LogOut size={14} />
                   </motion.button>
@@ -268,7 +268,7 @@ export default function Sidebar({ user }: SidebarProps) {
           whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
           whileTap={{ scale: 0.94 }}
           aria-label={isCollapsed ? 'Développer' : 'Réduire'}
-          className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-zinc-600 hover:text-zinc-300 transition-all duration-200 text-[11px] border border-transparent hover:border-white/[0.08]"
+          className="mt-1.5 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-theme-dim hover:text-zinc-300 transition-all duration-200 text-[11px] border border-transparent hover:border-theme"
         >
           <AnimatePresence mode="wait" initial={false}>
             {isCollapsed ? (
