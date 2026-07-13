@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
       platform_name: platform,
       access_token: 'extension',
-      sync_status: 'idle',
     },
     { onConflict: 'user_id,platform_name', ignoreDuplicates: true },
   )
