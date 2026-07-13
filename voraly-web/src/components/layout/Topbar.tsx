@@ -129,7 +129,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
     >
       {/* ── Titre de page ── */}
       <div>
-        <p className="text-[10px] font-semibold text-theme-muted uppercase tracking-[0.16em] mb-2">
+        <p className="hidden md:block text-[10px] font-semibold text-theme-muted uppercase tracking-[0.16em] mb-2">
           {dateCapitalized}
         </p>
         <motion.h1
@@ -137,7 +137,7 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
           initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="text-[28px] font-black text-white tracking-tight leading-none"
+          className="text-lg sm:text-[28px] font-black text-white tracking-tight leading-none"
         >
           {title}
         </motion.h1>

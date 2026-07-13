@@ -41,12 +41,12 @@ export default function HeroBento({
 
   return (
     <div className="pt-2 pb-6">
-      {/* ── Greeting ── */}
+      {/* ── Greeting — caché sur mobile ── */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.04 }}
-        className="text-[10px] font-semibold text-theme-muted uppercase tracking-[0.18em] mb-5"
+        className="hidden md:block text-[10px] font-semibold text-theme-muted uppercase tracking-[0.18em] mb-5"
       >
         {t('greeting', { name: firstName })}
       </motion.p>
@@ -60,7 +60,7 @@ export default function HeroBento({
               initial={{ opacity: 0, filter: 'blur(4px)', y: 6 }}
               animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-              className="text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2"
+              className="hidden md:block text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2"
             >
               {t('revenueThisMonth')}
             </motion.p>
@@ -71,17 +71,17 @@ export default function HeroBento({
               transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
               className="flex items-baseline gap-2.5"
             >
-              <span className="text-[58px] font-black text-white tracking-tight leading-none tabular-nums">
+              <span className="text-4xl sm:text-[58px] font-black text-white tracking-tight leading-none tabular-nums">
                 {revenue.monthTotal.toLocaleString(numberLocale)}
               </span>
-              <span className="text-[26px] font-bold text-theme-secondary">€</span>
+              <span className="text-xl sm:text-[26px] font-bold text-theme-secondary">€</span>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
-              className="flex items-center gap-3 mt-2.5"
+              className="hidden md:flex items-center gap-3 mt-2.5"
             >
               <span
                 className={`text-[13px] font-bold ${revenue.deltaPct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
@@ -105,14 +105,14 @@ export default function HeroBento({
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             className="max-w-md"
           >
-            <p className="text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2">
+            <p className="hidden md:block text-[11px] font-medium text-theme-secondary uppercase tracking-wider mb-2">
               {t('dashboardLabel')}
             </p>
-            <h2 className="text-[28px] sm:text-[32px] font-black text-white tracking-tight leading-[1.1]">
+            <h2 className="text-xl sm:text-[28px] sm:text-[32px] font-black text-white tracking-tight leading-[1.1]">
               {t('welcome')}
             </h2>
             {connectedPlatformsCount > 0 ? (
-              <p className="text-[14px] text-theme-secondary mt-3 leading-relaxed">
+              <p className="hidden md:block text-[14px] text-theme-secondary mt-3 leading-relaxed">
                 {t.rich('connectedIntro', {
                   count: connectedPlatformsCount,
                   b: (chunks) => <span className="font-bold text-violet-300">{chunks}</span>,
@@ -120,13 +120,13 @@ export default function HeroBento({
               </p>
             ) : (
               <>
-                <p className="text-[14px] text-theme-secondary mt-3 leading-relaxed">
+                <p className="hidden md:block text-[14px] text-theme-secondary mt-3 leading-relaxed">
                   {t('emptyIntro')}
                 </p>
                 {showConnectCta && (
                   <Link
                     href="/dashboard/platforms"
-                    className="group inline-flex items-center gap-2 mt-4 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-[13px] font-semibold text-violet-200 transition-all duration-200 hover:bg-violet-500/15 hover:border-violet-500/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
+                    className="hidden md:inline-flex group items-center gap-2 mt-4 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-[13px] font-semibold text-violet-200 transition-all duration-200 hover:bg-violet-500/15 hover:border-violet-500/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50"
                     style={{ boxShadow: '0 0 24px rgba(139,92,246,0.18)' }}
                   >
                     <Plug size={15} className="text-violet-300" />
@@ -149,7 +149,7 @@ export default function HeroBento({
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }}
             whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-            className="flex flex-col items-center gap-2.5 flex-shrink-0 cursor-default"
+            className="hidden md:flex flex-col items-center gap-2.5 flex-shrink-0 cursor-default"
           >
             <div className="relative w-[86px] h-[86px]">
               <svg
@@ -198,9 +198,9 @@ export default function HeroBento({
         )}
       </div>
 
-      {/* ── Chips — uniquement si données disponibles ── */}
+      {/* ── Chips — desktop only ── */}
       {hasChips && (
-        <div className="flex gap-3 flex-wrap">
+        <div className="hidden md:flex gap-3 flex-wrap">
           {[
             chips!.revenueToday && {
               label: t('chips.revenueToday'),
