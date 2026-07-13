@@ -7,6 +7,7 @@ import KpiGrid      from './KpiGrid'
 import RevenueChart from './RevenueChart'
 import AiTaskCard   from './AiTaskCard'
 import type { DashboardData } from '@/lib/dashboard/types'
+import { useLiveConnectionCount } from './useLiveConnectionCount'
 
 const blurReveal = (delay = 0) => ({
   initial:    { filter: 'blur(4px)', opacity: 0, y: 18 },
@@ -28,6 +29,9 @@ interface DashboardContentProps {
 
 export default function DashboardContent({ firstName, data, userId, deadlineSlot }: DashboardContentProps) {
   const { connectedPlatformsCount, revenue, chips, score, kpiItems, revenueSeries, todos, roadmapGeneratedLabel } = data
+  const extCount = useLiveConnectionCount()
+  // Source de vérité = max(DB, extension locale) pour ne jamais afficher 0 si l'extension rapporte des connexions
+  const liveCount = Math.max(connectedPlatformsCount, extCount)
 
   return (
     <div className="flex w-full flex-col gap-12 md:gap-16">
@@ -35,11 +39,11 @@ export default function DashboardContent({ firstName, data, userId, deadlineSlot
       {/* ── HERO ── */}
       <HeroBento
         firstName={firstName}
-        connectedPlatformsCount={connectedPlatformsCount}
+        connectedPlatformsCount={liveCount}
         revenue={revenue}
         score={score}
         chips={chips}
-        showConnectCta={connectedPlatformsCount === 0}
+        showConnectCta={liveCount === 0}
       />
 
       {/* ── Divider ── */}
