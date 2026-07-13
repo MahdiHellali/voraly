@@ -6,11 +6,8 @@ import HeroBento    from './HeroBento'
 import KpiGrid      from './KpiGrid'
 import RevenueChart from './RevenueChart'
 import AiTaskCard   from './AiTaskCard'
-import { EmptyState } from './EmptyState'
 import type { DashboardData } from '@/lib/dashboard/types'
 
-// PricingCard blur-reveal pattern from inspiration.txt:
-// initial: blur(4px) → whileInView: blur(0px)
 const blurReveal = (delay = 0) => ({
   initial:    { filter: 'blur(4px)', opacity: 0, y: 18 },
   whileInView: { filter: 'blur(0px)', opacity: 1, y: 0  },
@@ -30,12 +27,7 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ firstName, data, userId, deadlineSlot }: DashboardContentProps) {
-  // État CONNECTED = au moins une plateforme connectée (source de vérité :
-  // platform_connections). Sinon → état EMPTY : on masque les cartes de
-  // métriques (revenus/KPI) et on affiche un empty state dédié pour lever
-  // l'ambiguïté du « 0 $ ». Le calendrier (deadlines) reste toujours visible.
-  const isConnected = data.connectedPlatformsCount > 0
-  const hasMetrics = !!data.revenueSeries
+  const { connectedPlatformsCount, revenue, chips, score, kpiItems, revenueSeries, todos, roadmapGeneratedLabel } = data
 
   return (
     <div className="flex w-full flex-col gap-12 md:gap-16">
@@ -43,11 +35,11 @@ export default function DashboardContent({ firstName, data, userId, deadlineSlot
       {/* ── HERO ── */}
       <HeroBento
         firstName={firstName}
-        connectedPlatformsCount={data.connectedPlatformsCount}
-        revenue={data.revenue}
-        score={data.score}
-        chips={data.chips}
-        showConnectCta={isConnected}
+        connectedPlatformsCount={connectedPlatformsCount}
+        revenue={revenue}
+        score={score}
+        chips={chips}
+        showConnectCta={connectedPlatformsCount === 0}
       />
 
       {/* ── Divider ── */}
@@ -58,52 +50,36 @@ export default function DashboardContent({ firstName, data, userId, deadlineSlot
         className="h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent origin-center"
       />
 
-      {isConnected || true ? (
-        <>
-          {/* ── KPI BENTO ── */}
-          <motion.div {...blurReveal(0.08)}>
-            <KpiGrid items={data.kpiItems} />
-          </motion.div>
+      {/* ── KPI BENTO — affiché seulement s'il y a des données ── */}
+      {kpiItems && kpiItems.length > 0 && (
+        <motion.div {...blurReveal(0.08)}>
+          <KpiGrid items={kpiItems} />
+        </motion.div>
+      )}
 
-          {/* ── REVENUE + DEADLINES ── */}
-          {hasMetrics ? (
-            /* Grille deux colonnes : graphique + deadlines */
-            <motion.div
-              {...blurReveal(0.12)}
-              className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5"
-            >
-              <div className="hidden md:block">
-                <RevenueChart series={data.revenueSeries!} />
-              </div>
-              {deadlineSlot}
-            </motion.div>
-          ) : (
-            /* Pas de métriques → DeadlineCard pleine largeur, RevenueChart non monté */
-            <motion.div {...blurReveal(0.12)}>
-              {deadlineSlot}
-            </motion.div>
-          )}
-        </>
+      {/* ── REVENUE + DEADLINES ── */}
+      {revenueSeries ? (
+        <motion.div
+          {...blurReveal(0.12)}
+          className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5"
+        >
+          <div className="hidden md:block">
+            <RevenueChart series={revenueSeries} />
+          </div>
+          {deadlineSlot}
+        </motion.div>
       ) : (
-        <>
-          {/* ── EMPTY STATE (aucune plateforme connectée) ── */}
-          <motion.div {...blurReveal(0.08)}>
-            <EmptyState />
-          </motion.div>
-
-          {/* ── DEADLINES / calendrier : toujours visible ── */}
-          <motion.div {...blurReveal(0.12)}>
-            {deadlineSlot}
-          </motion.div>
-        </>
+        <motion.div {...blurReveal(0.12)}>
+          {deadlineSlot}
+        </motion.div>
       )}
 
       {/* ── AI TASKS — caché sur mobile ── */}
       <div className="hidden md:block">
         <motion.div {...blurReveal(0.08)}>
           <AiTaskCard
-            tasks={data.todos}
-            generatedLabel={data.roadmapGeneratedLabel}
+            tasks={todos}
+            generatedLabel={roadmapGeneratedLabel}
             userId={userId}
           />
         </motion.div>
