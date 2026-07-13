@@ -25,6 +25,15 @@ function normalizeCompletedDailyTasks(raw: unknown): string[] {
   return data.filter((v) => typeof v === 'string')
 }
 
+/** KPIs par défaut quand aucune métrique n'est disponible. */
+function buildDefaultKpis(count: number) {
+  return [
+    { title: '0', description: '€ de revenus ce mois', icon: null, colSpan: 2, tags: [`${count} plateformes`] },
+    { title: '0', description: 'Commandes actives', icon: null, colSpan: 1, tags: [] },
+    { title: '—', description: 'Note moyenne', icon: null, colSpan: 1, tags: [] },
+  ] as NonNullable<DashboardData['kpiItems']>
+}
+
 // ─── Fonction principale ──────────────────────────────────────────────────────
 
 export async function getDashboardData(
@@ -128,6 +137,8 @@ export async function getDashboardData(
       if (!error.message?.includes('does not exist')) {
         console.error('[dashboard] platform_metrics fetch failed', error)
       }
+      // Table absente → KPIs par défaut à 0
+      kpiItems = buildDefaultKpis(connectedPlatformsCount)
     } else if (metrics && metrics.length > 0) {
       // Calculer les métriques à partir des données réelles
       const now = new Date()
@@ -237,30 +248,8 @@ export async function getDashboardData(
         })),
       }
     } else {
-      // Aucune métrique mais plateformes connectées → KPIs à 0
-      kpiItems = [
-        {
-          title: '0',
-          description: '€ de revenus ce mois',
-          icon: null as unknown as React.ReactNode,
-          colSpan: 2,
-          tags: [`${connectedPlatformsCount} plateformes`],
-        },
-        {
-          title: '0',
-          description: 'Commandes actives',
-          icon: null as unknown as React.ReactNode,
-          colSpan: 1,
-          tags: [],
-        },
-        {
-          title: '—',
-          description: 'Note moyenne',
-          icon: null as unknown as React.ReactNode,
-          colSpan: 1,
-          tags: [],
-        },
-      ]
+      // Aucune métrique → KPIs par défaut à 0
+      kpiItems = buildDefaultKpis(connectedPlatformsCount)
     }
   } catch (err) {
     console.error('[dashboard] platform_metrics unexpected error', err)
