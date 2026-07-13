@@ -110,16 +110,16 @@ export async function getDashboardData(
     console.error('[dashboard] profiles roadmap fetch failed', err)
   }
 
-  // ── 3. Métriques revenus — RÉSILIENT ──────────────────────────────────────
-  const revenue = null
-  const chips = null
-  const kpiItems = null
-  const revenueSeries = null
+  // ── 3. Métriques revenus — calculées depuis platform_metrics ──────────────
+  let revenue: DashboardData['revenue'] = null
+  let chips: DashboardData['chips'] = null
+  let kpiItems: DashboardData['kpiItems'] = null
+  let revenueSeries: DashboardData['revenueSeries'] = null
 
   try {
     const { data: metrics, error } = await supabase
       .from('platform_metrics')
-      .select('platform_name, metric_date, revenue, new_proposals, pending_replies, active_orders, conversion_rate')
+      .select('platform_name, metric_date, revenue, new_proposals, pending_replies, active_orders, conversion_rate, rating')
       .eq('user_id', userId)
       .order('metric_date', { ascending: false })
       .limit(200)
@@ -129,7 +129,113 @@ export async function getDashboardData(
         console.error('[dashboard] platform_metrics fetch failed', error)
       }
     } else if (metrics && metrics.length > 0) {
-      void metrics
+      // Calculer les métriques à partir des données réelles
+      const now = new Date()
+      const currentMonth = now.getMonth()
+      const currentYear = now.getFullYear()
+      const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1
+      const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear
+
+      let monthTotal = 0
+      let prevMonthTotal = 0
+      const activePlatforms = new Set<string>()
+      const platformRevenues: Record<string, number[]> = {}
+      const platformColors: Record<string, string> = {
+        upwork: '#22c55e',
+        fiverr: '#14b8a6',
+        malt: '#f43f5e',
+        linkedin: '#3b82f6',
+      }
+      let totalActiveOrders = 0
+      let totalNewProposals = 0
+      let totalPendingReplies = 0
+      let ratingsSum = 0
+      let ratingsCount = 0
+
+      for (const m of metrics) {
+        const date = new Date(m.metric_date)
+        const month = date.getMonth()
+        const year = date.getFullYear()
+
+        if (m.revenue) {
+          if (month === currentMonth && year === currentYear) {
+            monthTotal += Number(m.revenue)
+            activePlatforms.add(m.platform_name)
+          } else if (month === prevMonth && year === prevMonthYear) {
+            prevMonthTotal += Number(m.revenue)
+          }
+
+          // Série temporelle pour le graphique
+          if (!platformRevenues[m.platform_name]) platformRevenues[m.platform_name] = []
+        }
+
+        if (m.active_orders) totalActiveOrders += Number(m.active_orders)
+        if (m.new_proposals) totalNewProposals += Number(m.new_proposals)
+        if (m.pending_replies) totalPendingReplies += Number(m.pending_replies)
+        if (m.rating) { ratingsSum += Number(m.rating); ratingsCount++ }
+      }
+
+      // Revenu
+      const deltaPct = prevMonthTotal > 0
+        ? Math.round(((monthTotal - prevMonthTotal) / prevMonthTotal) * 100)
+        : 0
+
+      revenue = {
+        monthTotal: Math.round(monthTotal),
+        deltaPct,
+        activePlatforms: activePlatforms.size,
+      }
+
+      // Chips
+      chips = {
+        revenueToday: `${Math.round(monthTotal / 30)} €`,
+        newProposals: totalNewProposals,
+        pendingReplies: totalPendingReplies,
+      }
+
+      // Score — calculé mais non exposé pour l'instant (type BentoItem incompatible)
+      const avgRating = ratingsCount > 0 ? Math.round((ratingsSum / ratingsCount) * 10) / 10 : 0
+      const score = Math.round(
+        (activePlatforms.size * 15) + (Math.min(monthTotal / 100, 30)) + (avgRating * 10) + (totalActiveOrders * 2)
+      )
+      void score // réservé pour usage futur
+
+      // KPI items
+      kpiItems = [
+        {
+          title: String(Math.round(monthTotal)),
+          description: '€ de revenus ce mois',
+          icon: undefined as any,
+          colSpan: 2,
+          tags: [`${activePlatforms.size} plateformes`],
+        },
+        {
+          title: String(totalActiveOrders),
+          description: 'Commandes actives',
+          icon: undefined as any,
+          colSpan: 1,
+          tags: [],
+        },
+        {
+          title: avgRating > 0 ? `${avgRating}/5` : '—',
+          description: 'Note moyenne',
+          icon: undefined as any,
+          colSpan: 1,
+          tags: [],
+        },
+      ]
+
+      // Revenue Series (simple: par plateforme ce mois)
+      revenueSeries = {
+        months: ['Ce mois'],
+        series: Object.entries(platformRevenues).map(([platform]) => ({
+          platform,
+          color: platformColors[platform] || '#6366f1',
+          values: [Math.round(metrics
+            .filter(m => m.platform_name === platform)
+            .reduce((sum, m) => sum + Number(m.revenue || 0), 0))],
+        })),
+      }
     }
   } catch (err) {
     console.error('[dashboard] platform_metrics unexpected error', err)

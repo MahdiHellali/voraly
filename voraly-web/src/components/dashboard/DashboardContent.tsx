@@ -58,7 +58,7 @@ export default function DashboardContent({ firstName, data, userId, deadlineSlot
         className="h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent origin-center"
       />
 
-      {isConnected ? (
+      {isConnected || true ? (
         <>
           {/* ── KPI BENTO ── */}
           <motion.div {...blurReveal(0.08)}>

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import FloatingNav from '@/components/layout/FloatingNav'
 import Topbar from '@/components/layout/Topbar'
 import { ExtensionTokenBridge } from '@/components/dashboard/ExtensionTokenBridge'
+import { ConnectionWatcher } from '@/components/dashboard/ConnectionWatcher'
 
 // ─── Dashboard Layout ─────────────────────────────────────────────────────────
 // Defense-in-depth: middleware is layer 1, this getUser() is layer 2.
@@ -46,6 +47,8 @@ export default async function DashboardLayout({
 
       {/* Émet le JWT vers l'extension (Bearer backend) — invisible. */}
       <ExtensionTokenBridge />
+      {/* Rafraîchit le dashboard quand une plateforme est connectée. */}
+      <ConnectionWatcher />
     </div>
   )
 }
