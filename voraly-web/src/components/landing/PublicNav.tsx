@@ -21,6 +21,8 @@ import { ArrowRight, Menu, X, Sun, Moon } from 'lucide-react'
 import LanguageSwitcher from '@/components/i18n/LanguageSwitcher'
 import { useTheme } from '@/components/theme/ThemeProvider'
 
+type Theme = 'dark' | 'light'
+
 const THRESHOLD = 72 // px avant bascule pill
 
 // Les libellés sont des clés i18n résolues à l'affichage (namespace "nav").
@@ -167,9 +169,13 @@ function PillCTA() {
 function MobileMenu({
   open,
   onClose,
+  theme,
+  onToggleTheme,
 }: {
   open: boolean
   onClose: () => void
+  theme: Theme
+  onToggleTheme: () => void
 }) {
   const tNav = useTranslations('nav')
   const tCommon = useTranslations('common')
@@ -219,7 +225,7 @@ function MobileMenu({
               <div className="flex items-center gap-2 px-1 pt-1">
                 <LanguageSwitcher variant="inline" />
                 <button
-                  onClick={toggle}
+                  onClick={onToggleTheme}
                   aria-label={theme === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre'}
                   className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/[0.05] hover:text-white"
                 >
@@ -399,7 +405,7 @@ export default function PublicNav() {
       </div>
 
       {/* Menu mobile (partagé entre les 2 états) */}
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} theme={theme} onToggleTheme={toggle} />
     </header>
   )
 }
