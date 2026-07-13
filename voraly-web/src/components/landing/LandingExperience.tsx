@@ -231,47 +231,24 @@ export default function LandingExperience() {
           aria-labelledby="hero-title"
         >
           <div className="relative z-10 flex max-w-4xl flex-col items-center gap-4 sm:gap-6 md:gap-8">
-            {/* Eyebrow — animation shimmer + flottement continu */}
+            {/* Eyebrow — pas d'animation flottante sur mobile */}
             <motion.div
               initial={{ opacity: 0, y: 20, filter: 'blur(10px)', scale: 0.95 }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
-              <motion.p
-                animate={{
-                  y: [0, -6, 0, 4, 0],
-                  rotate: [-0.3, 0.3, -0.2, 0.2, 0],
-                }}
-                transition={{
-                  duration: 7,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                  repeatType: 'loop',
-                }}
-                className="relative inline-block rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-300 backdrop-blur-sm"
+              <p
+                className="relative inline-block rounded-full px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] text-violet-300 backdrop-blur-sm"
                 style={{
                   background: 'rgba(139,92,246,0.08)',
                   border: '1px solid rgba(139,92,246,0.3)',
-                  boxShadow: '0 0 20px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
                 }}
               >
-                {/* Shimmer sweep */}
-                <motion.span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-full"
-                  animate={{ backgroundPosition: ['200% center', '-200% center'] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-                  style={{
-                    background:
-                      'linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)',
-                    backgroundSize: '200% 100%',
-                  }}
-                />
                 {t("hero.eyebrow")}
-              </motion.p>
+              </p>
             </motion.div>
 
-            {/* H1 — animation gradient shimmer en boucle infinie */}
+            {/* H1 */}
             <motion.h1
               id="hero-title"
               variants={blurReveal}
@@ -281,32 +258,11 @@ export default function LandingExperience() {
               className="text-balance text-3xl sm:text-4xl md:text-6xl font-extrabold tracking-tight"
             >
               {t("hero.titleLead")}{' '}
-              <motion.span
-                className="gradient-text inline-block"
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                  textShadow: [
-                    '0 0 40px rgba(139,92,246,0)',
-                    '0 0 40px rgba(139,92,246,0.45)',
-                    '0 0 40px rgba(255,102,204,0.35)',
-                    '0 0 40px rgba(99,102,241,0.4)',
-                    '0 0 40px rgba(139,92,246,0)',
-                  ],
-                }}
-                transition={{
-                  backgroundPosition: { duration: 5, repeat: Infinity, ease: 'linear' },
-                  textShadow: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #a5b4fc 0%, #c084fc 35%, #FF66CC 65%, #a5b4fc 100%)',
-                  backgroundSize: '300% 100%',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
+              <span
+                className="gradient-text"
               >
                 {t("hero.titleAccent")}
-              </motion.span>
+              </span>
             </motion.h1>
 
             {/* Sous-titre — mot-clé principal intégré naturellement */}
@@ -338,7 +294,7 @@ export default function LandingExperience() {
               </Link>
               <Link
                 href="/pricing"
-                className="glass inline-flex items-center rounded-full px-8 py-3 text-base font-semibold text-theme-primary transition-colors hover:bg-white/[0.06] hover:text-white"
+                className="hidden sm:inline-flex glass items-center rounded-full px-8 py-3 text-base font-semibold text-theme-primary transition-colors hover:bg-white/[0.06] hover:text-white"
               >
                 {tc("viewPricing")}
               </Link>
@@ -355,24 +311,24 @@ export default function LandingExperience() {
               {t("hero.microcopy")}
             </motion.p>
 
-            {/* Phrase GEO — extractible par les moteurs et les IA */}
+            {/* Phrase GEO — extractible par les moteurs et les IA — cachée sur mobile */}
             <motion.p
               variants={blurReveal}
               initial="hidden"
               animate="visible"
               custom={4.5}
-              className="max-w-2xl text-xs leading-relaxed text-zinc-500"
+              className="hidden md:block max-w-2xl text-xs leading-relaxed text-theme-muted"
             >
               {t("hero.geo")}
             </motion.p>
 
-            {/* Logos plateformes */}
+            {/* Logos plateformes — cachés sur mobile, trop de bruit */}
             <motion.div
               variants={blurReveal}
               initial="hidden"
               animate="visible"
               custom={5}
-              className="mt-4 flex flex-col items-center gap-4"
+              className="hidden md:flex mt-4 flex-col items-center gap-4"
             >
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">
                 {t("hero.platformsLabel")}
@@ -401,12 +357,12 @@ export default function LandingExperience() {
             </motion.div>
           </div>
 
-          {/* Scroll indicator */}
+          {/* Scroll indicator — caché sur mobile */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2, duration: 1 }}
-            className="absolute bottom-12 left-1/2 -translate-x-1/2"
+            className="hidden md:block absolute bottom-12 left-1/2 -translate-x-1/2"
           >
             <motion.div
               animate={{ y: [0, 8, 0] }}
