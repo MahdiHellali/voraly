@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: "Vue d'ensemble de vos performances freelance sur toutes les plateformes.",
 }
 
+// Toujours revalider pour refléter les connexions/déconnexions en temps réel.
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const {
