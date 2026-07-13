@@ -12,6 +12,7 @@ import {
 import { disconnectIntegration } from './actions'
 import { PlatformCards, type PlatformCardData } from '@/components/dashboard/PlatformCards'
 import { PlatformMetricsCard, type PlatformMetrics } from '@/components/dashboard/PlatformMetricsCard'
+import { LivePlatformStats } from '@/components/dashboard/LivePlatformStats'
 
 // Plateformes dont la connexion passe par l'extension Voraly (popup + sync
 // arrière-plan) plutôt que par OAuth. Aligné avec voraly-extension.
@@ -229,11 +230,13 @@ export default async function PlatformsPage({
       {/* ── Stats summary — 2 cards (sans OAuth) ── */}
       <div className="grid grid-cols-2 gap-4 fade-2">
         {[
-          { label: t('stats.active'), value: `${connectedCount} / ${connectableCount}`, color: 'text-indigo-300' },
-          { label: t('stats.available'), value: String(connectableCount), color: 'text-indigo-300' },
+          { label: t('stats.active'), value: connectedCount > 0 ? `${connectedCount} / ${connectableCount}` : null, color: 'text-indigo-300', live: true },
+          { label: t('stats.available'), value: String(connectableCount), color: 'text-indigo-300', live: false },
         ].map((s) => (
           <div key={s.label} className="glass rounded-2xl p-5 text-center">
-            <div className={`mb-1 text-2xl font-bold tracking-tight ${s.color}`}>{s.value}</div>
+            <div className={`mb-1 text-2xl font-bold tracking-tight ${s.color}`}>
+              {s.live ? <LivePlatformStats connectableCount={connectableCount} /> : s.value}
+            </div>
             <div className="text-[11px] text-zinc-500">{s.label}</div>
           </div>
         ))}
