@@ -23,14 +23,10 @@ const navItems = [
 ] as const
 
 const tabVariants = {
-  initial: {
-    gap: 0,
-    paddingLeft:  '0.9rem',
-    paddingRight: '0.9rem',
-  },
+  initial: { gap: 0, paddingLeft: '0.9rem', paddingRight: '0.9rem' },
   animate: (isActive: boolean) => ({
-    gap:          isActive ? '0.6rem' : 0,
-    paddingLeft:  isActive ? '1.5rem' : '0.9rem',
+    gap: isActive ? '0.6rem' : 0,
+    paddingLeft: isActive ? '1.5rem' : '0.9rem',
     paddingRight: isActive ? '1.5rem' : '0.9rem',
   }),
 }
@@ -38,62 +34,49 @@ const tabVariants = {
 const labelVariants = {
   initial: { width: 0, opacity: 0 },
   animate: { width: 'auto', opacity: 1 },
-  exit:    { width: 0, opacity: 0 },
+  exit: { width: 0, opacity: 0 },
 }
 
 const spring = { delay: 0.05, type: 'spring', bounce: 0, duration: 0.55 } as const
-const HIDE_DELAY = 3000 // 3s avant auto-hide
-const REVEAL_THRESHOLD = 80 // px depuis le bas pour révéler
+const HIDE_DELAY = 2000
 
 export default function FloatingNav() {
   const pathname = usePathname()
   const t = useTranslations('dashboard.nav')
   const [hidden, setHidden] = useState(false)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isDesktop = useRef(false)
 
   useEffect(() => {
-    isDesktop.current = window.innerWidth >= 768
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const bottomDist = window.innerHeight - e.clientY
-
-      // Révéler si la souris s'approche du bas
-      if (bottomDist <= REVEAL_THRESHOLD) {
-        setHidden(false)
-      }
-
-      // Reset du timer de cache
+    const startTimer = () => {
       if (hideTimer.current) clearTimeout(hideTimer.current)
-      if (isDesktop.current) {
-        hideTimer.current = setTimeout(() => {
-          setHidden(true)
-        }, HIDE_DELAY)
-      }
-    }
-
-    const handleMouseLeave = () => {
-      // Si la souris quitte la fenêtre, cacher après délai
-      if (hideTimer.current) clearTimeout(hideTimer.current)
-      if (isDesktop.current) {
-        hideTimer.current = setTimeout(() => {
-          setHidden(true)
-        }, HIDE_DELAY)
-      }
-    }
-
-    // Initialiser le timer au montage
-    if (isDesktop.current) {
       hideTimer.current = setTimeout(() => setHidden(true), HIDE_DELAY)
     }
+    const clearTimer = () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current)
+    }
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true })
-    window.addEventListener('mouseleave', handleMouseLeave, { passive: true })
+    const onMouseMove = (e: MouseEvent) => {
+      const bottomDist = window.innerHeight - e.clientY
+      if (bottomDist <= 80) setHidden(false)
+      startTimer()
+    }
+
+    const onMouseLeave = () => startTimer()
+    const onScroll = () => setHidden(true)
+    const onTouchStart = () => { setHidden(false); startTimer() }
+
+    startTimer()
+    window.addEventListener('mousemove', onMouseMove, { passive: true })
+    window.addEventListener('mouseleave', onMouseLeave, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseleave', handleMouseLeave)
-      if (hideTimer.current) clearTimeout(hideTimer.current)
+      clearTimer()
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseleave', onMouseLeave)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('touchstart', onTouchStart)
     }
   }, [])
 
@@ -104,7 +87,7 @@ export default function FloatingNav() {
           <motion.nav
             key="floating-nav"
             initial={{ opacity: 0, y: 28, scale: 0.92, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0,  scale: 1,    filter: 'blur(0px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 20, scale: 0.95, filter: 'blur(4px)' }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="glass-pill flex items-center gap-1 rounded-[1.75rem] p-1.5 sm:p-2 pointer-events-auto"
@@ -126,7 +109,6 @@ export default function FloatingNav() {
                   aria-label={label}
                   className="group relative"
                 >
-                  {/* Hover tooltip */}
                   {!isActive && (
                     <span
                       className="pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-xl border border-theme bg-theme-glass px-3 py-1.5 text-xs font-semibold text-theme-primary opacity-0 backdrop-blur-xl transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100"

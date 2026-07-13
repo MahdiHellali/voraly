@@ -199,17 +199,11 @@ export default async function PlatformsPage({
 
   return (
     <div className="flex w-full flex-col gap-8 fade-1">
-      {/* ── Header ── */}
+      {/* ── Header — simplifié ── */}
       <div>
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-indigo-400">
-          {t('eyebrow')}
-        </p>
-        <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-white">
+        <h1 className="text-2xl font-extrabold tracking-tight text-white">
           {t('title')}
         </h1>
-        <p className="text-sm leading-relaxed text-zinc-400">
-          {t('subtitle')}
-        </p>
       </div>
 
       {/* ── Status banner ── */}
@@ -232,11 +226,10 @@ export default async function PlatformsPage({
         </div>
       )}
 
-      {/* ── Stats summary ── */}
-      <div className="grid grid-cols-3 gap-4 fade-2">
+      {/* ── Stats summary — 2 cards (sans OAuth) ── */}
+      <div className="grid grid-cols-2 gap-4 fade-2">
         {[
           { label: t('stats.active'), value: `${connectedCount} / ${connectableCount}`, color: 'text-indigo-300' },
-          { label: t('stats.oauth'), value: String(connectedCount), color: 'text-emerald-400' },
           { label: t('stats.available'), value: String(connectableCount), color: 'text-indigo-300' },
         ].map((s) => (
           <div key={s.label} className="glass rounded-2xl p-5 text-center">

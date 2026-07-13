@@ -181,7 +181,11 @@ export default function Topbar({ isPremium = false }: { isPremium?: boolean }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute right-0 top-14 w-80 z-50 glass rounded-3xl border border-theme shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                className="absolute right-0 top-14 w-80 z-50 rounded-3xl border border-theme shadow-[0_12px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                style={{
+                  background: 'rgba(12,12,15,0.96)',
+                  backdropFilter: 'blur(28px) saturate(180%)',
+                }}
               >
                 {/* Header */}
                 <div className="p-4 border-b border-theme flex items-center justify-between bg-white/[0.01]">
