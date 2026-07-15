@@ -22,11 +22,9 @@ export const metadata: Metadata = {
 
 export default function TestLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={dmSans.className}>
-      <body className="bg-zinc-950 text-white antialiased">
-        <DotGrid />
-        {children}
-      </body>
-    </html>
+    <div className={dmSans.className}>
+      <DotGrid />
+      {children}
+    </div>
   )
 }
