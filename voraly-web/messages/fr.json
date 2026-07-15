@@ -795,7 +795,7 @@
   },
   "privacyPage": {
     "title": "Politique de confidentialité",
-    "intro": "Document en cours de finalisation — contact : <mail>contact@voraly.net</mail>",
+    "intro": "Dernière mise à jour : 15 juillet 2026. Pour toute question, contactez-nous à <mail>contact@voraly.net</mail>.",
     "sections": {
       "collected": {
         "title": "Données collectées",
@@ -803,7 +803,11 @@
       },
       "usage": {
         "title": "Utilisation des données",
-        "body": "Vos données sont utilisées exclusivement pour fournir le service Voraly : alimenter votre tableau de bord, générer votre roadmap IA et synchroniser vos deadlines. Aucune donnée personnelle n'est vendue ni transmise à des tiers à des fins commerciales."
+        "body": "Vos données sont utilisées exclusivement pour fournir et améliorer les fonctionnalités de Voraly : alimenter votre tableau de bord, générer votre roadmap IA, synchroniser vos deadlines et optimiser vos offres. Aucune donnée personnelle n'est vendue, louée ou transmise à des tiers à des fins commerciales. Nous n'utilisons pas vos données pour afficher des publicités, ni pour créer des profils publicitaires."
+      },
+      "googleData": {
+        "title": "Données utilisateur Google — Utilisation limitée",
+        "body": "L'utilisation et le transfert vers toute autre application des informations reçues des API Google par Voraly sont conformes à la Politique relative aux données utilisateur des services d'API Google, y compris les exigences d'utilisation limitée. Les données Google que nous accédons via OAuth (telles que votre adresse email, votre profil Google et les données de vos plateformes connectées via Google) sont utilisées exclusivement pour fournir et améliorer les fonctionnalités de Voraly. Ces données ne sont jamais vendues, partagées avec des tiers, ni utilisées à des fins publicitaires, de marketing ou de profilage. Elles ne sont pas non plus utilisées pour entraîner des modèles d'intelligence artificielle ou d'apprentissage automatique destinés à d'autres applications."
       },
       "security": {
         "title": "Sécurité",
@@ -818,7 +822,7 @@
         "body": "Voraly utilise des cookies de session nécessaires au fonctionnement de l'authentification. Aucun cookie publicitaire ou de tracking tiers n'est déposé sans votre consentement."
       }
     },
-    "footerNote": "Cette politique de confidentialité sera complétée lors de la finalisation juridique du projet. Pour toute question, contactez <mail>contact@voraly.net</mail>."
+    "footerNote": "Pour toute question concernant cette politique de confidentialité, contactez-nous à <mail>contact@voraly.net</mail>."
   },
   "pricingPage": {
     "backToDashboard": "Retour au tableau de bord",

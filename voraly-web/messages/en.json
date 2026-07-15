@@ -795,7 +795,7 @@
   },
   "privacyPage": {
     "title": "Privacy Policy",
-    "intro": "Document being finalized — contact: <mail>contact@voraly.net</mail>",
+    "intro": "Last updated: July 15, 2026. For any questions, contact us at <mail>contact@voraly.net</mail>.",
     "sections": {
       "collected": {
         "title": "Data collected",
@@ -803,7 +803,11 @@
       },
       "usage": {
         "title": "Use of data",
-        "body": "Your data is used exclusively to provide the Voraly service: power your dashboard, generate your AI roadmap and sync your deadlines. No personal data is sold or shared with third parties for commercial purposes."
+        "body": "Your data is used exclusively to provide and improve Voraly's features: power your dashboard, generate your AI roadmap, sync your deadlines and optimize your proposals. No personal data is sold, rented, or shared with third parties for commercial purposes. We do not use your data for advertising or to build advertising profiles."
+      },
+      "googleData": {
+        "title": "Google User Data — Limited Use",
+        "body": "Voraly's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements. The Google data we access via OAuth (such as your email address, Google profile, and data from your connected freelance platforms via Google) is used exclusively to provide and improve Voraly's features. This data is never sold, shared with third parties, or used for advertising, marketing, or profiling purposes. It is also not used to train AI or machine learning models for other applications."
       },
       "security": {
         "title": "Security",
@@ -818,7 +822,7 @@
         "body": "Voraly uses session cookies necessary for authentication to work. No advertising or third-party tracking cookie is placed without your consent."
       }
     },
-    "footerNote": "This privacy policy will be completed once the project's legal finalization is done. For any question, contact <mail>contact@voraly.net</mail>."
+    "footerNote": "For any questions regarding this privacy policy, contact us at <mail>contact@voraly.net</mail>."
   },
   "pricingPage": {
     "backToDashboard": "Back to dashboard",

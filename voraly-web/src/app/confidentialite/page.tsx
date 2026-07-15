@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
 }
 
-const SECTION_KEYS = ["collected", "usage", "security", "rights", "cookies"] as const
+const SECTION_KEYS = ["collected", "usage", "googleData", "security", "rights", "cookies"] as const
 
 const inlineMail = (chunks: React.ReactNode) => (
   <a
